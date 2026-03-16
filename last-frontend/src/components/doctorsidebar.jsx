@@ -13,9 +13,9 @@ export default function DoctorSidebar() {
   const [doctorInfo, setDoctorInfo] = useState(null);
 
   const menuItems = [
-    { icon: Home, label: "Dashboard", path: `/dashboard-doctor`, },
+    { icon: Home, label: "Dashboard", path: `/dashboard`, },
     { icon: MessageSquare, label: "Chat", path: "/chats", },
-    { icon: User, label: "Profile", path: `/doctor-profile`, type: "profile", },
+    { icon: User, label: "Profile", path: `/profile`, type: "profile", },
   ];
 
   useEffect(() => {

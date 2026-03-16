@@ -13,10 +13,10 @@ export default function PatientSidebar() {
   const [PatientInfo, setPatientInfo] = useState(null);
 
   const menuItems = [
-    { icon: Home, label: "Dashboard", path: `/dashboard-patient`, },
+    { icon: Home, label: "Dashboard", path: `/dashboard`, },
     { icon: MessageSquare, label: "Chat", path: "/chats", },
     { icon: FileText, label: "Medical Records", path: "/reports", },
-    { icon: User, label: "Profile", path: `/patient-profile`, type: "profile", },
+    { icon: User, label: "Profile", path: `/profile`, type: "profile", },
   ];
 
   useEffect(() => {
