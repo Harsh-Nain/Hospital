@@ -145,15 +145,9 @@ export const EditOwnProfile = async (req, res) => {
 export const updatePassword = async (req, res) => {
     try {
         const { email, role, password } = req.body;
-        console.log(email, role, password);
-
 
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        await db
-            .update(users)
-            .set({ password: hashedPassword })
-            .where(and(eq(users.email, email), eq(users.role, role)));
+        await db.update(users).set({ password: hashedPassword }).where(and(eq(users.email, email), eq(users.role, role)));
 
         res.json({ success: true, message: "Password updated successfully" });
 
@@ -172,8 +166,10 @@ export const getDoctorsBySymptom = async (req, res) => {
         }
 
         const result = await db
-            .select({ doctorId: doctors.id, name: users.fullName, specialization: specializations.name, experience: doctors.experienceYears, fee: doctors.consultationFee, bio: doctors.bio, })
-            .from(doctors).innerJoin(users, eq(users.id, doctors.userId)).innerJoin(specializations, eq(doctors.specializationId, specializations.id))
+            .select({ fullName: users.fullName, image: users.image, specialization: specializations.name, doctorId: doctors.id, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee })
+            .from(users)
+            .leftJoin(doctors, eq(doctors.userId, users.id))
+            .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .where(sql`JSON_SEARCH(${specializations.symptoms}, 'one', CONCAT('%', ${symptom}, '%')) IS NOT NULL`)
 
         res.json({ success: true, doctors: result, });

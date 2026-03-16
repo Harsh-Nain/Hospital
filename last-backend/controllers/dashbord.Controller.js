@@ -1,6 +1,6 @@
 import db from "../db/index.js";
-import { users, patients, appointments, doctors, specializations, doctorSlots, } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { users, patients, appointments, doctors, specializations, doctorSlots, payments, } from "../db/schema.js";
+import { eq, and, sql } from "drizzle-orm";
 
 export const PatientInfo = async (req, res) => {
 
@@ -119,23 +119,34 @@ export const PatientDashboard = async (req, res) => {
             .where(and(eq(users.id, id), eq(users.role, "patient")))
             .limit(1);
 
-        const doctorsList = await db
+        let doctorsList = await db
             .select({ doctorId: doctors.id, fullName: users.fullName, image: users.image, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, specialization: specializations.name, slotId: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime })
             .from(doctors)
             .leftJoin(users, eq(users.id, doctors.userId))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .leftJoin(doctorSlots, eq(doctorSlots.doctorId, doctors.id))
-            .where(and(eq(doctors.isApproved, true), eq(doctors.status, "success"), eq(doctorSlots.isBooked, false)))
+            .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', ${patient.disease})`, eq(doctors.isApproved, true), eq(doctors.status, "success"), eq(doctorSlots.isBooked, false)))
             .limit(6);
 
+        if (doctorsList == 0) {
+            doctorsList = await db
+                .select({ doctorId: doctors.id, fullName: users.fullName, image: users.image, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, specialization: specializations.name, slotId: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime })
+                .from(doctors)
+                .leftJoin(users, eq(users.id, doctors.userId))
+                .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
+                .leftJoin(doctorSlots, eq(doctorSlots.doctorId, doctors.id))
+                .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', 'fever')`, eq(doctors.isApproved, true), eq(doctors.status, "success"), eq(doctorSlots.isBooked, false)))
+                .limit(6);
+        }
 
         const appointmentList = await db
-            .select({ appointmentId: appointments.id, status: appointments.status, meetingLink: appointments.meetingLink, doctorName: users.fullName, doctorImage: users.image, specialization: specializations.name, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime })
+            .select({ amount: payments.amount, transactionId: payments.transactionId, paymentStatus: payments.paymentStatus, paymentId: payments.id, appointmentId: appointments.id, appoitmentStatus: appointments.status, doctorName: users.fullName, doctorImage: users.image, specialization: specializations.name, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime })
             .from(appointments)
             .leftJoin(doctors, eq(doctors.id, appointments.doctorId))
             .leftJoin(users, eq(users.id, doctors.userId))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
+            .leftJoin(payments, eq(payments.appointmentId, appointments.id))
             .where(eq(appointments.patientId, patient.patientId));
 
         res.json({ success: true, patient, doctorsList, appointments: appointmentList });

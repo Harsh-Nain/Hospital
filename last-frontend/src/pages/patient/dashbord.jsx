@@ -23,7 +23,7 @@ export default function Dashboard() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-white/70 p-4 sm:p-6 lg:p-10 space-y-10">
+        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-10 space-y-10">
             {showDoctorDetail && <ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={patient?.patientId} />}
 
             <div className="bg-white/80 backdrop-blur-xl border border-sky-100 rounded-2xl p-5 sm:p-6 shadow-sm flex items-center gap-4">
@@ -36,8 +36,8 @@ export default function Dashboard() {
 
             <div>
                 <h2 className="text-lg sm:text-xl font-semibold mb-6 text-gray-800">Your Appointments</h2>
-
                 <div className="space-y-4">
+                    {appointments.length == 0 && "no any appointments yet..."}
                     {appointments.map((a, i) => (
 
                         <div key={i} className=" bg-white/80 backdrop-blur-lg border border-sky-100 rounded-2xl p-4 sm:px-6 sm:py-4 shadow-sm hover:shadow-lg  transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -48,13 +48,12 @@ export default function Dashboard() {
                                     <p className="text-xs sm:text-sm text-sky-500 font-medium">{a.specialization}</p>
                                 </div>
                             </div>
-
                             <div className="text-sm text-gray-600 text-center sm:text-center w-[33%]">
                                 <p className="font-medium">{a.date}</p>
                                 <p className="text-xs text-gray-500">{a.startTime} – {a.endTime}</p>
                             </div>
-                            <div className={`self-start sm:self-auto px-4 text-right py-1.5 w-[33%] rounded-full text-xs font-semibold capitalize${a.status !== "pending" ? "bg-blue-50 text-green-600" : "bg-red-50 text-red-500"}`}  >
-                                {a.status}
+                            <div className={`self-start sm:self-auto px-4 sm:text-right py-1.5 w-[33%] rounded-full text-xs font-semibold capitalize${a.appoitmentStatus !== "pending" ? "bg-blue-50 text-green-600" : "bg-red-50 text-red-500"}`}  >
+                                {a.appoitmentStatus}
                             </div>
                         </div>
                     ))}
@@ -64,6 +63,7 @@ export default function Dashboard() {
             <div>
                 <h2 className="text-lg sm:text-xl font-semibold mb-6 text-gray-800">Recommended Doctors</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+                    {doctors.length == 0 && "no any doctor avalable..."}
                     {doctors.map((doc, i) => (
                         <div key={i} onClick={() => setshowDoctorDetail(doc.doctorId)} className="group relative bg-white/80 backdrop-blur-xl border border-sky-100 rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-300 overflow-hidden">
 
@@ -98,7 +98,7 @@ export default function Dashboard() {
                                 <p className="text-xs text-gray-500">{doc.startTime} – {doc.endTime}</p>
                             </div>
 
-                            <button onClick={() =>  setshowDoctorDetail(doc.doctorId)} className="mt-5 w-full bg-linear-to-r from-sky-400 to-blue-500 text-white py-2.5 rounded-xl font-medium shadow-sm hover:shadow-lg transition">View Details</button>
+                            <button onClick={() => setshowDoctorDetail(doc.doctorId)} className="mt-5 w-full bg-linear-to-r from-sky-400 to-blue-500 text-white py-2.5 rounded-xl font-medium shadow-sm hover:shadow-lg transition">View Details</button>
                         </div>
                     ))}
                 </div>

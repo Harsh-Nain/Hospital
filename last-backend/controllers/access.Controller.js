@@ -28,7 +28,6 @@ export const sendOtp = async (req, res) => {
         }
 
         const existingUser = await db.select().from(users).where(and(eq(users.email, email), eq(users.role, role)));
-        console.log(existingUser);
 
         if (existingUser.length > 0) {
             return res.status(400).json({ success: false, message: "Email already exists" });
