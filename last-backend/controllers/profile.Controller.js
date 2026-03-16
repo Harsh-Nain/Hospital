@@ -1,6 +1,6 @@
 import db from "../db/index.js";
 import { users, patients, doctors, doctorSlots, reviews, specializations, medicalReports } from "../db/schema.js";
-import { eq, and, desc, avg, count } from "drizzle-orm";
+import { eq, sql, and, desc, avg, count } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const GetDoctorProfile = async (req, res) => {
@@ -160,5 +160,25 @@ export const updatePassword = async (req, res) => {
     } catch (error) {
         console.error("UpdatePassword Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+export const getDoctorsBySymptom = async (req, res) => {
+    try {
+        const { symptom } = req.query;
+
+        if (!symptom) {
+            return res.status(400).json({ success: false, message: "Symptom is required", });
+        }
+
+        const result = await db
+            .select({ doctorId: doctors.id, name: users.fullName, specialization: specializations.name, experience: doctors.experienceYears, fee: doctors.consultationFee, bio: doctors.bio, })
+            .from(doctors).innerJoin(users, eq(users.id, doctors.userId)).innerJoin(specializations, eq(doctors.specializationId, specializations.id))
+            .where(sql`JSON_SEARCH(${specializations.symptoms}, 'one', CONCAT('%', ${symptom}, '%')) IS NOT NULL`)
+
+        res.json({ success: true, doctors: result, });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error", });
     }
 };

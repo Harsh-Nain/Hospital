@@ -33,19 +33,16 @@ function AppRoutes() {
         <Route path="/checking" element={<Checking />} />
 
         <Route element={<PatientLayout />}>
-
           <Route path="/dashboard-patient" element={<PatientDashboard />} />
-          <Route path="/chats-patient" element={""} />
-          <Route path="/reports-patient" element={""} />
+          <Route path="/chats" element={""} />
+          <Route path="/reports" element={""} />
           <Route path="/Patient-profile" element={<PatientProfile />} />
-
         </Route>
-        <Route element={<DoctorLayout />}>
 
+        <Route element={<DoctorLayout />}>
           <Route path="/dashboard-doctor" element={<DoctorDashboard />} />
-          <Route path="/chats-doctor" element={""} />
+          <Route path="/chats" element={""} />
           <Route path="/doctor-profile" element={<DoctorProfile />} />
-          
         </Route>
 
       </Routes>

@@ -1,5 +1,5 @@
 import { medicalReports, doctorSlots, appointments } from "../db/schema.js";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import db from "../db/index.js";
 
 export const UploadMedicalReport = async (req, res) => {
@@ -62,6 +62,10 @@ export const GetDoctorSlots = async (req, res) => {
 export const CreateAppointment = async (req, res) => {
     try {
         const { doctorId, patientId, slotId } = req.body;
+        const slot = await db.select().from(appointments).where(and(eq(appointments.doctorId, doctorId), eq(appointments.patientId, patientId)));
+        if (slot.length > 0) {
+            return res.json({ success: true, message: "Appointment already requested" });
+        }
 
         await db.insert(appointments).values({ doctorId, patientId, slotId, status: "pending" });
         res.json({ success: true, message: "Appointment requested" });

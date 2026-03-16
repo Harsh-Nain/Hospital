@@ -13,20 +13,18 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchDashboard = async () => {
             const res = await axios.get(`${API_URL}/dashboard/patient`, { withCredentials: true });
-
             if (res.data.success) {
                 setPatient(res.data.patient);
                 setAppointments(res.data.appointments);
                 setDoctors(res.data.doctorsList);
             }
         };
-
         fetchDashboard();
     }, []);
 
     return (
         <div className="min-h-screen bg-white/70 p-4 sm:p-6 lg:p-10 space-y-10">
-            {showDoctorDetail && <ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} />}
+            {showDoctorDetail && <ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={patient?.patientId} />}
 
             <div className="bg-white/80 backdrop-blur-xl border border-sky-100 rounded-2xl p-5 sm:p-6 shadow-sm flex items-center gap-4">
                 <img src={patient?.image} className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover" />
@@ -67,7 +65,7 @@ export default function Dashboard() {
                 <h2 className="text-lg sm:text-xl font-semibold mb-6 text-gray-800">Recommended Doctors</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
                     {doctors.map((doc, i) => (
-                        <div key={i} onClick={() => { setshowDoctorDetail(doc.doctorId); console.log(doc.doctorId) }} className="group relative bg-white/80 backdrop-blur-xl border border-sky-100 rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-300 overflow-hidden">
+                        <div key={i} onClick={() => setshowDoctorDetail(doc.doctorId)} className="group relative bg-white/80 backdrop-blur-xl border border-sky-100 rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-300 overflow-hidden">
 
                             <div className="absolute inset-0 opacity-100 transition bg-linear-to-r from-sky-200/20 via-blue-200/20 to-transparent"></div>
                             <div className="flex items-center gap-4 relative z-10">
@@ -100,7 +98,7 @@ export default function Dashboard() {
                                 <p className="text-xs text-gray-500">{doc.startTime} – {doc.endTime}</p>
                             </div>
 
-                            <button onClick={() => { setshowDoctorDetail(doc.doctorId); console.log(doc.doctorId) }} className="mt-5 w-full bg-linear-to-r from-sky-400 to-blue-500 text-white py-2.5 rounded-xl font-medium shadow-sm hover:shadow-lg transition">View Details</button>
+                            <button onClick={() =>  setshowDoctorDetail(doc.doctorId)} className="mt-5 w-full bg-linear-to-r from-sky-400 to-blue-500 text-white py-2.5 rounded-xl font-medium shadow-sm hover:shadow-lg transition">View Details</button>
                         </div>
                     ))}
                 </div>

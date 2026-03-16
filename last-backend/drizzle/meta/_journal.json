@@ -1,34 +1,5 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1773288334703,
-      "tag": "0000_steep_stardust",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1773293725081,
-      "tag": "0001_plain_blink",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1773298243064,
-      "tag": "0002_worthless_magdalene",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1773306776257,
-      "tag": "0003_low_shinko_yamashiro",
-      "breakpoints": true
-    }
-  ]
+  "entries": []
 }

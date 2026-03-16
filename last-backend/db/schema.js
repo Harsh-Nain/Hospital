@@ -19,6 +19,7 @@ export const specializations = mysqlTable("specializations",
   {
     id: int("id").primaryKey().autoincrement(),
     name: varchar("name", { length: 100 }).notNull(),
+    symptoms: json("symptoms").notNull(),
   },
   (table) => ({
     nameIndex: uniqueIndex("specialization_name_unique").on(table.name),

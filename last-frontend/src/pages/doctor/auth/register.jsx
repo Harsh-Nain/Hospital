@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FaUser, FaEnvelope, FaLock, FaUserMd, FaCertificate, FaMoneyBillWave, FaClock, FaLockOpen } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaUserMd, FaCertificate, FaMoneyBillWave, FaClock, FaLockOpen, FaNotesMedical } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
@@ -13,14 +13,17 @@ export default function DoctorRegister() {
     const [Loading, setLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false);
     const [OtpVerification, setOtpVerification] = useState(false);
-    const [formData, setFormData] = useState({ fullName: "", email: "", password: "", specialization: "", experienceYears: "", licenseNumber: "", consultationFee: "" });
+    const [formData, setFormData] = useState({ fullName: "", email: "", password: "", specialization: "", experienceYears: "", licenseNumber: "", symptoms: [], consultationFee: "" });
     const handleChange = (e) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             setLoading(true);
-            const res = await axios.post(`${API_URL}/auth/send-otp`, { ...formData, role: "doctor" });
+            let formdata = { ...formData, symptoms: formData.symptoms.split(",").map((s) => s.trim()).filter(Boolean) };
+            console.log(formdata);
+
+            const res = await axios.post(`${API_URL}/auth/send-otp`, { ...formdata, role: "doctor" });
 
             if (res.data.success) {
                 toast.success("OTP sent to email 📧");
@@ -94,6 +97,11 @@ export default function DoctorRegister() {
                             <input type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange} placeholder="Consultation Fee (₹)" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-400" />
                         </div>
 
+                        <div className="relative">
+                            <FaNotesMedical className="absolute top-4 left-3 text-gray-400" />
+                            <input type="text" name="symptoms" value={formData.symptoms} onChange={handleChange} placeholder="Enter Symptoms" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-400" />
+                        </div>
+
                         <button type="submit" className="w-full py-3 rounded-lg bg-linear-to-r from-emerald-400 to-emerald-600 text-white font-semibold shadow-md hover:opacity-90 transition">
                             Register as Doctor
                         </button>
@@ -112,7 +120,6 @@ export default function DoctorRegister() {
                     </p>
 
                 </motion.div>
-
             </div>
         </div>
     );
