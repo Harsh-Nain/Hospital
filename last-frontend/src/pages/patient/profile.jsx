@@ -99,7 +99,7 @@ export default function PatientProfile() {
 
     return (
         <div className="sm:p-8 bg-gray-50 p-4 min-h-screen">
-            {loading && <Loading />}
+
             <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
 
             <div className="bg-white p-6 rounded-xl shadow mb-6 relative">

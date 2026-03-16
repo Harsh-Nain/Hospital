@@ -37,7 +37,7 @@ function AppRoutes() {
           <Route path="/dashboard-patient" element={<PatientDashboard />} />
           <Route path="/chats" element={""} />
           <Route path="/reports" element={<PatientRecord />} />
-          <Route path="/profile-patient" element={<PatientProfile />} />
+          <Route path="/patient-profile" element={<PatientProfile />} />
         </Route>
 
         <Route element={<DoctorLayout />}>
