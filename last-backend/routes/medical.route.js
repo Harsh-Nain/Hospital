@@ -6,7 +6,7 @@ import { UploadMedicalReport, CreateAppointment, GetDoctorSlots, GetDoctorAppoin
 router.post("/add-report", upload.any(), UploadMedicalReport);
 router.get("/reports", GetMedicalReports);
 
-router.delete("/report", DeleteMedicalReport);
+router.delete("/delete-report/:reportId", DeleteMedicalReport);
 
 router.post("/slot", CreateDoctorSlot);
 router.get("/slots", GetDoctorSlots);

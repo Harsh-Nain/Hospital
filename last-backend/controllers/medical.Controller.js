@@ -1,35 +1,164 @@
-import { medicalReports, doctorSlots, appointments } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { medicalReports, doctorSlots, appointments ,patients } from "../db/schema.js";
+import { eq } from "drizzle-orm";
 import db from "../db/index.js";
 
+
 export const UploadMedicalReport = async (req, res) => {
-    try {
-        const { patientId, diseaseName } = req.body;
+    
+  try {
+    const { diseaseName } = req.body;
+    const userId = req.user?.id;
+    const file = req.files; // single file
 
-        if (!req.files) {
-            return res.json({ success: false, message: "File required" });
-        }
-
-        await db.insert(medicalReports).values({ patientId: Number(patientId), fileUrl: req.files[0].path, diseaseName: diseaseName });
-        res.json({ success: true, message: "Medical report uploaded" });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized access",
+      });
     }
+
+    if (!diseaseName || diseaseName.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Disease name is required",
+      });
+    }
+
+    
+    if (!file) {
+      return res.status(400).json({
+        success: false,
+        message: "Medical report file is required",
+      });
+    }
+
+    // Find patient
+    const patient = await db
+      .select()
+      .from(patients)
+      .where(eq(patients.userId, userId))
+      .limit(1);
+
+    if (!patient.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient profile not found",
+      });
+    }
+
+    const patientId = patient[0].id;
+
+    // Insert report
+    const result = await db
+      .insert(medicalReports)
+      .values({
+        patientId,
+        diseaseName: diseaseName.trim(),
+        fileUrl: file[0].path,
+        uploadedAt: new Date(),
+      })
+      ;
+
+const insertedId = result[0]?.insertId || result.insertId;
+
+const newReport = await db
+  .select()
+  .from(medicalReports)
+  .where(eq(medicalReports.id, insertedId))
+  .limit(1);
+
+
+    return res.json({
+      success: true,
+      message: "Medical report uploaded successfully",
+      data: newReport[0],
+    });
+
+  } catch (error) {
+    console.error("UploadMedicalReport Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
 export const GetMedicalReports = async (req, res) => {
-    try {
-        const { patientId } = req.query;
+  try {
+    const userId = req.user?.id;
 
-        const reports = await db.select().from(medicalReports).where(eq(medicalReports.patientId, patientId));
-        res.json({ success: true, reports });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
+
+    const patient = await db
+      .select()
+      .from(patients)
+      .where(eq(patients.userId, userId))
+      .limit(1);
+
+    if (!patient.length) {
+      return res.json({
+        success: true,
+    reports: [],
+      });
+    }
+
+    const patientId = patient[0].id;
+
+    const reports = await db
+      .select()
+      .from(medicalReports)
+      .where(eq(medicalReports.patientId, patientId));
+
+    return res.json({
+      success: true,
+      reports,
+    });
+
+  } catch (error) {
+    console.error("GetMedicalReports Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+export const DeleteMedicalReport = async (req, res) => {
+  try {
+
+    const { reportId } = req.params;
+
+    if (!reportId) {
+      return res.status(400).json({
+        success: false,
+        message: "Report ID required",
+      });
+    }
+
+    await db
+      .delete(medicalReports)
+      .where(eq(medicalReports.id, reportId));
+
+    return res.json({
+      success: true,
+      message: "Report deleted successfully",
+    });
+
+  } catch (error) {
+    console.error("DeleteMedicalReport Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
 export const CreateDoctorSlot = async (req, res) => {
@@ -62,10 +191,6 @@ export const GetDoctorSlots = async (req, res) => {
 export const CreateAppointment = async (req, res) => {
     try {
         const { doctorId, patientId, slotId } = req.body;
-        const slot = await db.select().from(appointments).where(and(eq(appointments.doctorId, doctorId), eq(appointments.patientId, patientId)));
-        if (slot.length > 0) {
-            return res.json({ success: true, message: "Appointment already requested" });
-        }
 
         await db.insert(appointments).values({ doctorId, patientId, slotId, status: "pending" });
         res.json({ success: true, message: "Appointment requested" });
@@ -130,15 +255,3 @@ export const GetDoctorAppointments = async (req, res) => {
     }
 };
 
-export const DeleteMedicalReport = async (req, res) => {
-    try {
-        const { reportId } = req.query;
-
-        await db.delete(medicalReports).where(eq(medicalReports.id, reportId));
-        res.json({ success: true, message: "Report deleted" });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
-    }
-};

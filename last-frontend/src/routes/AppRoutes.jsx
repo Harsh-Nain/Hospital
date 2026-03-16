@@ -14,6 +14,7 @@ import PatientProfile from "../pages/patient/profile";
 import DoctorProfile from "../pages/doctor/profile";
 import PatientLayout from "../pages/layout/patientlayout";
 import DoctorLayout from "../pages/layout/doctorlayout";
+import PatientRecord from "../pages/patient/patientrecord";
 
 function AppRoutes() {
   return (
@@ -41,6 +42,7 @@ function AppRoutes() {
 
         <Route element={<DoctorLayout />}>
           <Route path="/dashboard-doctor" element={<DoctorDashboard />} />
+          <Route path="/reports-patient" element={< PatientRecord/>} />
           <Route path="/chats" element={""} />
           <Route path="/doctor-profile" element={<DoctorProfile />} />
         </Route>
