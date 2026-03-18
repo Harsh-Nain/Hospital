@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ShowDoctorProfile from "../../components/showDoctorProfile";
+import Doctorcard from "../../components/doctorcard";
 
 export default function Dashboard() {
 
@@ -64,43 +65,7 @@ export default function Dashboard() {
                 <h2 className="text-lg sm:text-xl font-semibold mb-6 text-gray-800">Recommended Doctors</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
                     {doctors.length == 0 && "no any doctor avalable..."}
-                    {doctors.map((doc, i) => (
-                        <div key={i} onClick={() => setshowDoctorDetail(doc.doctorId)} className="group relative bg-white/80 backdrop-blur-xl border border-sky-100 rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-300 overflow-hidden">
-
-                            <div className="absolute inset-0 opacity-100 transition bg-linear-to-r from-sky-200/20 via-blue-200/20 to-transparent"></div>
-                            <div className="flex items-center gap-4 relative z-10">
-                                <img src={doc.image || "https://i.pravatar.cc/150"} className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-sky-100 shadow-sm" />
-
-                                <div>
-                                    <h3 className="font-semibold text-gray-800 text-base sm:text-lg">Dr {doc.fullName}</h3>
-                                    <p className="text-sky-600 text-sm font-medium">{doc.specialization}</p>
-                                    <span className="inline-block mt-1 text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">Available Today</span>
-                                </div>
-                            </div>
-                            <div className="my-4 h-px bg-linear-to-r from-transparent via-sky-200 to-transparent"></div>
-                            <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                                <p>
-                                    <span className="font-medium text-gray-700">Experience</span>
-                                    <br />
-                                    {doc.experienceYears} yrs
-                                </p>
-                                <p>
-                                    <span className="font-medium text-gray-700">Fee</span>
-                                    <br />
-                                    ₹{doc.consultationFee}
-                                </p>
-                            </div>
-
-                            <div className="mt-4 p-3 bg-sky-50 rounded-lg border border-sky-100">
-                                <p className="text-xs text-gray-500">Next Available Slot</p>
-                                <p className="font-semibold text-gray-800 text-sm">
-                                    {doc.date}</p>
-                                <p className="text-xs text-gray-500">{doc.startTime} – {doc.endTime}</p>
-                            </div>
-
-                            <button onClick={() => setshowDoctorDetail(doc.doctorId)} className="mt-5 w-full bg-linear-to-r from-sky-400 to-blue-500 text-white py-2.5 rounded-xl font-medium shadow-sm hover:shadow-lg transition">View Details</button>
-                        </div>
-                    ))}
+                    {doctors.map((doc, i) => (<Doctorcard doc={doc} i={i} setshowDoctorDetail={setshowDoctorDetail} />))}
                 </div>
             </div>
         </div>

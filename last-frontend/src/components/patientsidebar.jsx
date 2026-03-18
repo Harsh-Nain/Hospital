@@ -14,7 +14,7 @@ export default function PatientSidebar() {
 
   const menuItems = [
     { icon: Home, label: "Dashboard", path: `/dashboard-patient`, },
-    { icon: MessageSquare, label: "Chat", path: "/chats", },
+    { icon: MessageSquare, label: "Chat", path: "/patient-chats", },
     { icon: FileText, label: "Medical Records", path: "/reports", },
     { icon: User, label: "Profile", path: `/patient-profile`, type: "profile", },
   ];

@@ -14,7 +14,11 @@ import PatientProfile from "../pages/patient/profile";
 import DoctorProfile from "../pages/doctor/profile";
 import PatientLayout from "../pages/layout/patientlayout";
 import DoctorLayout from "../pages/layout/doctorlayout";
+import AdminLayout from "../pages/layout/adminlayout";
 import PatientRecord from "../pages/patient/patientrecord";
+import Dashboard from "../pages/admin/dashboard";
+import Alldoctors from "../components/alldoctors"
+import Allpatients from "../components/allpatients"
 
 function AppRoutes() {
   return (
@@ -33,16 +37,22 @@ function AppRoutes() {
 
         <Route path="/checking" element={<Checking />} />
 
+        <Route element={<AdminLayout />}>
+          <Route path="/admin_dashboard" element={<Dashboard />} />
+          <Route path="/admin_doctors" element={<Alldoctors />} />
+          <Route path="/admin_Patients" element={<Allpatients />} />
+        </Route>
+
         <Route element={<PatientLayout />}>
           <Route path="/dashboard-patient" element={<PatientDashboard />} />
-          <Route path="/chats" element={""} />
+          <Route path="/patient-chats" element={""} />
           <Route path="/reports" element={<PatientRecord />} />
           <Route path="/patient-profile" element={<PatientProfile />} />
         </Route>
 
         <Route element={<DoctorLayout />}>
           <Route path="/dashboard-doctor" element={<DoctorDashboard />} />
-          <Route path="/chats" element={""} />
+          <Route path="/doctor-chats" element={""} />
           <Route path="/doctor-profile" element={<DoctorProfile />} />
         </Route>
 

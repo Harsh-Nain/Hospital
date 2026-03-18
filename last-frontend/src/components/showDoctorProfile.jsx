@@ -5,7 +5,7 @@ import { FaStar } from "react-icons/fa";
 import Loading from "../components/loading";
 import toast from "react-hot-toast";
 
-export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId }) {
+export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, isAdmin }) {
 
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -37,7 +37,6 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId }
     if (id) fetchDoctor();
   }, [id]);
 
-
   const confirmAppointment = async () => {
     if (!selectedSlot) return;
     try {
@@ -56,19 +55,16 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId }
     } finally {
       setLoading(false);
     }
-
   };
 
-
   if (loading) { return (<div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50"><Loading /></div>); }
-
 
   return (
 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl border border-sky-100 rounded-2xl shadow-xl p-6">
 
-        <button onClick={() => setshowDoctorDetail(null)} className="absolute top-4 right-4 text-gray-500 hover:text-red-500">
+        <button onClick={() => setshowDoctorDetail(null)} className="absolute cursor-pointer top-4 right-4 text-gray-500 hover:text-red-500">
           <RxCross1 size={20} />
         </button>
 
@@ -110,11 +106,13 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId }
         <div className="mb-6">
           <h3 className="font-semibold mb-3">Available Slots</h3>
 
+          {console.log(slots)
+          }
           {slots.length === 0 ? (<p className="text-gray-500 text-sm">No slots available</p>) : (
             <div className="flex flex-wrap gap-3">
               {slots.map((slot) => (
                 <button key={slot.id} disabled={slot.isBooked} onClick={() => setSelectedSlot(slot.id)} className={`p-3 rounded-xl border text-sm transition
-                    ${slot.isBooked ? "bg-gray-200 text-gray-500" : selectedSlot === slot.id ? "bg-sky-500 text-white border-sky-500" : "bg-sky-50 border-sky-200 hover:bg-sky-100"}`}>
+                    ${slot.isBooked ? "bg-gray-200 text-gray-500" : (selectedSlot === slot.id && !isAdmin) ? "bg-sky-500 text-white border-sky-500" : "bg-sky-50 border-sky-200 hover:bg-sky-100"}`}>
                   {slot.date}
                   <br />
                   {slot.startTime} - {slot.endTime}
@@ -124,7 +122,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId }
           )}
         </div>
 
-        {selectedSlot && (
+        {(!isAdmin && selectedSlot) && (
           <button onClick={confirmAppointment} className="w-full bg-linear-to-r from-sky-400 to-sky-500 text-white py-2 rounded-xl font-medium hover:shadow-lg transition">  Confirm Appointment</button>
         )}
 

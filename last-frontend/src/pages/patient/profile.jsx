@@ -127,7 +127,7 @@ export default function PatientProfile() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <Input label="Full Name" name="fullName" placeholder="Enter full name" value={profile.fullName} onChange={handleChange} />
-                    <Input label="Age" name="age" placeholder="Enter age" value={profile.age} onChange={handleChange} />
+                    <Input label="Age" name="age" placeholder="Enter age" type="number" value={profile.age} onChange={handleChange} />
                 </div>
 
                 <div className="mt-4">
@@ -153,7 +153,7 @@ export default function PatientProfile() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <Input label="Email" name="email" placeholder="Enter email" readOnly value={profile.email} onChange={handleChange} />
-                    <Input label="Phone" name="phone" placeholder="Enter phone number" value={profile.phone} onChange={handleChange} />
+                    <Input label="Phone" name="phone" placeholder="Enter phone number" type="number" value={profile.phone} onChange={handleChange} />
                 </div>
 
                 <div className="mt-4">

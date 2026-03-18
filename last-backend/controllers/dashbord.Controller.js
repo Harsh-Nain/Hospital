@@ -1,6 +1,8 @@
+import { date } from "drizzle-orm/mysql-core";
 import db from "../db/index.js";
 import { users, patients, appointments, doctors, specializations, doctorSlots, payments, } from "../db/schema.js";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, is } from "drizzle-orm";
+import { sendApprovalMail, sendRejectionMail } from "../utils/mailer.js";
 
 export const PatientInfo = async (req, res) => {
 
@@ -99,12 +101,13 @@ export const AdminDashboard = async (req, res) => {
         const doctorsList = await db.select().from(doctors).leftJoin(users, eq(users.id, doctors.userId));
         const patientsList = await db.select().from(patients).leftJoin(users, eq(users.id, patients.userId));
         const appointmentList = await db.select({ appointmentId: appointments.id, status: appointments.status, doctorId: appointments.doctorId, patientId: appointments.patientId, }).from(appointments);
+        const doctorsForApproval = await db.select({ doctorId: doctors.id, ...doctors, ...users, specialization: specializations.name, symptoms: specializations.symptoms }).from(doctors).where(and(eq(doctors.status, "pending"), eq(doctors.isApproved, false))).leftJoin(users, eq(users.id, doctors.userId)).leftJoin(specializations, eq(specializations.id, doctors.specializationId));
 
-        res.json({ success: true, totalUsers: usersList.length, totalDoctors: doctorsList.length, totalPatients: patientsList.length, totalAppointments: appointmentList.length, appointments: appointmentList, });
+        res.json({ success: true, totalUsers: usersList.length, doctorsForApproval, totalDoctors: doctorsList.length, totalPatients: patientsList.length, totalAppointments: appointmentList.length, appointments: appointmentList, });
 
     } catch (error) {
         console.error("AdminDashboard Error:", error);
-        res.status(500).json({ success: false, message: "Server error" });
+        res.status(500).json({ success: false, message: "Server error", });
     }
 };
 
@@ -154,5 +157,96 @@ export const PatientDashboard = async (req, res) => {
     } catch (error) {
         console.error("PatientDashboard Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+export const AllPatients = async (req, res) => {
+    try {
+        const data = await db
+            .select({ patientId: patients.id, age: patients.age, gender: patients.gender, phone: patients.phone, address: patients.address, disease: patients.disease, bloodGroup: patients.bloodGroup, userId: users.id, fullName: users.fullName, email: users.email, image: users.image, appointmentId: appointments.id, appoitmentStatus: appointments.status, doctorId: doctors.id, appoitmentDoctor: specializations.name, })
+            .from(patients)
+            .leftJoin(users, eq(users.id, patients.userId))
+            .leftJoin(appointments, eq(appointments.patientId, patients.id))
+            .leftJoin(doctors, eq(doctors.id, appointments.doctorId))
+            .leftJoin(specializations, eq(specializations.id, doctors.specializationId));
+
+        res.json({ success: true, patients: data, });
+
+    } catch (error) {
+        console.error("AdminPatients Error:", error);
+        res.status(500).json({ success: false, message: "Server error", });
+    }
+};
+
+export const AllDoctors = async (req, res) => {
+    try {
+        const data = await db
+            .select({ startTime: doctorSlots.startTime, date: doctorSlots.date, endTime: doctorSlots.endTime, doctorId: doctors.id, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, license: doctors.licenseNumber, bio: doctors.bio, status: doctors.status, isApproved: doctors.isApproved, userId: users.id, fullName: users.fullName, email: users.email, image: users.image, specialization: specializations.name, appointmentId: appointments.id, appointmentStatus: appointments.status, })
+            .from(doctors)
+            .where(eq(doctors.isApproved, true))
+            .leftJoin(users, eq(users.id, doctors.userId))
+            .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
+            .leftJoin(appointments, eq(appointments.doctorId, doctors.id))
+            .leftJoin(doctorSlots, eq(doctorSlots.doctorId, doctors.id))
+            .leftJoin(patients, eq(patients.id, appointments.patientId))
+
+        res.json({ success: true, doctors: data, });
+
+    } catch (error) {
+        console.error("ApprovedDoctors Error:", error);
+        res.status(500).json({ success: false, message: "Server error", });
+    }
+};
+
+export const updateDoctorStatus = async (req, res) => {
+    try {
+        let { status, doctorId, name, email } = req.body;
+
+        if (!doctorId) {
+            return res.status(400).json({ success: false, message: "Doctor ID is required", });
+        }
+
+        if (!status) {
+            return res.status(400).json({ success: false, message: "Status is required", });
+        }
+
+        const normalizedStatus = status.toLowerCase();
+        const isApproved = normalizedStatus === "approved";
+
+        if (isApproved) {
+            await sendApprovalMail(email, name);
+        } else {
+            const reason = "Your application has been rejected due to inaccurate or unverifiable information.";
+            await sendRejectionMail(email, name, reason);
+        }
+
+        const result = await db.update(doctors).set({ status: normalizedStatus, isApproved: isApproved, }).where(eq(doctors.id, Number(doctorId)));
+
+        if (!result) {
+            return res.status(404).json({ success: false, message: "Doctor not found", });
+        }
+
+        if (!isApproved) {
+            setTimeout(async () => {
+                try {
+                    const doctor = await db.query.doctors.findFirst({ where: eq(doctors.id, doctorId), });
+
+                    if (doctor) {
+                        await db.delete(notifications).where(eq(notifications.userId, doctor.userId));
+
+                        await db.delete(doctors).where(eq(doctors.id, doctorId));
+                        await db.delete(users).where(eq(users.id, doctor.userId));
+
+                        console.log("Doctor deleted after rejection:", doctorId);
+                    }
+                } catch (err) { console.error("Delete failed:", err); }
+            }, 1000 * 60 * 5);
+        }
+
+        return res.status(200).json({ success: true, message: "Doctor status updated", });
+
+    } catch (error) {
+        console.error("Update Doctor Status Error:", error);
+        return res.status(500).json({ success: false, message: "Failed to update doctor status", });
     }
 };

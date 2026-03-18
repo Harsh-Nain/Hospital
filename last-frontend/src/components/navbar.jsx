@@ -91,10 +91,12 @@ export default function Navbar() {
 
           {search && (<button onClick={() => { setSearch(""); setDoctors([]); setShowResults(false); }} className="absolute right-3 cursor-pointer top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500"><X size={17} /></button>)}
 
-          {showResults && doctors.length > 0 && (
+          {showResults && (
             <div className="absolute left-0 top-12 w-full bg-white/90 p-3 border border-gray-200 rounded-xl shadow-lg z-40 max-h-96 overflow-y-auto">
-
-              {doctors.map((doc) => (
+              {doctors.length == 0 && <p className="text-sm text-center">No result found...</p>}
+              {console.log(doctors)
+              }
+              {(doctors.length > 0) && doctors.map((doc) => (
                 <div key={doc.doctorId} onClick={() => setshowDoctorDetail(doc.doctorId)} className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded bg-white cursor-pointer transition">
                   <img src={doc.image} className="w-10 h-10 rounded-lg object-cover" />
                   <div className="flex-1">
