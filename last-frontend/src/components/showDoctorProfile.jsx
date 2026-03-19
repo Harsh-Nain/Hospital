@@ -52,11 +52,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
     if (id) fetchDoctor();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50"><Loading /></div>
-    );
-  }
+  if (loading) { return (<div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50"><Loading /></div>); }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center h-screen justify-center bg-black/50 backdrop-blur-sm p-4">
