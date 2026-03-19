@@ -1,130 +1,139 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { RxCross1 } from "react-icons/rx";
+import Loading from "../components/loading";
+import toast from "react-hot-toast";
 
-export default function ShowPatientProfile({ user, showDoctorDetail }) {
+export default function ShowPatientProfile({ id, setshowPatientDetail, }) {
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-  const [User, setUser] = useState()
+  const [user, setUser] = useState(null);
+  const [reports, setReports] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [summary, setSummary] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      const res = await axios.get(`${API_URL}/profile/patient`, { withCredentials: true });
+    const fetchPatient = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/profile/patient?patientId=${id}`, { withCredentials: true });
 
-      if (res.data.success) {
-        setUser(res.data.patient);
+        if (res.data.success) {
+          setUser(res.data.patient);
+          setReports(res.data.medicalReports || []);
+          setAppointments(res.data.appointments || []);
+          setSummary(res.data.summary || {});
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load patient");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchDashboard();
-  }, []);
+    if (id) fetchPatient();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50"><Loading /></div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center h-screen justify-center bg-black/50 backdrop-blur-sm p-4">
 
-      <div className="relative w-full max-w-xl bg-white/80 backdrop-blur-xl border border-sky-100 rounded-2xl shadow-xl p-6 sm:p-8">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-6">
 
-        <button onClick={() => showDoctorDetail(null)} className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-lg">
-          <RxCross1 />
+        <button onClick={() => setshowPatientDetail(null)} className="absolute cursor-pointer top-4 right-4 text-gray-500 hover:text-red-500">
+          <RxCross1 size={20} />
         </button>
 
-        <div className="flex flex-col sm:flex-row items-center gap-5">
+        <div className="flex gap-5 items-center">
+          <img src={user?.image || "/user.png"} className="w-20 h-20 rounded-xl object-cover border" />
 
-          <img src={user?.image || ""} alt={user?.fullName} className="w-20 h-20 rounded-xl object-cover border border-sky-100 shadow-sm" />
+          <div>
+            <h2 className="text-xl font-bold">{user?.fullName}</h2>
 
-          <div className="text-center sm:text-left">
-            <h2 className="text-xl font-bold text-gray-800">
-              {user?.fullName}
-            </h2>
+            <p className="text-sky-600 text-sm">{user?.email}</p>
 
-            <p className="text-sky-600 text-sm font-medium">
-              {user?.role}
+            <p className="text-xs text-gray-500 mt-1">
+              Visits: {summary?.totalAppointments || 0}
             </p>
-
-            <p className="text-gray-500 text-sm">
-              {user?.email}
+            <p className="text-xs text-gray-500">
+              Last Visit: {summary?.lastVisit || "N/A"}
             </p>
           </div>
-
         </div>
 
+        <div className="my-6 h-px bg-gray-200"></div>
 
-        {/* Divider */}
-        <div className="my-6 h-px bg-linear-to-r from-transparent via-sky-200 to-transparent"></div>
-
-
-        {/* Profile Details */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-2 gap-4 text-sm">
 
           <div>
             <p className="text-gray-500">Gender</p>
-            <p className="font-medium text-gray-800">
-              {user?.gender || "N/A"}
-            </p>
+            <p className="font-medium">{user?.gender || "N/A"}</p>
           </div>
 
           <div>
             <p className="text-gray-500">Age</p>
-            <p className="font-medium text-gray-800">
-              {user?.age || "N/A"}
-            </p>
+            <p className="font-medium">{user?.age || "N/A"}</p>
           </div>
 
           <div>
             <p className="text-gray-500">Phone</p>
-            <p className="font-medium text-gray-800">
-              {user?.phone || "N/A"}
-            </p>
+            <p className="font-medium">{user?.phone || "N/A"}</p>
           </div>
 
           <div>
             <p className="text-gray-500">Blood Group</p>
-            <p className="font-medium text-gray-800">
-              {user?.bloodGroup || "N/A"}
-            </p>
+            <p className="font-medium">{user?.bloodGroup || "N/A"}</p>
           </div>
 
           <div>
             <p className="text-gray-500">Disease</p>
-            <p className="font-medium text-gray-800">
-              {user?.disease || "N/A"}
-            </p>
+            <p className="font-medium">{user?.disease || "N/A"}</p>
           </div>
 
           <div>
-            <p className="text-gray-500">Allergy</p>
-            <p className="font-medium text-gray-800">
-              {user?.allergy || "None"}
-            </p>
+            <p className="text-gray-500">Address</p>
+            <p className="font-medium">{user?.address || "N/A"}</p>
           </div>
 
         </div>
 
+        <div className="mt-6">
+          <h3 className="font-semibold mb-2">
+            Medical Reports
+          </h3>
 
-        {/* Address */}
-        <div className="mt-5">
-
-          <p className="text-gray-500 text-sm">
-            Address
-          </p>
-
-          <p className="text-gray-800 font-medium">
-            {user?.address || "Not provided"}
-          </p>
-
-        </div>
-
-
-        {/* Bio */}
-        {user?.bio && (
-          <div className="mt-4">
-            <p className="text-gray-500 text-sm">About</p>
-            <p className="text-gray-700 text-sm">
-              {user.bio}
+          {reports.length === 0 ? (
+            <p className="text-gray-500 text-sm">
+              No reports
             </p>
-          </div>
-        )}
+          ) : (
+            <div className="space-y-2">
+              {reports.map((r) => (
+                <div key={r.reportId} className="border rounded-lg p-3 text-sm">
+                  <p className="font-medium">
+                    {r.diseaseName}
+                  </p>
+
+                  <p className="text-xs text-gray-500">
+                    {new Date(r.uploadedAt).toLocaleDateString()}
+                  </p>
+
+                  <a href={r.fileUrl} target="_blank" rel="noreferrer" className="text-sky-600 text-xs underline">
+                    View Report
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
       </div>
-
     </div>
   );
 }

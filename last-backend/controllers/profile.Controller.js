@@ -1,5 +1,5 @@
 import db from "../db/index.js";
-import { users, patients, doctors, doctorSlots, reviews, specializations, medicalReports } from "../db/schema.js";
+import { users, patients, doctors, doctorSlots, reviews, specializations, medicalReports, appointments } from "../db/schema.js";
 import { eq, sql, and, desc, avg, count } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -23,19 +23,39 @@ export const GetDoctorProfile = async (req, res) => {
             return res.json({ success: false, message: "Doctor not found", });
         }
 
-        const slots = await db.select().from(doctorSlots).where(and(eq(doctorSlots.doctorId, Number(doctorId)), eq(doctorSlots.isBooked, false)));
+        const slotsRaw = await db
+            .select()
+            .from(doctorSlots)
+            .where(and(eq(doctorSlots.doctorId, Number(doctorId)), eq(doctorSlots.isBooked, false)))
+            .orderBy(doctorSlots.date, doctorSlots.startTime);
+
+        const formatTime = (time) => {
+            if (!time) return "";
+            const [h, m] = time.split(":");
+            return `${h.padStart(2, "0")}:${m}`;
+        };
+
+        const slots = {};
+
+        slotsRaw.forEach((slot) => {
+            if (!slots[slot.date]) { slots[slot.date] = []; }
+            slots[slot.date].push({ id: slot.id, startTime: formatTime(slot.startTime), endTime: formatTime(slot.endTime), isBooked: slot.isBooked, });
+        });
 
         const doctorReviews = await db
-            .select({ id: reviews.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, image: users.image, })
+            .select({ id: reviews.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, patientImage: users.image, })
             .from(reviews)
             .leftJoin(patients, eq(patients.id, reviews.patientId))
             .leftJoin(users, eq(users.id, patients.userId))
             .where(eq(reviews.doctorId, Number(doctorId)))
             .orderBy(desc(reviews.createdAt));
 
-        const [ratingSummary] = await db.select({ avgRating: avg(reviews.rating), totalReviews: count(reviews.id), }).from(reviews).where(eq(reviews.doctorId, Number(doctorId)));
+        const [ratingSummary] = await db
+            .select({ avgRating: avg(reviews.rating), totalReviews: count(reviews.id), })
+            .from(reviews)
+            .where(eq(reviews.doctorId, Number(doctorId)));
 
-        res.json({ success: true, doctor, slots, reviews: doctorReviews, rating: ratingSummary, });
+        res.json({ success: true, doctor, slots, reviews: doctorReviews, rating: { avgRating: Number(ratingSummary?.avgRating || 0).toFixed(1), totalReviews: ratingSummary?.totalReviews || 0, }, });
 
     } catch (error) {
         console.error("GetDoctorProfile Error:", error);
@@ -47,27 +67,59 @@ export const GetPatientProfile = async (req, res) => {
     try {
         let { patientId } = req.query;
 
+        if (!patientId) {
+            return res.json({ success: false, message: "Patient ID required", });
+        }
+
+        patientId = Number(patientId);
+
         const [patient] = await db
-            .select({ patientId: patients.id, fullName: users.fullName, email: users.email, image: users.image, age: patients.age, gender: patients.gender, disease: patients.disease, phone: patients.phone, })
+            .select({ patientId: patients.id, fullName: users.fullName, email: users.email, image: users.image, age: patients.age, gender: patients.gender, disease: patients.disease, phone: patients.phone, address: patients.address, bloodGroup: patients.bloodGroup, })
             .from(patients)
             .leftJoin(users, eq(users.id, patients.userId))
             .where(eq(patients.id, patientId))
             .limit(1);
 
+        if (!patient) {
+            return res.json({ success: false, message: "Patient not found", });
+        }
+
         const reports = await db
             .select({ reportId: medicalReports.id, diseaseName: medicalReports.diseaseName, fileUrl: medicalReports.fileUrl, uploadedAt: medicalReports.uploadedAt, })
             .from(medicalReports)
-            .where(eq(medicalReports.patientId, patient.patientId));
+            .where(eq(medicalReports.patientId, patientId))
+            .orderBy(desc(medicalReports.uploadedAt));
 
-        if (!patient) {
-            return res.json({ success: false, message: "Patient not found" });
+        const appointmentsData = await db
+            .select({ appointmentId: appointments.id, status: appointments.status, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, doctorId: doctors.id, specialization: specializations.name, })
+            .from(appointments)
+            .leftJoin(doctors, eq(doctors.id, appointments.doctorId))
+            .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
+            .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
+            .where(eq(appointments.patientId, patientId))
+            .orderBy(desc(doctorSlots.date));
+
+        let totalAppointments = appointmentsData.length;
+        let lastVisit = null;
+
+        if (appointmentsData.length > 0) {
+            lastVisit = appointmentsData[0].date;
         }
 
-        res.json({ success: true, patient, medicalReports: reports });
+        const appointmentsFormatted = appointmentsData.map((a) => ({
+            appointmentId: a.appointmentId,
+            status: a.status,
+            date: a.date,
+            startTime: a.startTime,
+            endTime: a.endTime,
+            doctor: { doctorId: a.doctorId, name: a.doctorName, specialization: a.specialization, },
+        }));
+
+        res.json({ success: true, patient, medicalReports: reports, appointments: appointmentsFormatted, summary: { totalAppointments, lastVisit, }, });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Server error" });
+        console.error("GetPatientProfile Error:", error);
+        res.status(500).json({ success: false, message: "Server error", });
     }
 };
 
@@ -145,15 +197,9 @@ export const EditOwnProfile = async (req, res) => {
 export const updatePassword = async (req, res) => {
     try {
         const { email, role, password } = req.body;
-        console.log(email, role, password);
-
 
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        await db
-            .update(users)
-            .set({ password: hashedPassword })
-            .where(and(eq(users.email, email), eq(users.role, role)));
+        await db.update(users).set({ password: hashedPassword }).where(and(eq(users.email, email), eq(users.role, role)));
 
         res.json({ success: true, message: "Password updated successfully" });
 
@@ -172,8 +218,10 @@ export const getDoctorsBySymptom = async (req, res) => {
         }
 
         const result = await db
-            .select({ doctorId: doctors.id, name: users.fullName, specialization: specializations.name, experience: doctors.experienceYears, fee: doctors.consultationFee, bio: doctors.bio, })
-            .from(doctors).innerJoin(users, eq(users.id, doctors.userId)).innerJoin(specializations, eq(doctors.specializationId, specializations.id))
+            .select({ fullName: users.fullName, image: users.image, specialization: specializations.name, doctorId: doctors.id, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee })
+            .from(users)
+            .leftJoin(doctors, eq(doctors.userId, users.id))
+            .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .where(sql`JSON_SEARCH(${specializations.symptoms}, 'one', CONCAT('%', ${symptom}, '%')) IS NOT NULL`)
 
         res.json({ success: true, doctors: result, });

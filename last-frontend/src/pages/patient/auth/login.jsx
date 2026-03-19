@@ -16,13 +16,12 @@ export default function PatientLogin() {
 
     const handleSubmit = async (e) => {
         const API_URL = import.meta.env.VITE_BACKEND_URL
-        console.log(import.meta.env.VITE_BACKEND_URL);
         
 
         e.preventDefault();
 
         try {
-            const res = await axios.post(`${API_URL}/auth/login-patient`, formData, { withCredentials: true });
+            const res = await axios.post(`${API_URL}/medical/login-patient`, formData, { withCredentials: true });
             if (res.data.success) {
                 toast.success("Login Successful 🎉");
                 navigate(res.data.redirect);
