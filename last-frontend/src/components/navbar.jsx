@@ -17,9 +17,29 @@ export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const [showDoctorDetail, setshowDoctorDetail] = useState(null);
+  const [getPatient, setPatientInfo] = useState(null);
 
   const searchRef = useRef();
   const dropdownRef = useRef();
+
+  useEffect(() => {
+    const getPatient = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/dashboard/patient-info`, { withCredentials: true, });
+
+        if (res.data.success) {
+          setPatientInfo(res.data.patient);
+        } else {
+          navigate(`/patient/login`);
+        }
+      } catch (error) {
+        console.error(error);
+        navigate(`/patient/login`);
+      }
+    };
+
+    getPatient();
+  }, [API_URL, navigate]);
 
   useEffect(() => {
     const getNotifications = async () => {
@@ -81,7 +101,7 @@ export default function Navbar() {
 
   return (
     <div className="flex items-center justify-between bg-white border-b border-gray-200 px-4 md:px-6 py-4">
-      {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} />)}
+      {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={getPatient?.patientId} />)}
 
       <div className="flex items-center gap-3 flex-1 max-w-xl" ref={searchRef}>
 
@@ -94,8 +114,6 @@ export default function Navbar() {
           {showResults && (
             <div className="absolute left-0 top-12 w-full bg-white/90 p-3 border border-gray-200 rounded-xl shadow-lg z-40 max-h-96 overflow-y-auto">
               {doctors.length == 0 && <p className="text-sm text-center">No result found...</p>}
-              {console.log(doctors)
-              }
               {(doctors.length > 0) && doctors.map((doc) => (
                 <div key={doc.doctorId} onClick={() => setshowDoctorDetail(doc.doctorId)} className="flex items-center gap-3 p-3 hover:bg-gray-100 rounded bg-white cursor-pointer transition">
                   <img src={doc.image} className="w-10 h-10 rounded-lg object-cover" />

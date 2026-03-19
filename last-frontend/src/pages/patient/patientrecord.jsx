@@ -131,13 +131,11 @@ export default function PatientRecord() {
           <div className="flex justify-between">
 
             <h2 className="text-xl font-semibold flex items-center gap-3 text-gray-800">
-              <Upload className="text-sky-500" />
-              Upload Medical Report
+              <Upload className="text-sky-500" /> Upload Medical Report
             </h2>
 
             <button onClick={addReport} disabled={loading} className="bg-linear-to-r from-sky-400 to-blue-500 text-white p-1.5 sm:px-3 sm:py-2 rounded-lg flex items-center justify-center gap-2 hover:shadow-lg transition disabled:opacity-50"           >
               <Upload className="w-4 h-4" />
-
               <span className="hidden sm:inline text-sm">
                 {loading ? "Uploading..." : "Upload Report"}
               </span>
@@ -147,12 +145,8 @@ export default function PatientRecord() {
 
           <div className="space-y-5">
             <div>
-              <label className="text-sm text-gray-600">
-                Report Title
-              </label>
-
+              <label className="text-sm text-gray-600">Report Title</label>
               <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Blood Test / X-Ray / MRI" className="mt-2 w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-sky-500 outline-none" />
-
             </div>
 
             <div>
@@ -168,7 +162,6 @@ export default function PatientRecord() {
                       <RxCross2 size={16} color="red" />
                     </button>
                   </>
-
                 ) : (
                   <div className="text-center">
                     <p className="text-gray-500 text-sm">Drag & Drop Image</p>
@@ -183,8 +176,7 @@ export default function PatientRecord() {
 
         <div className="bg-white/80 backdrop-blur-xl border border-sky-100 rounded-2xl shadow-md p-4 sm:p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <FileText size={18} />
-            Medical Reports
+            <FileText size={18} /> Medical Reports
           </h2>
 
           {reports.length === 0 ? (<div className="text-center py-12 text-gray-500">No reports uploaded</div>) : (
@@ -211,7 +203,7 @@ export default function PatientRecord() {
 
                           <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100">
                             <Eye size={18} />
-                          </a>
+                          </a>mtb81539
 
                           <a href={report.fileUrl} download className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100">
                             <Download size={18} />

@@ -1,10 +1,9 @@
-import { medicalReports, doctorSlots, appointments ,patients } from "../db/schema.js";
-import { eq } from "drizzle-orm";
+import { medicalReports, doctorSlots, appointments, patients, doctors } from "../db/schema.js";
+import { eq, and } from "drizzle-orm";
 import db from "../db/index.js";
 
-
 export const UploadMedicalReport = async (req, res) => {
-    
+
   try {
     const { diseaseName } = req.body;
     const userId = req.user?.id;
@@ -24,7 +23,7 @@ export const UploadMedicalReport = async (req, res) => {
       });
     }
 
-    
+
     if (!file) {
       return res.status(400).json({
         success: false,
@@ -59,13 +58,13 @@ export const UploadMedicalReport = async (req, res) => {
       })
       ;
 
-const insertedId = result[0]?.insertId || result.insertId;
+    const insertedId = result[0]?.insertId || result.insertId;
 
-const newReport = await db
-  .select()
-  .from(medicalReports)
-  .where(eq(medicalReports.id, insertedId))
-  .limit(1);
+    const newReport = await db
+      .select()
+      .from(medicalReports)
+      .where(eq(medicalReports.id, insertedId))
+      .limit(1);
 
 
     return res.json({
@@ -104,7 +103,7 @@ export const GetMedicalReports = async (req, res) => {
     if (!patient.length) {
       return res.json({
         success: true,
-    reports: [],
+        reports: [],
       });
     }
 
@@ -162,96 +161,130 @@ export const DeleteMedicalReport = async (req, res) => {
 };
 
 export const CreateDoctorSlot = async (req, res) => {
-    try {
-        const { id } = req.user;
-        const { date, startTime, endTime } = req.body;
+  try {
+    const userId = req.user.id
 
-        await db.insert(doctorSlots).values({ doctorId: id, date, startTime, endTime });
-        res.json({ success: true, message: "Slot created" });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
+    const { date, startTime, endTime } = req.body;
+    const doctorData = await db.select().from(doctors).where(eq(doctors.userId, userId)).limit(1);
+    const doctor = doctorData[0];
+    
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: "Doctor not found", });
     }
+
+    await db.insert(doctorSlots).values({ doctorId: doctor.id, date, startTime, endTime });
+    res.json({ success: true, message: "Slot created" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
 };
 
 export const GetDoctorSlots = async (req, res) => {
-    try {
-        const { doctorId } = req.query;
+  try {
+    const { doctorId } = req.query;
 
-        const slots = await db.select().from(doctorSlots).where(eq(doctorSlots.doctorId, doctorId));
-        res.json({ success: true, slots });
+    const slots = await db.select().from(doctorSlots).where(eq(doctorSlots.doctorId, doctorId));
+    res.json({ success: true, slots });
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "doctor slot get err" });
+  }
+};
+
+export const DeleteDoctorSlot = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { slotId } = req.query;
+
+    const slotData = await db
+      .select({ slotId: doctorSlots.id, })
+      .from(doctorSlots)
+      .innerJoin(doctors, eq(doctorSlots.doctorId, doctors.id))
+      .where(and(eq(doctorSlots.id, slotId), eq(doctors.userId, userId)))
+      .limit(1);
+
+    if (slotData.length === 0) {
+      return res.status(404).json({ success: false, message: "Slot not found or unauthorized", });
     }
+
+    await db.delete(doctorSlots).where(eq(doctorSlots.id, slotId));
+    return res.json({ success: true, message: "Slot deleted successfully", });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "slote delete err" });
+  }
 };
 
 export const CreateAppointment = async (req, res) => {
-    try {
-        const { doctorId, patientId, slotId } = req.body;
+  try {
+    const { doctorId, slotId, patientId } = req.body;
 
-        await db.insert(appointments).values({ doctorId, patientId, slotId, status: "pending" });
-        res.json({ success: true, message: "Appointment requested" });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
+    if (!doctorId || !slotId) {
+      return res.json({ success: false, message: "DoctorId and SlotId required", });
     }
+
+    const [slot] = await db.select().from(doctorSlots).where(eq(doctorSlots.id, Number(slotId)));
+
+    if (!slot) {
+      return res.json({ success: false, message: "Slot not found", });
+    }
+
+    if (slot.isBooked) {
+      return res.json({ success: false, message: "Slot already booked", });
+    }
+
+    const existing = await db.select().from(appointments).where(eq(appointments.slotId, Number(slotId)));
+
+    if (existing.length > 0) {
+      return res.json({ success: false, message: "Slot already taken", });
+    }
+
+    await db.insert(appointments).values({ doctorId, patientId, slotId, status: "wait for approval", });
+    await db.update(doctorSlots).set({ isBooked: true }).where(eq(doctorSlots.id, Number(slotId)));
+
+    res.json({ success: true, message: "Appointment booked successfully", });
+
+  } catch (error) {
+    console.error("CreateAppointment Error:", error);
+    res.status(500).json({ success: false, message: "Server error", });
+  }
 };
 
 export const ConfirmAppointment = async (req, res) => {
-    try {
-        const { appointmentId, slotId } = req.body;
+  try {
+    const { appointmentId, slotId } = req.body;
 
-        await db.update(appointments).set({ status: "confirmed" }).where(eq(appointments.id, appointmentId));
-        await db.update(doctorSlots).set({ isBooked: true }).where(eq(doctorSlots.id, slotId));
+    await db.update(appointments).set({ status: "confirmed" }).where(eq(appointments.id, appointmentId));
+    await db.update(doctorSlots).set({ isBooked: true }).where(eq(doctorSlots.id, slotId));
 
-        res.json({ success: true, message: "Appointment confirmed" });
+    res.json({ success: true, message: "Appointment confirmed" });
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
-    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
 };
 
 export const CancelAppointment = async (req, res) => {
-    try {
-        const { appointmentId } = req.query;
+  try {
+    const { appointmentId, slotId } = req.body;
 
-        await db.update(appointments).set({ status: "cancelled" }).where(eq(appointments.id, appointmentId));
-        res.json({ success: true, message: "Appointment cancelled" });
+    await db.update(appointments)
+      .set({ status: "cancelled" })
+      .where(eq(appointments.id, appointmentId));
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
-    }
+    await db.update(doctorSlots)
+      .set({ isBooked: false })
+      .where(eq(doctorSlots.id, slotId));
+
+    res.json({ success: true, message: "Appointment cancelled" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
 };
-
-export const GetPatientAppointments = async (req, res) => {
-    try {
-        const { patientId } = req.query;
-
-        const data = await db.select().from(appointments).where(eq(appointments.patientId, patientId));
-        res.json({ success: true, appointments: data });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
-    }
-};
-
-export const GetDoctorAppointments = async (req, res) => {
-    try {
-        const { doctorId } = req.query;
-
-        const data = await db.select().from(appointments).where(eq(appointments.doctorId, doctorId));
-        res.json({ success: true, appointments: data });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
-    }
-};
-
