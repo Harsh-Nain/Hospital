@@ -54,9 +54,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
 
   if (loading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
-        <Loading />
-      </div>
+      <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50"><Loading /></div>
     );
   }
 
