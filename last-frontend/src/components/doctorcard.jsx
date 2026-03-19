@@ -1,6 +1,6 @@
 export default function Doctorcard({ doc, i, setshowDoctorDetail }) {
     return (
-        <div key={i} onClick={() => setshowDoctorDetail(doc.doctorId)} className="group cursor-pointer relative bg-white border border-sky-100 rounded-2xl p-5 sm:p-6 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
+        <div key={i} onClick={() => setshowDoctorDetail(doc.doctorId)} className="group h-screen cursor-pointer relative bg-white border border-sky-100 rounded-2xl p-5 sm:p-6 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
 
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-linear-to-r from-sky-100/40 to-blue-100/40"></div>
 
