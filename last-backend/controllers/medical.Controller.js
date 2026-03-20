@@ -1,5 +1,5 @@
 import { medicalReports, doctorSlots, appointments, patients, doctors } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import db from "../db/index.js";
 
 export const UploadMedicalReport = async (req, res) => {
@@ -7,8 +7,7 @@ export const UploadMedicalReport = async (req, res) => {
   try {
     const { diseaseName } = req.body;
     const userId = req.user?.id;
-    const file = req.files; // single file
-
+    const file = req.files; 
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -167,7 +166,7 @@ export const CreateDoctorSlot = async (req, res) => {
     const { date, startTime, endTime } = req.body;
     const doctorData = await db.select().from(doctors).where(eq(doctors.userId, userId)).limit(1);
     const doctor = doctorData[0];
-    
+
     if (!doctor) {
       return res.status(404).json({ success: false, message: "Doctor not found", });
     }
@@ -223,34 +222,61 @@ export const CreateAppointment = async (req, res) => {
   try {
     const { doctorId, slotId, patientId } = req.body;
 
-    if (!doctorId || !slotId) {
-      return res.json({ success: false, message: "DoctorId and SlotId required", });
+    if (!doctorId || !slotId || !patientId) {
+      return res.json({ success: false, message: "DoctorId, SlotId and PatientId required", });
     }
 
-    const [slot] = await db.select().from(doctorSlots).where(eq(doctorSlots.id, Number(slotId)));
+    const [slot] = await db
+      .select()
+      .from(doctorSlots)
+      .where(eq(doctorSlots.id, Number(slotId)));
 
     if (!slot) {
-      return res.json({ success: false, message: "Slot not found", });
+      return res.json({ success: false, message: "Slot not found" });
     }
 
-    if (slot.isBooked) {
-      return res.json({ success: false, message: "Slot already booked", });
+    if (slot.isCancelled) {
+      return res.json({ success: false, message: "Slot is cancelled" });
     }
 
-    const existing = await db.select().from(appointments).where(eq(appointments.slotId, Number(slotId)));
+    const bookedCountResult = await db
+      .select({ count: sql`count(*)` })
+      .from(appointments)
+      .where(eq(appointments.slotId, Number(slotId)));
+
+    const bookedCount = Number(bookedCountResult[0].count);
+
+    if (bookedCount >= slot.capacity) {
+      return res.json({ success: false, message: "Slot is full" });
+    }
+
+    const existing = await db
+      .select()
+      .from(appointments)
+      .where(and(eq(appointments.slotId, Number(slotId)), eq(appointments.patientId, Number(patientId))));
 
     if (existing.length > 0) {
-      return res.json({ success: false, message: "Slot already taken", });
+      return res.json({ success: false, message: "You already booked this slot", });
     }
 
-    await db.insert(appointments).values({ doctorId, patientId, slotId, status: "wait for approval", });
-    await db.update(doctorSlots).set({ isBooked: true }).where(eq(doctorSlots.id, Number(slotId)));
+    await db.insert(appointments).values({
+      doctorId,
+      patientId,
+      slotId,
+      status: "wait for approval",
+    });
 
-    res.json({ success: true, message: "Appointment booked successfully", });
+    return res.json({
+      success: true,
+      message: "Appointment booked successfully",
+    });
 
   } catch (error) {
     console.error("CreateAppointment Error:", error);
-    res.status(500).json({ success: false, message: "Server error", });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 
@@ -259,7 +285,7 @@ export const ConfirmAppointment = async (req, res) => {
     const { appointmentId, slotId } = req.body;
 
     await db.update(appointments).set({ status: "confirmed" }).where(eq(appointments.id, appointmentId));
-    await db.update(doctorSlots).set({ isBooked: true }).where(eq(doctorSlots.id, slotId));
+    await db.update(doctorSlots).set({ capacity: 1 }).where(eq(doctorSlots.id, slotId));
 
     res.json({ success: true, message: "Appointment confirmed" });
 
@@ -271,15 +297,11 @@ export const ConfirmAppointment = async (req, res) => {
 
 export const CancelAppointment = async (req, res) => {
   try {
-    const { appointmentId, slotId } = req.body;
+    const { appointmentId } = req.body;
 
     await db.update(appointments)
       .set({ status: "cancelled" })
       .where(eq(appointments.id, appointmentId));
-
-    await db.update(doctorSlots)
-      .set({ isBooked: false })
-      .where(eq(doctorSlots.id, slotId));
 
     res.json({ success: true, message: "Appointment cancelled" });
 

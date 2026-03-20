@@ -83,14 +83,17 @@ export const medicalReports = mysqlTable("medical_reports",
   })
 );
 
-export const doctorSlots = mysqlTable("doctor_slots",
+export const doctorSlots = mysqlTable(
+  "doctor_slots",
   {
     id: int("id").primaryKey().autoincrement(),
     doctorId: int("doctor_id").notNull().references(() => doctors.id),
     date: varchar("date", { length: 20 }).notNull(),
     startTime: varchar("start_time", { length: 10 }).notNull(),
     endTime: varchar("end_time", { length: 10 }).notNull(),
-    isBooked: boolean("is_booked").default(false),
+    isCancelled: boolean("isCancelled").default(false),
+    cancelReason: text("cancelReason"),
+    capacity: int("capacity").default(1),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
@@ -98,7 +101,8 @@ export const doctorSlots = mysqlTable("doctor_slots",
   })
 );
 
-export const appointments = mysqlTable("appointments",
+export const appointments = mysqlTable(
+  "appointments",
   {
     id: int("id").primaryKey().autoincrement(),
     doctorId: int("doctor_id").notNull().references(() => doctors.id),
@@ -109,9 +113,10 @@ export const appointments = mysqlTable("appointments",
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
+    uniquePatientSlot: uniqueIndex("unique_patient_slot").on(table.patientId, table.slotId),
     doctorIdx: index("appointment_doctor_idx").on(table.doctorId),
     patientIdx: index("appointment_patient_idx").on(table.patientId),
-    slotUnique: uniqueIndex("appointment_slot_unique").on(table.slotId),
+    slotIdx: index("appointment_slot_idx").on(table.slotId),
   })
 );
 

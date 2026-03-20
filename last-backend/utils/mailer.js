@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 
 export const sendOtpMail = async (email, otp) => {
   console.log(otp);
-  
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -130,4 +130,111 @@ export const sendApprovalMail = async (email, name) => {
   };
 
   await transporter.sendMail(mailOptions);
+};
+
+export const sendSuspensionMail = async (email, name, reason) => {
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  const mailOptions = {
+    from: `"Healthcare Portal" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "⚠️ Account Suspended",
+    html: `
+      <div style="font-family: Arial; background:#f4f8fb; padding:20px;">
+        <div style="max-width:500px; margin:auto; background:white; border-radius:12px; overflow:hidden;">
+          
+          <div style="background:linear-gradient(90deg,#f59e0b,#d97706); padding:20px; text-align:center; color:white;">
+            <h2>Account Suspended</h2>
+          </div>
+
+          <div style="padding:25px;">
+            <h3>Hello Dr. ${name},</h3>
+
+            <p>
+              We regret to inform you that your account has been 
+              <b style="color:#d97706;">temporarily suspended</b>.
+            </p>
+
+            <p><b>Reason for suspension:</b></p>
+            <div style="background:#fff7ed; padding:10px; border-radius:8px; color:#9a3412;">
+              ${reason}
+            </div>
+
+            <p style="margin-top:15px;">
+              During this period, you will not be able to access your account or provide services on our platform.
+            </p>
+
+            <p>
+              If you believe this action was taken in error or wish to appeal, please contact our support team.
+            </p>
+          </div>
+
+          <div style="text-align:center; padding:15px; font-size:12px; color:#888;">
+            Healthcare System Support
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+export const sendReactivationMail = async (email, name) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: `"Healthcare Portal" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "✅ Account Reactivated",
+      html: `
+        <div style="font-family: Arial; background:#f4f8fb; padding:20px;">
+          <div style="max-width:500px; margin:auto; background:white; border-radius:12px; overflow:hidden;">
+            
+            <div style="background:linear-gradient(90deg,#10b981,#059669); padding:20px; text-align:center; color:white;">
+              <h2>Account Reactivated</h2>
+            </div>
+
+            <div style="padding:25px;">
+              <h3>Hello Dr. ${name},</h3>
+
+              <p>Great news! Your account has been <b style="color:#059669;">successfully reactivated</b>.</p>
+              <p>You can now log in and continue providing services on our platform.</p>
+              <p style="margin-top:15px;">We appreciate your cooperation and adherence to our guidelines.</p>
+
+              <div style="text-align:center; margin-top:20px;">
+                <a href="#" style="background:#10b981; color:white; padding:10px 20px; border-radius:8px; text-decoration:none;"> Login Now</a>
+              </div>
+            </div>
+
+            <div style="text-align:center; padding:15px; font-size:12px; color:#888;">
+              Healthcare System Support
+            </div>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    return { success: true, messageId: info.messageId };
+
+  } catch (error) {
+    console.error("Error sending reactivation email:", error);
+    return { success: false, error: error.message };
+  }
 };

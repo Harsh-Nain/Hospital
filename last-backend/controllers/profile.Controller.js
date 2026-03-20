@@ -1,6 +1,6 @@
 import db from "../db/index.js";
 import { users, patients, doctors, doctorSlots, reviews, specializations, medicalReports, appointments } from "../db/schema.js";
-import { eq, sql, or, and, gt, desc, avg, count } from "drizzle-orm";
+import { eq, sql, or, and, gt, desc, } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const GetDoctorProfile = async (req, res) => {
@@ -8,11 +8,14 @@ export const GetDoctorProfile = async (req, res) => {
         const { doctorId } = req.query;
 
         if (!doctorId) {
-            return res.json({ success: false, message: "Doctor ID required", });
+            return res.json({
+                success: false,
+                message: "Doctor ID required",
+            });
         }
 
         const [doctor] = await db
-            .select({ doctorId: doctors.id, fullName: users.fullName, image: users.image, specialization: specializations.name, experience: doctors.experienceYears, fee: doctors.consultationFee, bio: doctors.bio, })
+            .select({ doctorId: doctors.id, userId: users.id, email: users.email, fullName: users.fullName, image: users.image, status: doctors.status, specialization: specializations.name, experience: doctors.experienceYears, fee: doctors.consultationFee, bio: doctors.bio, })
             .from(doctors)
             .leftJoin(users, eq(users.id, doctors.userId))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
@@ -24,14 +27,15 @@ export const GetDoctorProfile = async (req, res) => {
         }
 
         const now = new Date();
-
         const today = now.toISOString().split("T")[0];
         const currentTime = now.toTimeString().slice(0, 5);
 
         const slotsRaw = await db
-            .select()
+            .select({ id: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, bookedCount: sql`COUNT(${appointments.id})`, })
             .from(doctorSlots)
-            .where(and(eq(doctorSlots.doctorId, Number(doctorId)), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, currentTime)))))
+            .leftJoin(appointments, eq(appointments.slotId, doctorSlots.id))
+            .where(and(eq(doctorSlots.doctorId, Number(doctorId)), eq(doctorSlots.isCancelled, false), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, currentTime)))))
+            .groupBy(doctorSlots.id)
             .orderBy(doctorSlots.date, doctorSlots.startTime);
 
         const formatTime = (time) => {
@@ -43,8 +47,12 @@ export const GetDoctorProfile = async (req, res) => {
         const slots = {};
 
         slotsRaw.forEach((slot) => {
-            if (!slots[slot.date]) { slots[slot.date] = []; }
-            slots[slot.date].push({ id: slot.id, startTime: formatTime(slot.startTime), endTime: formatTime(slot.endTime), isBooked: slot.isBooked, });
+            const booked = Number(slot.bookedCount || 0);
+            const remaining = slot.capacity - booked;
+
+            if (!slots[slot.date]) slots[slot.date] = [];
+
+            slots[slot.date].push({ id: slot.id, startTime: formatTime(slot.startTime), endTime: formatTime(slot.endTime), capacity: slot.capacity, booked, remaining, isFull: remaining <= 0, });
         });
 
         const doctorReviews = await db
@@ -56,12 +64,11 @@ export const GetDoctorProfile = async (req, res) => {
             .orderBy(desc(reviews.createdAt));
 
         const [ratingSummary] = await db
-            .select({ avgRating: avg(reviews.rating), totalReviews: count(reviews.id), })
+            .select({ avgRating: sql`AVG(${reviews.rating})`, totalReviews: sql`COUNT(${reviews.id})`, })
             .from(reviews)
             .where(eq(reviews.doctorId, Number(doctorId)));
 
-        res.json({ success: true, doctor, slots, reviews: doctorReviews, rating: { avgRating: Number(ratingSummary?.avgRating || 0).toFixed(1), totalReviews: ratingSummary?.totalReviews || 0, }, });
-
+        res.json({ success: true, doctor, slots, reviews: doctorReviews, rating: { avgRating: Number(ratingSummary?.avgRating || 0).toFixed(1), totalReviews: Number(ratingSummary?.totalReviews || 0), }, });
     } catch (error) {
         console.error("GetDoctorProfile Error:", error);
         res.status(500).json({ success: false, message: "Server error", });
@@ -79,7 +86,7 @@ export const GetPatientProfile = async (req, res) => {
         patientId = Number(patientId);
 
         const [patient] = await db
-            .select({ patientId: patients.id, fullName: users.fullName, email: users.email, image: users.image, age: patients.age, gender: patients.gender, disease: patients.disease, phone: patients.phone, address: patients.address, bloodGroup: patients.bloodGroup, })
+            .select({ patientId: patients.id, fullName: users.fullName, userid: users.id, email: users.email, image: users.image, age: patients.age, gender: patients.gender, disease: patients.disease, phone: patients.phone, address: patients.address, bloodGroup: patients.bloodGroup, })
             .from(patients)
             .leftJoin(users, eq(users.id, patients.userId))
             .where(eq(patients.id, patientId))
@@ -96,29 +103,30 @@ export const GetPatientProfile = async (req, res) => {
             .orderBy(desc(medicalReports.uploadedAt));
 
         const appointmentsData = await db
-            .select({ appointmentId: appointments.id, status: appointments.status, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, doctorId: doctors.id, specialization: specializations.name, })
+            .select({ appointmentId: appointments.id, status: appointments.status, meetingLink: appointments.meetingLink, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, doctorId: doctors.id, doctorName: users.fullName, doctorImage: users.image, specialization: specializations.name, })
             .from(appointments)
             .leftJoin(doctors, eq(doctors.id, appointments.doctorId))
+            .leftJoin(users, eq(users.id, doctors.userId))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
             .where(eq(appointments.patientId, patientId))
-            .orderBy(desc(doctorSlots.date));
+            .orderBy(desc(doctorSlots.date), desc(doctorSlots.startTime));
 
-        let totalAppointments = appointmentsData.length;
-        let lastVisit = null;
+        const now = new Date();
 
-        if (appointmentsData.length > 0) {
-            lastVisit = appointmentsData[0].date;
-        }
+        const formatTime = (time) => {
+            if (!time) return "";
+            const [h, m] = time.split(":");
+            return `${h.padStart(2, "0")}:${m}`;
+        };
 
-        const appointmentsFormatted = appointmentsData.map((a) => ({
-            appointmentId: a.appointmentId,
-            status: a.status,
-            date: a.date,
-            startTime: a.startTime,
-            endTime: a.endTime,
-            doctor: { doctorId: a.doctorId, name: a.doctorName, specialization: a.specialization, },
-        }));
+        const appointmentsFormatted = appointmentsData.map((a) => {
+            const slotDateTime = new Date(`${a.date}T${a.startTime}`);
+            return { appointmentId: a.appointmentId, status: a.status, meetingLink: a.meetingLink, date: a.date, startTime: formatTime(a.startTime), endTime: formatTime(a.endTime), type: slotDateTime > now ? "upcoming" : "past", doctor: { doctorId: a.doctorId, name: a.doctorName, image: a.doctorImage, specialization: a.specialization, }, };
+        });
+
+        const totalAppointments = appointmentsFormatted.length;
+        const lastVisit = appointmentsFormatted.find((a) => a.type === "past")?.date || null;
 
         res.json({ success: true, patient, medicalReports: reports, appointments: appointmentsFormatted, summary: { totalAppointments, lastVisit, }, });
 

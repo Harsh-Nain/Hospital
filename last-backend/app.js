@@ -5,6 +5,7 @@ import authRouter from "./routes/auth.route.js"
 import profileRouter from "./routes/profile.route.js"
 import notifRouter from "./routes/response.route.js"
 import dashboardRouter from "./routes/dashboard.route.js"
+import adminRouter from "./routes/admin.route.js"
 import medicalRouter from "./routes/medical.route.js"
 import paymentRouter from "./routes/payment.route.js"
 import chatRouter from "./routes/chat.route.js"
@@ -23,6 +24,8 @@ app.use(express.json());
 app.use("/auth", authRouter);
 
 app.use("/dashboard", islogin, dashboardRouter);
+app.use("/admin", islogin, adminRouter);
+
 app.use("/profile", islogin, profileRouter);
 app.use("/medical", islogin, medicalRouter);
 app.use("/payment", islogin, paymentRouter);

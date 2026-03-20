@@ -30,6 +30,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
     const fetchDoctor = async () => {
       try {
         const res = await axios.get(`${API_URL}/profile/doctor?doctorId=${id}`, { withCredentials: true });
+        console.log(res.data);
 
         if (res.data.success) {
           setDoctor(res.data.doctor);
@@ -37,10 +38,13 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
           setRating(res.data.rating);
 
           const groupedSlots = res.data.slots || {};
-          const formattedSlots = Object.entries(groupedSlots).flatMap(([date, times]) => times.map((t) => ({ id: t.id || `${date}-${t.startTime}`, date, startTime: t.startTime, endTime: t.endTime, isBooked: false, })));
+          const formattedSlots = Object.entries(groupedSlots).flatMap(([date, times]) => times.map((t) => ({ id: t.id || `${date}-${t.startTime}`, date, startTime: t.startTime, endTime: t.endTime, })));
 
           setSlots(formattedSlots);
+        } else {
+          toast.error(res.data.message)
         }
+
       } catch (error) {
         console.error(error);
         toast.error("Failed to load doctor");
@@ -52,27 +56,73 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
     if (id) fetchDoctor();
   }, [id]);
 
-  if (loading) { return (<div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50"><Loading /></div>); }
+  const profileControler = async () => {
+    let url = "reactivate_doctor"
+    if (doctor.status !== "suspanded") {
+      url = "suspand_doctor"
+    }
+
+    try {
+      setLoading(true)
+      const res = await axios.put(`${API_URL}/admin/${url}`, { doctorId: doctor.doctorId, userId: doctor.userId, name: doctor.fullName, email: doctor.email }, { withCredentials: true });
+
+      if (res.data.success) {
+        setLoading(false)
+        toast.success(res.data.message)
+        setshowDoctorDetail(false)
+      }
+
+    } catch (error) {
+      setLoading(false)
+      console.error(error);
+      toast.error("failed");
+    }
+  }
+
+  const confirmAppointment = async () => {
+    if (!selectedSlot) return toast.error("Select a slot");
+
+    try {
+      setLoading(true);
+      const res = await axios.post(`${API_URL}/medical/appointment-add`, { doctorId: doctor.doctorId, patientId, slotId: selectedSlot, }, { withCredentials: true });
+      console.log(res.data);
+
+      if (res.data.success) {
+        setshowDoctorDetail(null);
+        setPay(confirmSlot)
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Booking failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) { return (<div className="fixed inset-0 flex h-screen items-center justify-center bg-black/70 z-50"><Loading /></div>); }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center h-screen justify-center bg-black/50 backdrop-blur-sm p-4">
-      {pay && <PaymentCard payment={pay} API_URL={API_URL} onClose={() => setPay(null)} patientId={patientId} />}
+      {/* {pay && <PaymentCard payment={pay} API_URL={API_URL} onClose={() => setPay(null)} patientId={patientId} />} */}
 
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-6">
 
-        <button onClick={() => setshowDoctorDetail(null)} className="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-red-500">
+        <button onClick={() => setshowDoctorDetail(null)} className="absolute p-2 hover:bg-gray-100 rounded top-4 right-4 cursor-pointer text-gray-500 hover:text-red-500">
           <RxCross1 size={20} />
         </button>
 
-        <div className="flex gap-5 items-center">
+        <div className="flex gap-5 items-center relative">
           <img src={doctor?.image || "/doctor.png"} className="w-24 h-24 rounded-xl object-cover border" />
-
           <div>
             <h2 className="text-xl font-bold">Dr. {doctor?.fullName}</h2>
-
-            <p className="text-sky-600 font-medium">{doctor?.specialization}</p>
-
-            <p className="text-sm text-gray-500">{doctor?.experience} years experience </p>
+            <div className="flex justify-center gap-3 items-center">
+              <p className="text-sky-600 font-medium">{doctor?.specialization}</p>
+              <p className={`${doctor.status == "suspanded" ? "bg-yellow-400" : "bg-emerald-400"} text-white rounded-xl text-xs px-1`}>{doctor.status == "suspanded" ? "Suspanded" : "Active"}</p>
+            </div>
+            <p className="text-sm text-gray-500">{doctor?.experience} years experience</p>
 
             <div className="flex items-center gap-2 mt-1">
               <FaStar className="text-yellow-500" />
@@ -80,34 +130,27 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
               <span className="text-gray-500 text-sm">({rating?.totalReviews || 0} reviews)</span>
             </div>
           </div>
+
+          {isAdmin && (<button type="button" onClick={() => profileControler()} aria-label="Suspend Account" className={`absolute right-2 text-sm -bottom-5 sm:py-1.5 sm:bottom-0 cursor-pointer ${doctor.status == "suspanded" ? "bg-emerald-500" : "bg-red-500"} text-white px-3 rounded-md hover:bg-${doctor.status != "suspanded" ? "red" : "emerald"}-600 transition duration-200`}>{doctor.status !== "suspanded" ? "Suspend Account" : "Re-Activate"}</button>)}
         </div>
 
         <div className="my-6 h-px bg-gray-200"></div>
-
         <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
           <div>
             <p className="text-gray-500">Consultation Fee</p>
-            <p className="font-semibold text-lg">
-              ₹{doctor?.fee}
-            </p>
+            <p className="font-semibold text-lg">₹{doctor?.fee}</p>
           </div>
 
           <div>
             <p className="text-gray-500">Experience</p>
-            <p className="font-semibold text-lg">
-              {doctor?.experience} yrs
-            </p>
+            <p className="font-semibold text-lg">{doctor?.experience} yrs</p>
           </div>
         </div>
 
         {doctor?.bio && (
           <div className="mb-6">
-            <p className="text-gray-500 text-sm mb-1">
-              About Doctor
-            </p>
-            <p className="text-gray-700 text-sm">
-              {doctor.bio}
-            </p>
+            <p className="text-gray-500 text-sm mb-1">About Doctor</p>
+            <p className="text-gray-700 text-sm">{doctor.bio}</p>
           </div>
         )}
 
@@ -128,10 +171,10 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
           </div>
         </div>
 
-        {!isAdmin && confirmSlot && (<button onClick={() => setPay(confirmSlot)} className="w-full bg-sky-500 text-white py-2 rounded-xl font-medium hover:shadow-lg transition">Confirm Appointment</button>)}
+        {!isAdmin && confirmSlot && (<button onClick={() => confirmAppointment()} className="w-full bg-sky-500 text-white py-2 rounded-xl font-medium hover:shadow-lg transition">Confirm Appointment</button>)}
 
         <div className="mt-8">
-          <h3 className="font-semibold mb-3">  Patient Reviews</h3>
+          <h3 className="font-semibold mb-3">Patient Reviews</h3>
 
           {reviews.length === 0 ? (<p className="text-gray-500 text-sm">No reviews yet</p>) : (
             <div className="space-y-4">
@@ -142,17 +185,15 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
 
                     <div>
                       <p className="font-medium text-sm">{review.patientName}</p>
-                      <div className="flex items-center text-yellow-500 text-xs"><FaStar /> {review.rating}</div>
+                      <div className="flex items-center text-yellow-500 text-xs"><FaStar />{review.rating}</div>
                     </div>
                   </div>
-
                   {review.reviewText && (<p className="text-sm text-gray-600 mt-2">{review.reviewText}</p>)}
                 </div>
               ))}
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

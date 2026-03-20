@@ -8,7 +8,7 @@ export default function Doctorcard({ doc, i, setshowDoctorDetail }) {
                 <div>
                     <h3 className="font-semibold text-gray-800 text-base sm:text-lg">Dr. {doc.fullName}</h3>
                     <p className="text-sky-600 text-sm font-medium">{doc.specialization}</p>
-                    <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${doc.isApproved ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-600"}`}>{doc.isApproved ? "Approved" : "Pending"}</span>
+                    <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${doc.isApproved ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-600"}`}>{doc.status}</span>
                 </div>
             </div>
 

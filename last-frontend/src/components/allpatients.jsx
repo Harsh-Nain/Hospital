@@ -11,7 +11,7 @@ export default function Allpatient() {
     useEffect(() => {
         const getData = async () => {
             try {
-                const res = await axios.get(`${API_URL}/dashboard/admin_patients`, { withCredentials: true });
+                const res = await axios.get(`${API_URL}/admin/admin_patients`, { withCredentials: true });
 
                 if (res.data.success) {
                     setPatients(res.data.patients);

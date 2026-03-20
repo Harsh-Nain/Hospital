@@ -16,12 +16,10 @@ export const CreateReview = async (req, res) => {
     }
 };
 
-export const CreateNotification = async (req, res) => {
+export default async function CreateNotification(userId, message) {
     try {
-        const { userId, message } = req.body;
-
         await db.insert(notifications).values({ userId, message });
-        res.json({ success: true, message: "Notification sent" });
+        return ({ success: true, message: "Notification sent" });
 
     } catch (error) {
         console.error(error);
@@ -45,7 +43,7 @@ export const getNotifications = async (req, res) => {
 
 export const MarkNotificationRead = async (req, res) => {
     try {
-        const { notificationId } = req.query;
+        const { notificationId } = req.body;
 
         await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, notificationId));
         res.json({ success: true, message: "Notification marked as read" });
@@ -84,7 +82,8 @@ export const GetDoctorReviews = async (req, res) => {
 
 export const DeleteNotification = async (req, res) => {
     try {
-        const { notificationId } = req.query;
+        const { notificationId } = req.body;
+        console.log(notificationId);
 
         await db.delete(notifications).where(eq(notifications.id, notificationId));
 

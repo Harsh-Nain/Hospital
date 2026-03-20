@@ -11,7 +11,7 @@ export default function DoctorApprovalCard({ i, doc, setLoading }) {
     const handleAction = async (type) => {
         try {
             setLoading(true)
-            const res = await axios.put(`${API_URL}/dashboard/approve_doctor`, { doctorId: doc.doctorId, status: type, name: doc.fullName, email: doc.email, }, { withCredentials: true });
+            const res = await axios.put(`${API_URL}/admin/approve_doctor`, { doctorId: doc.doctorId, status: type, name: doc.fullName, email: doc.email, }, { withCredentials: true });
 
             if (res.data.success) {
                 setStatus(type);

@@ -11,7 +11,7 @@ export default function Alldoctors() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const res = await axios.get(`${API_URL}/dashboard/admin_doctors`, { withCredentials: true });
+        const res = await axios.get(`${API_URL}/admin/admin_doctors`, { withCredentials: true });
 
         if (res.data.success) {
           console.log(res.data.doctors);
