@@ -21,7 +21,7 @@ export default function PatientLogin() {
         e.preventDefault();
 
         try {
-            const res = await axios.post(`${API_URL}/medical/login-patient`, formData, { withCredentials: true });
+            const res = await axios.post(`${API_URL}/auth/login-patient`, formData, { withCredentials: true });
             if (res.data.success) {
                 toast.success("Login Successful 🎉");
                 navigate(res.data.redirect);

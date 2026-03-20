@@ -26,7 +26,7 @@ export const GetDoctorProfile = async (req, res) => {
         const slotsRaw = await db
             .select()
             .from(doctorSlots)
-            .where(and(eq(doctorSlots.doctorId, Number(doctorId)), eq(doctorSlots.isBooked, false)))
+            .where(and(eq(doctorSlots.doctorId, Number(doctorId)),))
             .orderBy(doctorSlots.date, doctorSlots.startTime);
 
         const formatTime = (time) => {
@@ -39,7 +39,7 @@ export const GetDoctorProfile = async (req, res) => {
 
         slotsRaw.forEach((slot) => {
             if (!slots[slot.date]) { slots[slot.date] = []; }
-            slots[slot.date].push({ id: slot.id, startTime: formatTime(slot.startTime), endTime: formatTime(slot.endTime), isBooked: slot.isBooked, });
+            slots[slot.date].push({ id: slot.id, startTime: formatTime(slot.startTime), endTime: formatTime(slot.endTime)});
         });
 
         const doctorReviews = await db

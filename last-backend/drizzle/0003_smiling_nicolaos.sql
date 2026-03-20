@@ -1,0 +1,1 @@
+ALTER TABLE `doctor_slots` DROP COLUMN `bookedno`;

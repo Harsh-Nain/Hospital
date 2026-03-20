@@ -1,97 +1,141 @@
 import axios from "axios";
-import  {  useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { RxCross1 } from "react-icons/rx";
 import Loading from "./loading";
+
 
 const DoctorSlots = ({ slots, setAddsote, setSlots }) => {
     const [loading, setLoading] = useState(false);
     const [newSlot, setNewSlot] = useState({
         date: "",
         startTime: "",
-        endTime: ""
+        endTime: "",
+        capacity: "",
     });
 
     const handleChange = (e) => {
         setNewSlot({ ...newSlot, [e.target.name]: e.target.value });
     };
 
-    // Add slot
-   const addSlot = async () => {
-    const API_URL = import.meta.env.VITE_BACKEND_URL;
+    const addSlot = async () => {
+        const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-    if (!newSlot.date || !newSlot.startTime || !newSlot.endTime) {
-        toast.error("Please fill all fields");
-        return;
-    }
+        if (!newSlot.date || !newSlot.startTime || !newSlot.endTime || !newSlot.capacity) {
+            toast.error("Please fill all fields");
+            return;
+        }
+       
 
-    const now = new Date();
-    const selectedStart = new Date(`${newSlot.date}T${newSlot.startTime}`);
-    const selectedEnd = new Date(`${newSlot.date}T${newSlot.endTime}`);
+        if (newSlot.capacity <= 0) {
+            toast.error("Enter valid max patients");
+            return;
+        }
 
-    // ❌ Past date/time not allowed
-    if (selectedStart <= now) {
-        toast.error("Slot must be in future");
-        return;
-    }
+        const [startHour, startMin] = newSlot.startTime.split(":").map(Number);
+        const [endHour, endMin] = newSlot.endTime.split(":").map(Number);
 
-    // ❌ End must be after start
-    if (selectedStart >= selectedEnd) {
-        toast.error("End time must be after start time");
-        return;
-    }
+        const selectedStart = new Date(newSlot.date);
+        selectedStart.setHours(startHour, startMin, 0, 0);
 
-    // ❌ Minimum 15 min duration
-    const diffMinutes = (selectedEnd - selectedStart) / (1000 * 60);
-    if (diffMinutes < 15) {
-        toast.error("Minimum slot duration is 15 minutes");
-        return;
-    }
+        const selectedEnd = new Date(newSlot.date);
+        selectedEnd.setHours(endHour, endMin, 0, 0);
 
-    // ❌ Overlapping check (improved)
-    const isOverlap = slots.some(s => {
-        const existingStart = new Date(`${newSlot.date}T${s.startTime}`);
-        const existingEnd = new Date(`${newSlot.date}T${s.endTime}`);
+        if (selectedEnd <= selectedStart) {
+            selectedEnd.setDate(selectedEnd.getDate() + 1);
+        }
 
-        return (
-            selectedStart < existingEnd &&
-            selectedEnd > existingStart
-        );
-    });
-    
+        if (selectedEnd <= selectedStart) {
+            toast.error("Invalid time range");
+            return;
+        }
 
-    if (isOverlap) {
-        toast.error("Slot overlaps with existing slot");
-        return;
-    }
 
-    const slot = {
-        ...newSlot,
-        booked: false,
-    };
+        const now = new Date();
 
-    try {
-        setLoading(true);
+        if (isNaN(selectedStart.getTime()) || isNaN(selectedEnd.getTime())) {
+            toast.error("Invalid date/time format");
+            return;
+        }
 
-        const res = await axios.post(`${API_URL}/medical/slot`, slot, {
-            withCredentials: true,
+        if (selectedStart <= now) {
+            toast.error("Slot must be in the future");
+            return;
+        }
+
+        if (selectedEnd <= selectedStart) {
+            toast.error("End time must be after start time");
+            return;
+        }
+
+        const diffMinutes = (selectedEnd - selectedStart) / (1000 * 60);
+        if (diffMinutes < 15) {
+            toast.error("Minimum slot duration is 15 minutes");
+            return;
+        }
+
+        const isOverlap = slots.some((s) => {
+            if (s.date !== newSlot.date) return false;
+
+            const existingStart = new Date(`${s.date}T${s.startTime}`);
+            const existingEnd = new Date(`${s.date}T${s.endTime}`);
+
+
+            return (
+                selectedStart < existingEnd &&
+                selectedEnd > existingStart
+            );
         });
 
-        if (res.data.success) {
-            toast.success(res.data.message || "Slot Added 🎉");
+        if (isOverlap) {
+            toast.error("Slot overlaps with existing slot");
+            return;
+        }
 
-            setSlots([...slots, slot]);
-            setNewSlot({ date: "", startTime: "", endTime: "" });
+        const slotPayload = {
+            date: newSlot.date,
+            startTime: newSlot.startTime,
+            endTime: newSlot.endTime,
+            capacity: newSlot.capacity,
+            booked: false,
+        };
+
+        try {
+            setLoading(true);
+
+            const res = await axios.post(
+                `${API_URL}/medical/slot`,
+                slotPayload,
+                { withCredentials: true }
+            );
+
+            if (res.data.success) {
+                toast.success(res.data.message || "Slot Added 🎉");
+
+                // ✅ Use backend response (IMPORTANT)
+                const savedSlot = res.data.slot || slotPayload;
+
+                setSlots((prev) => [...prev, savedSlot]);
+
+                // ✅ Reset form
+                setNewSlot({
+                    date: "",
+                    startTime: "",
+                    endTime: "",
+                    capacity: "",
+                });
+            }
+        } catch (err) {
+            if (err.response) {
+                toast.error(err.response.data.message || "Slot failed");
+            } else {
+                toast.error("Something went wrong");
+            }
+        } finally {
+            setAddsote(null);
+            setLoading(false);
         }
-    } catch (err) {
-        if (err.response) {
-            toast.error(err.response.data.message || "Slot failed");
-        }
-    } finally {
-        setAddsote(null);
-        setLoading(false);
-    }
-};
+    };
 
     if (loading) {
         return <Loading />;
@@ -118,64 +162,98 @@ const DoctorSlots = ({ slots, setAddsote, setSlots }) => {
                     </span>
                 </div>
 
-                {/* Add Slot Section */}
-                <div className="bg-white shadow-sm border border-gray-100 rounded-2xl p-5 mb-6">
-                    <div className="flex mb-4 justify-between items-center">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                            Add New Slot
-                        </h3>
+                <div className="bg-white border border-gray-200 rounded-3xl shadow-md p-6 mb-8">
+
+                    {/* Header */}
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 className="text-xl font-bold text-gray-800">
+                                Add New Slot
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                                Configure availability for appointments
+                            </p>
+                        </div>
+
                         <button
                             onClick={addSlot}
-                            className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold"
+                            className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all"
                         >
                             + Add Slot
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    {/* Form Card */}
+                    <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-    {/* Date */}
-    <div className="flex flex-col">
-        <label className="text-sm mb-1 text-gray-600">Select Date</label>
-        <input
-            type="date"
-            name="date"
-            min={new Date().toISOString().split("T")[0]}
-            value={newSlot.date}
-            onChange={handleChange}
-            className="border rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-sky-400"
-        />
-    </div>
+                        {/* Date */}
+                        <div>
+                            <label className="text-xs font-semibold text-gray-500 mb-2 block">
+                                Select Date
+                            </label>
+                            <input
+                                type="date"
+                                name="date"
+                                min={new Date().toISOString().split("T")[0]}
+                                value={newSlot.date}
+                                onChange={handleChange}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none transition"
+                            />
+                        </div>
 
-    {/* Start Time */}
-    <div className="flex flex-col">
-        <label className="text-sm mb-1 text-gray-600">Start Time</label>
-        <input
-            type="time"
-            name="startTime"
-            value={newSlot.startTime}
-            onChange={handleChange}
-            className="border rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-sky-400"
-        />
-    </div>
+                        {/* Max Patients */}
+                        <div>
+                            <label className="text-xs font-semibold text-gray-500 mb-2 block">
+                                Max Patients
+                            </label>
+                            <input
+                                type="number"
+                                name="capacity"
+                                value={newSlot.capacity}
+                                onChange={handleChange}
+                                min="1"
+                                placeholder="e.g. 5"
+                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none"
+                            />
+                        </div>
 
-    {/* End Time */}
-    <div className="flex flex-col">
-        <label className="text-sm mb-1 text-gray-600">End Time</label>
-        <input
-            type="time"
-            name="endTime"
-            value={newSlot.endTime}
-            onChange={handleChange}
-            className="border rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-sky-400"
-        />
-    </div>
-</div>
+                        {/* Start Time */}
+                        <div>
+                            <label className="text-xs font-semibold text-gray-500 mb-2 block">
+                                Start Time
+                            </label>
+                            <input
+                                type="time"
+                                name="startTime"
+                                value={newSlot.startTime}
+                                onChange={handleChange}
+                                min={
+                                    newSlot.date === new Date().toLocaleDateString("en-CA")
+                                        ? new Date().toTimeString().slice(0, 5)
+                                        : undefined
+                                }
+                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 outline-none"
+                            />
+                        </div>
 
+                        {/* End Time */}
+                        <div>
+                            <label className="text-xs font-semibold text-gray-500 mb-2 block">
+                                End Time
+                            </label>
+                            <input
+                                type="time"
+                                name="endTime"
+                                value={newSlot.endTime}
+                                onChange={handleChange}
+                                min={newSlot.startTime || undefined}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3"
+                            />
+                        </div>
 
+                    </div>
                 </div>
 
-                {/* Slots List */}
 
 
             </div>

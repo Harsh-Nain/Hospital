@@ -273,7 +273,7 @@ export const PatientDashboard = async (req, res) => {
             .leftJoin(users, eq(users.id, doctors.userId))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .leftJoin(doctorSlots, eq(doctorSlots.doctorId, doctors.id))
-            .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', ${patient.disease})`, eq(doctors.isApproved, true), eq(doctors.status, "success"), eq(doctorSlots.isBooked, false)))
+            .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', ${patient.disease})`, eq(doctors.isApproved, true), eq(doctors.status, "success")))
             .limit(6);
 
         if (doctorsList == 0) {
@@ -283,7 +283,7 @@ export const PatientDashboard = async (req, res) => {
                 .leftJoin(users, eq(users.id, doctors.userId))
                 .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
                 .leftJoin(doctorSlots, eq(doctorSlots.doctorId, doctors.id))
-                .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', 'fever')`, eq(doctors.isApproved, true), eq(doctors.status, "success"), eq(doctorSlots.isBooked, false)))
+                .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', 'fever')`, eq(doctors.isApproved, true), eq(doctors.status, "success"),))
                 .limit(6);
         }
 
@@ -318,46 +318,59 @@ export const DoctorDashboard = async (req, res) => {
             .limit(1);
 
         if (!doctor) {
-            return res.json({ success: false, message: "Doctor not found" });
+            return res.json({ success: false, message: "Doctor not found", });
         }
 
+        const now = new Date();
+        const today = now.toISOString().split("T")[0];
+
+        const formatTime = (time) => {
+            if (!time) return "";
+            const [h, m] = time.split(":");
+            return `${h.padStart(2, "0")}:${m}`;
+        };
+
         const appointmentsData = await db
-            .select({
-                appointmentId: appointments.id,
-                status: appointments.status,
-                date: doctorSlots.date,
-                startTime: doctorSlots.startTime,
-                endTime: doctorSlots.endTime,
-                patientId: patients.id,
-                disease: patients.disease,
-                image: users.image,
-                fullName: users.fullName,
-                paymentId: payments.id,
-                amount: payments.amount,
-                paymentStatus: payments.paymentStatus,
-                paymentMethod: payments.paymentMethod,
-                transactionId: payments.transactionId,
-                paidAt: payments.paidAt,
-            })
+          .select({ appointmentId: appointments.id, status: appointments.status, meetingLink: appointments.meetingLink, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, patientId: patients.id, disease: patients.disease, patientName: users.fullName, patientImage: users.image, paymentId: payments.id, amount: payments.amount, paymentStatus: payments.paymentStatus, paymentMethod: payments.paymentMethod, transactionId: payments.transactionId, paidAt: payments.paidAt, })
             .from(appointments)
             .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
             .leftJoin(patients, eq(patients.id, appointments.patientId))
             .leftJoin(users, eq(users.id, patients.userId))
             .leftJoin(payments, eq(payments.appointmentId, appointments.id))
             .where(eq(appointments.doctorId, doctor.doctorId))
-            .orderBy(desc(doctorSlots.date));
+            .orderBy(desc(doctorSlots.date), desc(doctorSlots.startTime));
+            
+            
+        const slotCounts = await db
+            .select({ slotId: appointments.slotId, count: sql`COUNT(*)`, })
+            .from(appointments)
+            .where(eq(appointments.doctorId, doctor.doctorId))
+            .groupBy(appointments.slotId);
 
-        const totalAppointments = appointmentsData.length;
-        const confirmed = appointmentsData.filter(a => a.status === "confirmed").length;
-        const pending = appointmentsData.filter(a => a.status === "pending").length;
 
-        const today = new Date().toISOString().split("T")[0];
-        const todayAppointments = appointmentsData.filter(a => a.date === today);
+        const slotCountMap = {};
+        slotCounts.forEach((s) => {
+            slotCountMap[s.slotId] = Number(s.count);
+        });
 
-        const totalRevenue = appointmentsData.reduce((sum, a) => sum + (a.amount || 0), 0);
+        const formattedAppointments = appointmentsData.map((a) => {
+            const slotDateTime = new Date(`${a.date}T${a.startTime}`);
+            const booked = slotCountMap[a.slotId] || 0;
+            const remaining = a.capacity - booked;
+            return { appointmentId: a.appointmentId, status: a.status, meetingLink: a.meetingLink, type: slotDateTime > now ? "upcoming" : "past", patient: { id: a.patientId, name: a.patientName, image: a.patientImage, disease: a.disease, }, slot: { date: a.date, startTime: formatTime(a.startTime), endTime: formatTime(a.endTime), capacity: a.capacity, booked, remaining, isFull: remaining <= 0, }, payment: { id: a.paymentId, amount: a.amount, status: a.paymentStatus, method: a.paymentMethod, transactionId: a.transactionId, paidAt: a.paidAt, }, };
+        });
 
-        res.json({ success: true, doctor, stats: { totalAppointments, confirmed, pending, todayAppointments: todayAppointments.length, totalRevenue, }, appointments: appointmentsData, });
+        
+        const totalAppointments = formattedAppointments.length;
+        const confirmed = formattedAppointments.filter((a) => a.status === "confirmed").length;
+        const Cancelled = formattedAppointments.filter((a) => a.status === "Cancelled").length;
+        const pending = formattedAppointments.filter((a) => a.status === "wait for approval").length;
+        const todayAppointments = formattedAppointments.filter((a) => a.slot.date === today).length;
+        const totalRevenue = formattedAppointments.reduce((sum, a) => sum + (a.payment.amount || 0), 0);
+        const fullSlots = formattedAppointments.filter((a) => a.slot.isFull).length;
 
+        
+        res.json({ success: true, doctor, stats: { totalAppointments, confirmed, pending,Cancelled, todayAppointments, totalRevenue, fullSlots, }, appointments: formattedAppointments, });
     } catch (error) {
         console.error("DoctorDashboard Error:", error);
         res.status(500).json({ success: false, message: "Server error", });

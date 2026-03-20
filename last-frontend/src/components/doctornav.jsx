@@ -74,7 +74,7 @@ export default function Doctornav() {
                     </div>
                 )}
 
-                <button onClick={() => navigate("/profile")} className="p-2 rounded-lg hover:bg-gray-100 transition" >
+                <button onClick={() => navigate("/doctor-profile")} className="p-2 rounded-lg hover:bg-gray-100 transition" >
                     <User size={20} className="text-gray-600" />
                 </button>
 

@@ -26,7 +26,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
           setRating(res.data.rating);
 
           const groupedSlots = res.data.slots || {};
-          const formattedSlots = Object.entries(groupedSlots).flatMap(([date, times]) => times.map((t) => ({ id: t.id || `${date}-${t.startTime}`, date, startTime: t.startTime, endTime: t.endTime, isBooked: false, })));
+          const formattedSlots = Object.entries(groupedSlots).flatMap(([date, times]) => times.map((t) => ({ id: t.id || `${date}-${t.startTime}`, date, startTime: t.startTime, endTime: t.endTime, })));
 
           setSlots(formattedSlots);
         }
