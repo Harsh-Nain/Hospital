@@ -3,7 +3,9 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Loading from "./loading";
 import { RxCross1 } from "react-icons/rx";
-import { IoMdArrowRoundBack } from "react-icons/io";
+import { IoIosEye, IoIosEyeOff, IoMdArrowRoundBack } from "react-icons/io";
+import { FaLock, FaLockOpen } from "react-icons/fa";
+import { MdKeyboardBackspace } from "react-icons/md";
 
 export default function Forgetpassword({ role, setPasswordforget }) {
 
@@ -13,6 +15,7 @@ export default function Forgetpassword({ role, setPasswordforget }) {
     const [Otp, setOtp] = useState("");
     const [newpassword, setnewpassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(true);
 
     const [next, setnext] = useState(false);
     const [nextpassword, setnextpassword] = useState(false);
@@ -34,12 +37,14 @@ export default function Forgetpassword({ role, setPasswordforget }) {
                     setnext(true);
                 }
             }
+
             else if (!nextpassword) {
                 const res = await axios.post(`${API_URL}/auth/verify-otp`, { email: Mail, otp: Otp }, { withCredentials: true });
 
                 if (res.data.success) {
                     toast.success(res.data.message);
                     setnextpassword(true);
+                    setnext(false)
                 }
             }
             else {
@@ -56,7 +61,6 @@ export default function Forgetpassword({ role, setPasswordforget }) {
         } finally {
             setLoading(false);
         }
-
     };
 
     const handleBack = () => {
@@ -72,24 +76,18 @@ export default function Forgetpassword({ role, setPasswordforget }) {
 
             <div className="relative w-100 bg-white/80 backdrop-blur-xl border border-sky-100 shadow-xl rounded-2xl p-8 space-y-6">
 
-                <button onClick={() => setPasswordforget(false)} className="absolute right-4 top-4 text-gray-500 hover:text-red-500 text-xl">
-                    <RxCross1 />
-                </button>
+                <button onClick={() => setPasswordforget(false)} className="absolute cursor-pointer right-4 top-4 text-gray-500 hover:text-red-500 text-xl"><RxCross1 /></button>
 
-                {(next || nextpassword) && (
-                    <button onClick={handleBack} className="absolute left-4 top-4 text-sm text-gray-500 hover:text-sky-600">
-                        <IoMdArrowRoundBack /> Back
+                {(next) && (
+                    <button onClick={handleBack} className="absolute cursor-pointer left-4 top-4 flex items-center gap-2 px-3 py-2 rounded-lg hover:shadow-sm hover:bg-white/30 transition text-gray-700">
+                        <MdKeyboardBackspace size={20} />
+                        <span className="text-sm font-medium">Back</span>
                     </button>
                 )}
 
                 <div className="text-center space-y-1">
-                    <h2 className="text-2xl font-bold text-gray-800">
-                        {nextpassword ? "Create New Password" : next ? "Verify OTP" : "Reset Password"}
-                    </h2>
-
-                    <p className="text-gray-500 text-sm">{nextpassword ? "Enter your new password" : next ? "Enter the OTP sent to your email" : "Enter your email to receive OTP"}
-                    </p>
-
+                    <h2 className="text-2xl font-bold text-gray-800">{nextpassword ? "Create New Password" : next ? "Verify OTP" : "Reset Password"}</h2>
+                    <p className="text-gray-500 text-sm">{nextpassword ? "Enter your new password" : next ? "Enter the OTP sent to your email" : "Enter your email to receive OTP"}</p>
                 </div>
 
                 {!next && !nextpassword && (
@@ -101,10 +99,14 @@ export default function Forgetpassword({ role, setPasswordforget }) {
                 )}
 
                 {nextpassword && (
-                    <input type="password" placeholder="Enter new password" value={newpassword} onChange={(e) => setnewpassword(e.target.value)} className="w-full border border-sky-100 rounded-lg p-3 bg-white/50 focus:outline-none focus:ring-2 focus:ring-sky-400" />
+                    <div className="relative">
+                        <span className="absolute top-4 left-3 text-gray-400 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>    {showPassword ? <FaLockOpen /> : <FaLock />}</span>
+                        <input type={showPassword ? "text" : "password"} name="password" value={newpassword} onChange={(e) => setnewpassword(e.target.value)} placeholder="Enter new password" className="w-full pl-10 pr-10 py-3 border-sky-100 border bg-white/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                        <span className="absolute top-4 right-3 text-gray-400 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>    {showPassword ? <IoIosEye /> : <IoIosEyeOff />}</span>
+                    </div>
                 )}
 
-                <button onClick={handleVerify} disabled={loading} className={`w-full py-3 rounded-lg font-medium text-white transition  ${role === "patient" ? "bg-linear-to-r from-sky-400 to-blue-500" : "bg-linear-to-r from-emerald-400 to-green-500"} hover:shadow-md`}        >
+                <button onClick={handleVerify} disabled={loading} className={`w-full py-3 rounded-lg font-medium text-white transition cursor-pointer ${role === "patient" ? "bg-linear-to-r from-sky-400 to-blue-500" : "bg-linear-to-r from-emerald-400 to-green-500"} hover:shadow-md`}        >
                     {loading ? "Processing..." : nextpassword ? "Change Password" : next ? "Verify OTP" : "Send OTP"}
                 </button>
 

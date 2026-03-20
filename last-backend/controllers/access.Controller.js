@@ -28,7 +28,6 @@ export const sendOtp = async (req, res) => {
         }
 
         const existingUser = await db.select().from(users).where(and(eq(users.email, email), eq(users.role, role)));
-        console.log(existingUser);
 
         if (existingUser.length > 0) {
             return res.status(400).json({ success: false, message: "Email already exists" });
@@ -68,7 +67,6 @@ export const verifyOtp = (req, res) => {
     res.json({ success: true, message: "OTP verified" });
 };
 
-
 export const forgetpassword = async (req, res) => {
     try {
         const { email, role } = req.body;
@@ -95,7 +93,6 @@ export const forgetpassword = async (req, res) => {
         res.status(500).json({ success: false, message: "OTP send failed" });
     }
 };
-
 
 export const SavePatient = async (req, res) => {
     try {
@@ -153,21 +150,6 @@ export const SaveDoctor = async (req, res) => {
     } catch (error) {
         console.error("SaveDoctor Error:", error);
         res.status(500).json({ success: false, message: "Server error", });
-    }
-};
-
-
-export const updateDoctorStatus = async (req, res) => {
-    try {
-        const { id } = req.query;
-        const { status, isApproved } = req.body;
-
-        const updatedDoctor = await db.update(doctors).set({ ...(status !== undefined && { status }), ...(isApproved !== undefined && { isApproved }), }).where(eq(doctors.id, id));
-        return res.status(200).json({ success: true, message: "Doctor status updated successfully", data: updatedDoctor, });
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ success: false, message: "Failed to update doctor status", });
     }
 };
 

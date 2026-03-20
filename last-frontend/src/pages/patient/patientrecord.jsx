@@ -85,7 +85,6 @@ export default function PatientRecord() {
         setReports((prev) => prev.filter((r) => r.id !== id));
         toast.success("Report deleted");
       }
-
     } catch (error) {
       console.error(error);
       toast.error("Delete failed");

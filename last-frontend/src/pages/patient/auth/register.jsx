@@ -63,23 +63,23 @@ export default function PatientRegister() {
 
                         <div className="relative">
                             <FaUser className="absolute top-4 left-3 text-gray-400" />
-                            <input type="text" name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl" />
+                            <input type="text" name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="w-full pl-10 pr-4 py-3 border focus:outline-none border-sky-100 focus:ring-2 focus:ring-sky-400 transition rounded-xl" />
                         </div>
 
                         <div className="relative">
                             <FaEnvelope className="absolute top-4 left-3 text-gray-400" />
-                            <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl" />
+                            <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className="w-full pl-10 pr-4 py-3 border focus:outline-none border-sky-100 focus:ring-2 focus:ring-sky-400 transition rounded-xl" />
                         </div>
 
                         <div className="relative">
                             <span className="absolute top-4 left-3 text-gray-400 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>    {showPassword ? <FaLockOpen /> : <FaLock />}</span>
-                            <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} placeholder={showPassword ? "Password" : "********"} className="w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                            <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} placeholder={showPassword ? "Password" : "********"} className="w-full pl-10 pr-10 py-3 border  rounded-lg focus:outline-none border-sky-100 focus:ring-2 focus:ring-sky-400 transition" />
                             <span className="absolute top-4 right-3 text-gray-400 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>    {showPassword ? <IoIosEye /> : <IoIosEyeOff />}</span>
                         </div>
 
                         <div className="relative">
                             <FaHeartbeat className="absolute top-4 left-3 text-gray-400" />
-                            <input type="text" name="disease" placeholder="Disease / Health Issue" value={formData.disease} onChange={handleChange} className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl" />
+                            <input type="text" name="disease" placeholder="Disease / Health Issue" value={formData.disease} onChange={handleChange} className="w-full pl-10 pr-4 py-3 border focus:outline-none border-sky-100 focus:ring-2 focus:ring-sky-400 transition rounded-xl" />
                         </div>
 
                         <button type="submit" className="w-full py-3 rounded-xl bg-linear-to-r from-blue-400 to-sky-600 text-white font-semibold" >

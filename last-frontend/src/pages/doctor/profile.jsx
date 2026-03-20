@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Phone, Stethoscope, Upload } from "lucide-react";
+import { User, Phone, Stethoscope, Upload, LogOut } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -93,17 +93,29 @@ export default function DoctorProfile() {
         );
     }
 
+    const handleLogout = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/logout`, { withCredentials: true, });
+
+            if (res.data.success) {
+                navigate("/doctor/login");
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Server error!");
+        }
+    };
+
     return (
 
-        <div className="p-8 bg-gray-50 min-h-screen">
+        <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
             {loading && <Loading />}
 
             <h1 className="text-3xl font-bold mb-8">Doctor Profile</h1>
-            <div className="bg-white p-6 rounded-xl shadow mb-6">
+            <div className="bg-white p-6 rounded-xl shadow mb-6 relative">
 
                 <h2 className="font-semibold mb-4">Profile Picture</h2>
 
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-5 ">
                     <img src={profile.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} className="w-20 h-20 rounded-full object-cover" alt="profile" />
 
                     <label className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg cursor-pointer">
@@ -111,6 +123,10 @@ export default function DoctorProfile() {
                         Upload
                         <input type="file" hidden accept="image/*" onChange={handleImageChange} />
                     </label>
+
+                    <button onClick={handleLogout} className="flex sm:hidden items-center gap-2 absolute right-3 top-3 text-red-500 p-3 rounded-xl text-sm hover:bg-red-50 transition font-medium">
+                        <LogOut size={18} />
+                    </button>
                 </div>
             </div>
 
@@ -122,7 +138,7 @@ export default function DoctorProfile() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <Input label="Full Name" name="fullName" value={profile.fullName} onChange={handleChange} />
-                    <Input label="Age" name="age" value={profile.age} onChange={handleChange} />
+                    <Input label="Age" name="age" type="number" value={profile.age} onChange={handleChange} />
                 </div>
 
                 <div className="mt-4">
@@ -150,14 +166,13 @@ export default function DoctorProfile() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <Input label="Email" name="email" value={profile.email} readOnly />
-                    <Input label="Phone" name="phone" value={profile.phone} onChange={handleChange} />
+                    <Input label="Phone" name="phone" type="number" value={profile.phone} onChange={handleChange} />
                 </div>
 
                 <div className="mt-4">
                     <Input label="Address" name="address" value={profile.address} onChange={handleChange} />
                 </div>
             </div>
-
 
             <div className="bg-white p-6 rounded-xl shadow mb-6">
 
@@ -168,9 +183,9 @@ export default function DoctorProfile() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <Input label="Specialization" name="specialization" value={profile.specialization} onChange={handleChange} />
-                    <Input label="Experience (Years)" name="experienceYears" value={profile.experienceYears} onChange={handleChange} />
+                    <Input label="Experience (Years)" type="number" name="experienceYears" value={profile.experienceYears} onChange={handleChange} />
                     <Input label="License Number" name="licenseNumber" value={profile.licenseNumber} onChange={handleChange} />
-                    <Input label="Consultation Fee" name="consultationFee" value={profile.consultationFee} onChange={handleChange} />
+                    <Input label="Consultation Fee" type="number" name="consultationFee" placeholder="Consultantion fee in rupee" value={profile.consultationFee} onChange={handleChange} />
                 </div>
             </div>
 

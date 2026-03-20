@@ -8,6 +8,7 @@ router.get("/reports", GetMedicalReports);
 
 router.delete("/delete-report/:reportId", DeleteMedicalReport);
 
+router.delete("/slot", DeleteDoctorSlot);
 router.post("/slot", CreateDoctorSlot);
 router.get("/slots", GetDoctorSlots);
 router.delete("/slot", DeleteDoctorSlot);

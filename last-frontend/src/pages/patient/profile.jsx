@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Phone, Heart, Upload } from "lucide-react";
+import { User, Phone, Heart, Upload, LogOut } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -73,7 +73,6 @@ export default function PatientProfile() {
             console.error(error);
             toast.error("Something Want Wrong...");
         }
-
     };
 
     const handleCancel = () => {
@@ -86,27 +85,41 @@ export default function PatientProfile() {
         setImageFile(null);
     };
 
-    return (
+    const handleLogout = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/logout`, { withCredentials: true, });
 
-        <div className="p-8 bg-gray-50 min-h-screen">
-            {loading && <Loading />}
+            if (res.data.success) {
+                navigate("/patient/login");
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Server error!");
+        }
+    };
+
+    return (
+        <div className="sm:p-8 bg-gray-50 p-4 min-h-screen">
+
             <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
 
-            <div className="bg-white p-6 rounded-xl shadow mb-6">
+            <div className="bg-white p-6 rounded-xl shadow mb-6 relative">
                 <h2 className="font-semibold mb-4">Profile Picture</h2>
 
                 <div className="flex items-center gap-5">
                     <img src={profile.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} className="w-20 h-20 rounded-full object-cover" alt="profile" />
 
                     <label className="flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg cursor-pointer">
-                        <Upload size={16} />
-                        Upload
+                        <Upload size={16} /> Upload
                         <input type="file" hidden accept="image/*" onChange={handleImageChange} />
                     </label>
+
+                    <button onClick={handleLogout} className="flex sm:hidden items-center gap-2 absolute right-3 top-3 text-red-500 p-3 rounded-xl text-sm hover:bg-red-50 transition font-medium">
+                        <LogOut size={18} />
+                    </button>
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow mb-6">
+            <div className="bg-white sm:p-6 p-2 rounded-xl shadow mb-6">
                 <div className="flex items-center gap-2 mb-4">
                     <User size={18} />
                     <h2 className="font-semibold">Personal Information</h2>
@@ -114,7 +127,7 @@ export default function PatientProfile() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <Input label="Full Name" name="fullName" placeholder="Enter full name" value={profile.fullName} onChange={handleChange} />
-                    <Input label="Age" name="age" placeholder="Enter age" value={profile.age} onChange={handleChange} />
+                    <Input label="Age" name="age" placeholder="Enter age" type="number" value={profile.age} onChange={handleChange} />
                 </div>
 
                 <div className="mt-4">
@@ -124,7 +137,6 @@ export default function PatientProfile() {
                         <Radio label="Female" value="Female" checked={profile.gender === "Female"} onChange={handleChange} />
                         <Radio label="Other" value="Other" checked={profile.gender === "Other"} onChange={handleChange} />
                     </div>
-
                 </div>
 
                 <div className="mt-4">
@@ -133,8 +145,7 @@ export default function PatientProfile() {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow mb-6">
-
+            <div className="bg-white sm:p-6 p-2 rounded-xl shadow mb-6">
                 <div className="flex items-center gap-2 mb-4">
                     <Phone size={18} />
                     <h2 className="font-semibold">Contact Details</h2>
@@ -142,16 +153,15 @@ export default function PatientProfile() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <Input label="Email" name="email" placeholder="Enter email" readOnly value={profile.email} onChange={handleChange} />
-                    <Input label="Phone" name="phone" placeholder="Enter phone number" value={profile.phone} onChange={handleChange} />
+                    <Input label="Phone" name="phone" placeholder="Enter phone number" type="number" value={profile.phone} onChange={handleChange} />
                 </div>
 
                 <div className="mt-4">
                     <Input label="Address" name="address" placeholder="Enter address" value={profile.address} onChange={handleChange} />
                 </div>
-
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow mb-6">
+            <div className="bg-white sm:p-6  p-2 rounded-xl shadow mb-6">
                 <div className="flex items-center gap-2 mb-4">
                     <Heart size={18} />
                     <h2 className="font-semibold">Medical Profile</h2>
@@ -169,7 +179,6 @@ export default function PatientProfile() {
                 <button onClick={handleCancel} className="px-5 py-2 border cursor-pointer rounded-lg">Cancel </button>
                 <button onClick={handleSave} className="px-5 py-2 bg-sky-500 hover:bg-sky-600 cursor-pointer text-white rounded-lg">Save Profile</button>
             </div>
-
         </div>
     );
 }

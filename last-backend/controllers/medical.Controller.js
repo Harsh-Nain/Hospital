@@ -1,5 +1,5 @@
 import { medicalReports, doctorSlots, appointments, patients, doctors } from "../db/schema.js";
-import { sql, and, eq, lt } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import db from "../db/index.js";
 
 export const UploadMedicalReport = async (req, res) => {
@@ -7,8 +7,7 @@ export const UploadMedicalReport = async (req, res) => {
   try {
     const { diseaseName } = req.body;
     const userId = req.user?.id;
-    const file = req.files; // single file
-
+    const file = req.files; 
     if (!userId) {
       return res.status(401).json({
         success: false,

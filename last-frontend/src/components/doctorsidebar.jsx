@@ -58,10 +58,9 @@ export default function DoctorSidebar() {
           <div className="bg-linear-to-br from-green-500 to-emerald-500 text-white w-11 h-11 flex items-center justify-center rounded-xl font-bold shadow">PD</div>
 
           <div className="leading-tight">
-            <h1 className="text-lg font-bold text-gray-800"> Past Doctor</h1>
+            <h1 className="text-lg font-bold text-gray-800">Past Doctor</h1>
             <p className="text-xs text-gray-500">Doctor Portal</p>
           </div>
-
         </div>
 
         {doctorInfo && (

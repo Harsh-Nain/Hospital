@@ -62,48 +62,47 @@ export default function DoctorRegister() {
 
                         <div className="relative">
                             <FaUser className="absolute top-4 left-3 text-gray-400" />
-                            <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Full Name" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-400" />
+                            <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Full Name" className="w-full pl-10 pr-4 py-3 border border-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-400 rounded-lg transition" />
                         </div>
 
                         <div className="relative">
                             <FaEnvelope className="absolute top-4 left-3 text-gray-400" />
-                            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-400" />
+                            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="w-full pl-10 pr-4 py-3 border border-emerald-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 transition" />
                         </div>
 
                         <div className="relative">
                             <span className="absolute top-4 left-3 text-gray-400 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>    {showPassword ? <FaLockOpen /> : <FaLock />}</span>
-                            <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} placeholder={showPassword ? "Password" : "********"} className="w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                            <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} placeholder={showPassword ? "Password" : "********"} className="w-full pl-10 pr-10 py-3 border outline-none border-emerald-100 rounded-lg focus:ring-2 focus:ring-emerald-400 transition " />
                             <span className="absolute top-4 right-3 text-gray-400 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>    {showPassword ? <IoIosEye /> : <IoIosEyeOff />}</span>
                         </div>
 
-
                         <div className="relative">
                             <FaUserMd className="absolute top-4 left-3 text-gray-400" />
-                            <input type="text" name="specialization" value={formData.specialization} onChange={handleChange} placeholder="Specialization" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-400" />
+                            <input type="text" name="specialization" value={formData.specialization} onChange={handleChange} placeholder="Specialization" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none border-emerald-100 focus:ring-2 focus:ring-emerald-400 transition" />
                         </div>
 
                         <div className="relative">
                             <FaClock className="absolute top-4 left-3 text-gray-400" />
-                            <input type="number" name="experienceYears" value={formData.experienceYears} onChange={handleChange} placeholder="Years of Experience" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-400" />
+                            <input type="number" name="experienceYears" value={formData.experienceYears} onChange={handleChange} placeholder="Years of Experience" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none border-emerald-100 focus:ring-2 focus:ring-emerald-400 transition" />
                         </div>
 
                         <div className="relative">
                             <FaCertificate className="absolute top-4 left-3 text-gray-400" />
-                            <input type="text" name="licenseNumber" value={formData.licenseNumber} onChange={handleChange} placeholder="Medical License Number" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-400" />
+                            <input type="text" name="licenseNumber" value={formData.licenseNumber} onChange={handleChange} placeholder="Medical License Number" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none border-emerald-100 focus:ring-2 focus:ring-emerald-400 transition" />
                         </div>
 
                         <div className="relative">
                             <FaMoneyBillWave className="absolute top-4 left-3 text-gray-400" />
-                            <input type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange} placeholder="Consultation Fee (₹)" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-400" />
+                            <input type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange} placeholder="Consultation Fee (₹)" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none border-emerald-100 focus:ring-2 focus:ring-emerald-400 transition" />
                         </div>
 
                         <div className="relative">
                             <FaNotesMedical className="absolute top-4 left-3 text-gray-400" />
-                            <input type="text" name="symptoms" value={formData.symptoms} onChange={handleChange} placeholder="Enter Symptoms" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-400" />
+                            <input type="text" name="symptoms" value={formData.symptoms} onChange={handleChange} placeholder="Enter Symptoms" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none border-emerald-100 focus:ring-2 focus:ring-emerald-400 transition" />
                         </div>
 
                         <button type="submit" className="w-full py-3 rounded-lg bg-linear-to-r from-emerald-400 to-emerald-600 text-white font-semibold shadow-md hover:opacity-90 transition">
-                            Register as Doctor
+                            Verify Email
                         </button>
 
                     </form>
@@ -116,7 +115,7 @@ export default function DoctorRegister() {
 
                     <p className="text-center text-sm text-gray-500">
                         Already have an account?{" "}
-                        <NavLink to="/doctor/login" className="text-emerald-600 font-medium hover:underline">    Login</NavLink>
+                        <NavLink to="/doctor/login" className="text-emerald-600 font-medium hover:underline">Login</NavLink>
                     </p>
 
                 </motion.div>

@@ -65,8 +65,8 @@ export default function Doctornav() {
                                 {notifications.map((item) => (
                                     <div key={item.id} className="p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition">
                                         <p className="text-sm font-medium text-gray-800">  {item.title}</p>
-                                        <p className="text-xs text-gray-500">  {item.message}</p>
-                                        <p className="text-xs text-gray-400 mt-1">  {item.createdAt}</p>
+                                        <p className="text-xs text-gray-500">{item.message}</p>
+                                        <p className="text-xs text-gray-400 mt-1">{item.createdAt}</p>
                                     </div>
                                 ))}
                             </div>
@@ -77,7 +77,6 @@ export default function Doctornav() {
                 <button onClick={() => navigate("/doctor-profile")} className="p-2 rounded-lg hover:bg-gray-100 transition" >
                     <User size={20} className="text-gray-600" />
                 </button>
-
             </div>
         </div>
     );

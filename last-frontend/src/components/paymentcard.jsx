@@ -2,10 +2,10 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-export default function PaymentCard({ payment, API_URL, onClose }) {
+export default function PaymentCard({ payment, API_URL, onClose, patientId }) {
     const [step, setStep] = useState("create");
     const [loading, setLoading] = useState(false);
-    const [amount, setAmount] = useState(payment.consultationFee || 100);
+    const [amount, setAmount] = useState(payment.fee || 100);
     const [transactionId, setTransactionId] = useState("");
 
     const handleCreatePayment = async () => {
@@ -41,33 +41,52 @@ export default function PaymentCard({ payment, API_URL, onClose }) {
         }
     };
 
+    const formatTime = (time) => {
+        const [hour, minute] = time.split(":");
+        let h = parseInt(hour, 10);
+        const ampm = h >= 12 ? "PM" : "AM";
+        h = h % 12 || 12;
+        return `${h}:${minute} ${ampm}`;
+    };
+
+    const confirmAppointment = async () => {
+        if (!selectedSlot) return toast.error("Select a slot");
+
+        try {
+            setLoading(true);
+            const res = await axios.post(`${API_URL}/medical/appointment-add`, { doctorId: payment.doctorId, patientId, slotId: payment.id, }, { withCredentials: true });
+
+            if (res.data.success) {
+                toast.success(res.data.message);
+                setshowDoctorDetail(null);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Booking failed");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex h-screen items-center justify-center bg-black/50">
             <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
 
-                <h2 className="text-lg font-semibold mb-4">Payment</h2>
+                <h2 className="text-lg font-semibold mb-4">Confirm Appoitment</h2>
 
                 <div className="flex items-center gap-3 mb-4">
-                    <img src={payment.doctorImage} className="w-12 h-12 rounded-lg" />
+                    <img src={payment.image} className="w-12 h-12 rounded-lg" />
                     <div>
-                        <p className="font-medium">
-                            Dr. {payment.doctorName}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                            {payment.specialization}
-                        </p>
+                        <p className="font-medium">Dr. {payment.fullName}</p>
+                        <p className="text-xs text-gray-500">{payment.specialization}</p>
                     </div>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-3">
-                    {payment.date} | {payment.startTime} – {payment.endTime}
-                </p>
+                <p className="text-sm text-gray-600 mb-3">{payment.date} | {formatTime(payment.startTime)} – {formatTime(payment.endTime)}</p>
 
                 <div className="mb-4">
                     <p className="text-sm text-gray-500">Amount</p>
-                    <p className="text-lg font-bold text-gray-800">
-                        ₹{amount}
-                    </p>
+                    <p className="text-lg font-bold text-gray-800">₹{amount}</p>
                 </div>
 
                 {step === "create" && (
@@ -84,7 +103,6 @@ export default function PaymentCard({ payment, API_URL, onClose }) {
                         </button>
                     </>
                 )}
-
                 <button onClick={onClose} className="mt-3 w-full border cursor-pointer py-2 rounded-lg text-sm">Cancel</button>
             </div>
         </div>

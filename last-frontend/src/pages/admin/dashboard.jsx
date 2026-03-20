@@ -15,7 +15,7 @@ export default function Dashboard() {
     const getData = async () => {
       try {
         setLoading(true)
-        const res = await axios.get(`${API_URL}/dashboard/admin_`, { withCredentials: true });
+        const res = await axios.get(`${API_URL}/admin/admin_`, { withCredentials: true });
         console.log(res.data);
 
         if (res.data.success) {

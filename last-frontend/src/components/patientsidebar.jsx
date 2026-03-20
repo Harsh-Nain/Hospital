@@ -58,7 +58,7 @@ export default function PatientSidebar() {
           <div className="bg-linear-to-br from-blue-500 to-indigo-500 text-white w-11 h-11 flex items-center justify-center rounded-xl font-bold shadow">PD</div>
 
           <div className="leading-tight">
-            <h1 className="text-lg font-bold text-gray-800"> Past Doctor</h1>
+            <h1 className="text-lg font-bold text-gray-800">Past Doctor</h1>
             <p className="text-xs text-gray-500">Patient Portal</p>
           </div>
 
@@ -81,20 +81,18 @@ export default function PatientSidebar() {
             const active = location.pathname.startsWith(item.path);
 
             return (
-              <li key={item.path} onClick={() => navigate(item.path)} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition relative  ${active ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-100 text-gray-600"}`}>
-                {active && (<span className="absolute left-0 top-2 bottom-2 w-1 bg-blue-600 rounded-r"></span>)}
+              <li key={item.path} onClick={() => navigate(item.path)} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition relative  ${active ? "bg-blue-50 text-sky-600 font-medium" : "hover:bg-gray-100 text-gray-600"}`}>
+                {active && (<span className="absolute left-0 top-2 bottom-2 w-1 bg-sky-600 rounded-r"></span>)}
                 {item.type === "profile" ? (<img src={PatientInfo?.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-5 h-5 rounded-full object-cover" />) : (<Icon size={18} />)}
                 {item.label}
               </li>
             );
           })}
-
         </ul>
       </div>
 
       <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 p-3 rounded-xl hover:bg-red-50 transition font-medium">
-        <LogOut size={18} />
-        Logout
+        <LogOut size={18} /> Logout
       </button>
 
     </div>
