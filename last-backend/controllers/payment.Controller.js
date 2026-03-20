@@ -41,32 +41,3 @@ export const verifyPayment = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error", });
     }
 };
-
-export const getPaymentByAppointment = async (req, res) => {
-    try {
-        const { appointmentId } = req.query;
-
-        const payment =  await db.select().from(payments).where(eq(payments.appointmentId, Number(appointmentId)));
-
-        if (!payment) {
-            return res.status(404).json({ success: false, message: "Payment not found", });
-        }
-
-        res.json({ success: true, payment, });
-
-    } catch (error) {
-        console.error("Get Payment Error:", error);
-        res.status(500).json({ success: false, message: "Server error", });
-    }
-};
-
-export const getAllPayments = async (req, res) => {
-    try {
-        const allPayments =  await db.select().from(payments)
-        res.json({ success: true, payments: allPayments, });
-
-    } catch (error) {
-        console.error("Get Payments Error:", error);
-        res.status(500).json({ success: false, message: "Server error", });
-    }
-};

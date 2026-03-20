@@ -14,7 +14,7 @@ export default function DoctorSidebar() {
 
   const menuItems = [
     { icon: Home, label: "Dashboard", path: `/dashboard-doctor`, },
-    { icon: MessageSquare, label: "Chat", path: "/chats", },
+    { icon: MessageSquare, label: "Chat", path: "/doctor-chats", },
     { icon: User, label: "Profile", path: `/doctor-profile`, type: "profile", },
   ];
 

@@ -198,6 +198,7 @@ export async function LoginUser(req, res, role) {
             if (doctor.status == "rejected") {
                 return res.status(403).json({ success: false, message: "Doctor account is not approved" });
             }
+            
 
             if (!doctor || !doctor.isApproved) {
                 return res.status(403).json({ success: false, redirect: "/checking", message: "Doctor account is not approved yet" });
