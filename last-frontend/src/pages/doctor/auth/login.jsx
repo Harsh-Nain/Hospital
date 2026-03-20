@@ -24,6 +24,7 @@ export default function DoctorLogin() {
             const res = await axios.post(`${API_URL}/auth/login-doctor`, formData, { withCredentials: true, });
 
             if (res.data.success) {
+                
                 toast.success("Doctor Login Successful 👨‍⚕️");
                 navigate(res.data.redirect || "/dashboard-doctor");
             }

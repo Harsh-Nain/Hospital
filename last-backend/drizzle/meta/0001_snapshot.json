@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "accbb081-c1ee-44fa-b594-b67c635ac48f",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "c5af9e74-f1ca-4cbb-897c-523a7df4005d",
+  "prevId": "accbb081-c1ee-44fa-b594-b67c635ac48f",
   "tables": {
     "appointments": {
       "name": "appointments",
@@ -60,6 +60,14 @@
         }
       },
       "indexes": {
+        "unique_patient_slot": {
+          "name": "unique_patient_slot",
+          "columns": [
+            "patient_id",
+            "slot_id"
+          ],
+          "isUnique": true
+        },
         "appointment_doctor_idx": {
           "name": "appointment_doctor_idx",
           "columns": [
@@ -74,12 +82,12 @@
           ],
           "isUnique": false
         },
-        "appointment_slot_unique": {
-          "name": "appointment_slot_unique",
+        "appointment_slot_idx": {
+          "name": "appointment_slot_idx",
           "columns": [
             "slot_id"
           ],
-          "isUnique": true
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -316,28 +324,28 @@
           "notNull": true,
           "autoincrement": false
         },
-        "is_booked": {
-          "name": "is_booked",
+        "isCancelled": {
+          "name": "isCancelled",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
           "default": false
         },
-        "is_cancelled": {
-          "name": "is_cancelled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": false
-        },
-        "cancel_reason": {
-          "name": "cancel_reason",
+        "cancelReason": {
+          "name": "cancelReason",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "capacity": {
+          "name": "capacity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 1
         },
         "created_at": {
           "name": "created_at",

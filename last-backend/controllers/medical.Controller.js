@@ -163,15 +163,23 @@ export const CreateDoctorSlot = async (req, res) => {
   try {
     const userId = req.user.id
 
-    const { date, startTime, endTime } = req.body;
-    const doctorData = await db.select().from(doctors).where(eq(doctors.userId, userId)).limit(1);
-    const doctor = doctorData[0];
+    const { date, startTime, endTime, capacity } = req.body;
 
+    const doctorData = await db
+      .select()
+      .from(doctors)
+      .where(eq(doctors.userId, userId))
+      .limit(1);
+
+    const doctor = doctorData[0];
     if (!doctor) {
-      return res.status(404).json({ success: false, message: "Doctor not found", });
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found",
+      });
     }
 
-    await db.insert(doctorSlots).values({ doctorId: doctor.id, date, startTime, endTime });
+    await db.insert(doctorSlots).values({ doctorId: doctor.id, date, startTime, endTime, capacity: capacity });
     res.json({ success: true, message: "Slot created" });
 
   } catch (error) {
@@ -187,9 +195,10 @@ export const GetDoctorSlots = async (req, res) => {
     const slots = await db.select().from(doctorSlots).where(eq(doctorSlots.doctorId, doctorId));
     res.json({ success: true, slots });
 
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "doctor slot get err" });
+    res.status(500).json({ success: false });
   }
 };
 
@@ -199,22 +208,97 @@ export const DeleteDoctorSlot = async (req, res) => {
     const { slotId } = req.query;
 
     const slotData = await db
-      .select({ slotId: doctorSlots.id, })
+      .select({
+        slotId: doctorSlots.id,
+      })
       .from(doctorSlots)
       .innerJoin(doctors, eq(doctorSlots.doctorId, doctors.id))
-      .where(and(eq(doctorSlots.id, slotId), eq(doctors.userId, userId)))
+      .where(
+        and(
+          eq(doctorSlots.id, slotId),
+          eq(doctors.userId, userId)
+        )
+      )
       .limit(1);
 
     if (slotData.length === 0) {
-      return res.status(404).json({ success: false, message: "Slot not found or unauthorized", });
+      return res.status(404).json({
+        success: false,
+        message: "Slot not found or unauthorized",
+      });
     }
 
-    await db.delete(doctorSlots).where(eq(doctorSlots.id, slotId));
-    return res.json({ success: true, message: "Slot deleted successfully", });
+    // Delete slot
+    await db
+      .delete(doctorSlots)
+      .where(eq(doctorSlots.id, slotId));
+
+    return res.json({
+      success: true,
+      message: "Slot deleted successfully",
+    });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "slote delete err" });
+    res.status(500).json({ success: false });
+  }
+};
+
+export const CancleDoctorSlot = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const { slotId, reason } = req.body
+
+
+    if (!slotId || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: "SlotId and reason are required",
+      });
+    }
+
+    const slotData = await db
+      .select({
+        slotId: doctorSlots.id,
+      })
+      .from(doctorSlots)
+      .innerJoin(doctors, eq(doctorSlots.doctorId, doctors.id))
+      .where(
+        and(
+          eq(doctorSlots.id, slotId),
+          eq(doctors.userId, userId)
+        )
+      )
+      .limit(1);
+
+
+    if (slotData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Slot not found or unauthorized",
+      });
+    }
+
+    await db
+      .update(doctorSlots)
+      .set({
+        isCancelled: true,
+        cancelReason: reason,
+      })
+      .where(eq(doctorSlots.id, slotId));
+
+    return res.json({
+      success: true,
+      message: "Slot cancelled successfully",
+    });
+
+
+
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error", });
   }
 };
 
@@ -222,61 +306,28 @@ export const CreateAppointment = async (req, res) => {
   try {
     const { doctorId, slotId, patientId } = req.body;
 
-    if (!doctorId || !slotId || !patientId) {
-      return res.json({ success: false, message: "DoctorId, SlotId and PatientId required", });
+    if (!doctorId || !slotId) {
+      return res.json({ success: false, message: "DoctorId and SlotId required", });
     }
 
-    const [slot] = await db
-      .select()
-      .from(doctorSlots)
-      .where(eq(doctorSlots.id, Number(slotId)));
+    const [slot] = await db.select().from(doctorSlots).where(eq(doctorSlots.id, Number(slotId)));
 
     if (!slot) {
-      return res.json({ success: false, message: "Slot not found" });
+      return res.json({ success: false, message: "Slot not found", });
     }
-
-    if (slot.isCancelled) {
-      return res.json({ success: false, message: "Slot is cancelled" });
-    }
-
-    const bookedCountResult = await db
-      .select({ count: sql`count(*)` })
-      .from(appointments)
-      .where(eq(appointments.slotId, Number(slotId)));
-
-    const bookedCount = Number(bookedCountResult[0].count);
-
-    if (bookedCount >= slot.capacity) {
-      return res.json({ success: false, message: "Slot is full" });
-    }
-
-    const existing = await db
-      .select()
-      .from(appointments)
-      .where(and(eq(appointments.slotId, Number(slotId)), eq(appointments.patientId, Number(patientId))));
+    const existing = await db.select().from(appointments).where(eq(appointments.slotId, Number(slotId)));
 
     if (existing.length > 0) {
-      return res.json({ success: false, message: "You already booked this slot", });
+      return res.json({ success: false, message: "Slot already taken", });
     }
 
-    await db.insert(appointments).values({
-      doctorId,
-      patientId,
-      slotId,
-      status: "wait for approval",
-    });
+    await db.insert(appointments).values({ doctorId, patientId, slotId, status: "wait for approval", });
 
-    return res.json({
-      success: true,
-      message: "Appointment booked successfully",
-    });
+    res.json({ success: true, message: "Appointment booked successfully", });
 
   } catch (error) {
     console.error("CreateAppointment Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ success: false, message: "Server error", });
   }
 };
 
@@ -284,10 +335,54 @@ export const ConfirmAppointment = async (req, res) => {
   try {
     const { appointmentId, slotId } = req.body;
 
-    await db.update(appointments).set({ status: "confirmed" }).where(eq(appointments.id, appointmentId));
-    await db.update(doctorSlots).set({ capacity: 1 }).where(eq(doctorSlots.id, slotId));
+    const { id } = req.user;
 
-    res.json({ success: true, message: "Appointment confirmed" });
+
+    const appointmentData = await db
+      .select({
+        appointmentId: appointments.id,
+        slotId: appointments.slotId, // 👈 ye add karo
+        status: appointments.status,
+        meetingLink: appointments.meetingLink,
+
+        date: doctorSlots.date,
+        startTime: doctorSlots.startTime,
+        endTime: doctorSlots.endTime,
+        capacity: doctorSlots.capacity,
+
+        patientId: patients.id,
+        doctorid: doctorSlots.doctorId,
+        disease: patients.disease,
+      })
+      .from(appointments)
+      .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
+      .leftJoin(patients, eq(patients.id, appointments.patientId))
+      .where(eq(appointments.id, appointmentId))
+      .limit(1);
+
+
+
+    const slotCounts = await db
+      .select({
+        count: sql`COUNT(*)`,
+      })
+      .from(appointments)
+      .where(eq(appointments.slotId, appointmentData[0].slotId));
+
+    const totalBooked = slotCounts[0]?.count || 0;
+
+    console.log("Booked:", totalBooked);
+    console.log("Capacity:", appointmentData[0].capacity);
+
+
+
+
+
+
+    // await db.update(appointments).set({ status: "confirmed", createdAt: new Date() }).where(eq(appointments.id, appointmentId));
+
+
+    // res.json({ success: true, message: "Appointment confirmed" });
 
   } catch (error) {
     console.error(error);
@@ -300,8 +395,9 @@ export const CancelAppointment = async (req, res) => {
     const { appointmentId } = req.body;
 
     await db.update(appointments)
-      .set({ status: "cancelled" })
+      .set({ status: "Cancelled", createdAt: new Date() })
       .where(eq(appointments.id, appointmentId));
+
 
     res.json({ success: true, message: "Appointment cancelled" });
 

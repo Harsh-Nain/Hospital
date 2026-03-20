@@ -168,7 +168,6 @@ export const DoctorDashboard = async (req, res) => {
             .leftJoin(payments, eq(payments.appointmentId, appointments.id))
             .where(eq(appointments.doctorId, doctor.doctorId))
             .orderBy(desc(doctorSlots.date), desc(doctorSlots.startTime));
-
         const slotCounts = await db
             .select({ slotId: appointments.slotId, count: sql`COUNT(*)`, })
             .from(appointments)

@@ -16,7 +16,7 @@ export default function PatientSidebar() {
     { icon: Home, label: "Dashboard", path: `/dashboard-patient`, },
     { icon: MessageSquare, label: "Chat", path: "/patient-chats", },
     { icon: FileText, label: "Medical Records", path: "/reports", },
-    { icon: User, label: "Profile", path: `/patient-profile`, type: "profile", },
+    { icon: User, label: "Profile", path: `/Patient-profile`, type: "profile", },
   ];
 
   useEffect(() => {

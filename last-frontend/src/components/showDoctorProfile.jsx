@@ -45,6 +45,11 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
           toast.error(res.data.message)
         }
 
+          const groupedSlots = res.data.slots || {};
+          const formattedSlots = Object.entries(groupedSlots).flatMap(([date, times]) => times.map((t) => ({ id: t.id || `${date}-${t.startTime}`, date, startTime: t.startTime, endTime: t.endTime, })));
+
+          setSlots(formattedSlots);
+        }
       } catch (error) {
         console.error(error);
         toast.error("Failed to load doctor");
@@ -71,7 +76,6 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
         toast.success(res.data.message)
         setshowDoctorDetail(false)
       }
-
     } catch (error) {
       setLoading(false)
       console.error(error);
@@ -149,8 +153,12 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
 
         {doctor?.bio && (
           <div className="mb-6">
-            <p className="text-gray-500 text-sm mb-1">About Doctor</p>
-            <p className="text-gray-700 text-sm">{doctor.bio}</p>
+            <p className="text-gray-500 text-sm mb-1">
+              About Doctor
+            </p>
+            <p className="text-gray-700 text-sm">
+              {doctor.bio}
+            </p>
           </div>
         )}
 
@@ -194,6 +202,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

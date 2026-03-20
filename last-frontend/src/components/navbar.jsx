@@ -6,6 +6,7 @@ import ShowDoctorProfile from "./showDoctorProfile";
 import toast from "react-hot-toast";
 
 export default function Navbar() {
+
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -48,16 +49,17 @@ export default function Navbar() {
         if (res.data.success) {
           setNotifications(res.data.notifications);
         }
+
       } catch (error) {
         console.error(error);
       }
     };
-
     getNotifications();
   }, [API_URL]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
