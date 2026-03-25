@@ -151,7 +151,7 @@ export default function Dashboard() {
       {addSlot && (<DoctorSlots slots={slots} setAddsote={setAddSlot} setSlots={setSlots} />)}
       {showCancelModal && (
         <div className="fixed h-full inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white md:w-[360px] rounded-2xl shadow-xl p-5 animate-fadeIn">
+          <div className="bg-white md:w-90 rounded-2xl shadow-xl p-5 animate-fadeIn">
 
             <h2 className="text-lg font-semibold text-gray-800 mb-3">   Cancel Slot </h2>
             <p className="text-xs text-gray-500 mb-3">   Please provide a reason for cancellation </p>

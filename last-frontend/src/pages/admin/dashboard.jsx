@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Users, Stethoscope, CalendarCheck, UserCheck } from "lucide-react";
@@ -10,6 +10,17 @@ export default function Dashboard() {
   const { setLoading } = useOutletContext();
   const API_URL = import.meta.env.VITE_BACKEND_URL;
   const [data, setData] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const filteredAppointments = useMemo(() => {
+    if (!data?.appointments) return [];
+
+    if (statusFilter === "all") return data.appointments;
+
+    return data.appointments.filter(
+      (appt) => appt.status === statusFilter
+    );
+  }, [data, statusFilter]);
 
   useEffect(() => {
     const getData = async () => {
@@ -104,24 +115,22 @@ export default function Dashboard() {
       </div>
 
       <div className="bg-linear-to-br from-emerald-50 via-white to-sky-50 rounded-2xl shadow-sm border border-gray-100 p-5">
-
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Appointments</h2>
 
+        <div className="flex justify-center gap-3 bg-emerald-50 mb-3 p-2 rounded-xl shadow-sm">
+          {[{ label: "All", value: "all" }, { label: "Confirmed", value: "confirmed" }, { label: "Cancelled", value: "Cancelled" }, { label: "Upcoming", value: "upcomming" },].map((item) =>
+          (<button key={item.value} onClick={() => setStatusFilter(item.value)} className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${statusFilter === item.value ? "bg-emerald-500 text-white shadow-md" : "text-emerald-700 hover:bg-white hover:shadow-sm"}`}>{item.label}</button>
+          ))}
+        </div>
+
         <div className="space-y-3">
-          {data.appointments.map((appt, i) => (
+          {filteredAppointments.map((appt, i) => (
             <div key={i} className="flex items-center justify-between border border-black/5 shadow-sm bg-linear-to-r from-sky-50 via-white to-emerald-100 p-3 rounded-xl hover:bg-gray-50 transition">
               <div>
-                <p className="text-sm text-gray-700">
-                  Appointment ID: {appt.appointmentId}
-                </p>
-                <p className="text-xs text-gray-500">
-                  Doctor ID: {appt.doctorId} | Patient ID: {appt.patientId}
-                </p>
+                <p className="text-sm text-gray-700">Appointment ID: {appt.appointmentId}</p>
+                <p className="text-xs text-gray-500">Doctor ID: {appt.doctorId} | Patient ID: {appt.patientId}</p>
               </div>
-
-              <span className={`text-xs px-3 py-1 rounded-full ${appt.status === "confirmed" ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-600"}`}>
-                {appt.status}
-              </span>
+              <span className={`text-xs px-3 py-1 rounded-full ${appt.status === "confirmed" ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-600"}`}>{appt.status}</span>
             </div>
           ))}
         </div>

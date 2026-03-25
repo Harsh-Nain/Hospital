@@ -6,7 +6,6 @@ import ShowDoctorProfile from "./showDoctorProfile";
 import toast from "react-hot-toast";
 
 export default function Navbar() {
-
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -22,6 +21,21 @@ export default function Navbar() {
 
   const searchRef = useRef();
   const dropdownRef = useRef();
+
+  const modals = [showDoctorDetail];
+  const isAnyModalOpen = modals.some(Boolean);
+
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.body.classList.add("overflow-hidden");
+      document.documentElement.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+      document.documentElement.classList.remove("overflow-hidden");
+    }
+
+    return () => { document.body.classList.remove("overflow-hidden"); };
+  }, [isAnyModalOpen]);
 
   useEffect(() => {
     const getPatient = async () => {
@@ -97,8 +111,8 @@ export default function Navbar() {
 
   const readNotification = async (notificationId) => {
     try {
-      await axios.put(`${API_URL}/feed/notification`, { notificationId }, { withCredentials: true });
-      setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
+      await axios.put(`${API_URL}/feed/notification?notificationId=${notificationId}`, { withCredentials: true });
+      setNotifications((prev) => prev.map((n) => n.id === notificationId ? { ...n, isRead: true } : n));
     } catch (error) {
       console.error(error);
     }
@@ -106,11 +120,13 @@ export default function Navbar() {
 
   const deleteNotification = async (notificationId) => {
     try {
-      const res = await axios.delete(`${API_URL}/feed/notification`, { notificationId }, { withCredentials: true });
+      console.log(notificationId);
+
+      const res = await axios.delete(`${API_URL}/feed/notification?notificationId=${notificationId}`, { withCredentials: true });
 
       if (res.data.success) {
         toast.success(res.data.message);
-        setNotifications((prev) => prev.filter((n) => n.id !== id));
+        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       }
     } catch (error) {
       console.error(error);
@@ -125,7 +141,7 @@ export default function Navbar() {
       <div className="flex-1 max-w-xl" ref={searchRef}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input type="text" placeholder="Search doctors or symptoms..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-9 py-2.5 rounded-xl border-2 border-sky-500 outline-hidden text-sm shadow-sm focus:shadow-lg transition outline-none" />
+          <input type="text" placeholder="Search doctors or symptoms..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-9 py-2.5 rounded-xl border-2 border-gray-100 outline-hidden text-sm shadow-sm focus:border-sky-500 focus:shadow-lg transition outline-none" />
 
           {search && (<button onClick={() => { setSearch(""); setDoctors([]); setShowResults(false); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500"><X size={17} /></button>)}
 

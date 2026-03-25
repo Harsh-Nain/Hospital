@@ -80,11 +80,10 @@ export default function DoctorLogin() {
                             <span className="absolute top-4 right-3 text-gray-400 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>    {showPassword ? <IoIosEye /> : <IoIosEyeOff />}</span>
                         </div>
 
-                        <div className="text-right text-sm" onClick={() => setPasswordforget(true)}>
+                        <div className="text-right text-sm w-fit cursor-pointer" onClick={() => setPasswordforget(true)}>
                             <p className="text-emerald-600 hover:underline">Forget Password?</p>
                         </div>
                         <button type="submit" className="w-full py-3 rounded-lg bg-linear-to-r from-green-400 to-emerald-600 text-white font-semibold shadow-md hover:opacity-90 transition">Login</button>
-
                     </form>
 
                     <div className="flex items-center gap-3">

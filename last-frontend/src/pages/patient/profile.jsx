@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
 import { User, Phone, Heart, Upload, LogOut } from "lucide-react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
-import Loading from "../../components/loading"
 
 export default function PatientProfile() {
+    const { setLoading } = useOutletContext();
 
     const API_URL = import.meta.env.VITE_BACKEND_URL;
     const navigate = useNavigate();
 
     const emptyProfile = { fullName: "", age: "", gender: "", bio: "", email: "", phone: "", address: "", bloodGroup: "", allergy: "", image: "" };
 
-    const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(emptyProfile);
     const [originalProfile, setOriginalProfile] = useState(emptyProfile);
     const [imageFile, setImageFile] = useState(null);
@@ -20,12 +19,15 @@ export default function PatientProfile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
+                setLoading(true)
                 const res = await axios.get(`${API_URL}/profile/own`, { withCredentials: true });
 
                 if (res.data.success) {
+                    setLoading(false)
                     setProfile(res.data.profile);
                     setOriginalProfile(res.data.profile);
                 } else {
+                    setLoading(false)
                     navigate("/patient/login");
                 }
 
@@ -35,9 +37,7 @@ export default function PatientProfile() {
                 setLoading(false);
             }
         };
-
         fetchProfile();
-
     }, [API_URL, navigate]);
 
     const handleChange = (e) => {
@@ -70,6 +70,7 @@ export default function PatientProfile() {
             }
 
         } catch (error) {
+            setLoading(false)
             console.error(error);
             toast.error("Something Want Wrong...");
         }
@@ -87,9 +88,11 @@ export default function PatientProfile() {
 
     const handleLogout = async () => {
         try {
+            setLoading(true)
             const res = await axios.get(`${API_URL}/logout`, { withCredentials: true, });
 
             if (res.data.success) {
+                setLoading(false)
                 navigate("/patient/login");
             }
         } catch (err) {

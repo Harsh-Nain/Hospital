@@ -17,8 +17,6 @@ export default function PatientLogin() {
 
     const handleSubmit = async (e) => {
         const API_URL = import.meta.env.VITE_BACKEND_URL
-        
-
         e.preventDefault();
 
         try {
@@ -78,7 +76,7 @@ export default function PatientLogin() {
                             <span className="absolute top-4 right-3 text-gray-400 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>    {showPassword ? <IoIosEye /> : <IoIosEyeOff />}</span>
                         </div>
 
-                        <div className="text-right text-sm" onClick={() => setPasswordforget(true)}>
+                        <div className="text-right text-sm w-fit cursor-pointer" onClick={() => setPasswordforget(true)}>
                             <p className="text-sky-600 hover:underline">Forget Password?</p>
                         </div>
 

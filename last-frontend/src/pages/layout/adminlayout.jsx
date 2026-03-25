@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import Doctornav from "../../components/doctornav"
 import { useState } from "react";
 import AdminSidebar from "../../components/adminsidebar";
 import Loading from "../../components/loading"

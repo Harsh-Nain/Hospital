@@ -26,7 +26,6 @@ export default function NextAppoitment({ id, setNextAppoitment, patientId }) {
 
     useEffect(() => {
         const fetchDoctor = async () => {
-            console.log('kokookok');
 
             try {
                 const res = await axios.get(`${API_URL}/profile/doctor?doctorId=${id}`, { withCredentials: true });
@@ -36,11 +35,7 @@ export default function NextAppoitment({ id, setNextAppoitment, patientId }) {
                     setDoctor(res.data.doctor);
                     setReviews(res.data.reviews || []);
                     setRating(res.data.rating);
-
-                    const groupedSlots = res.data.slots || {};
-                    const formattedSlots = Object.entries(groupedSlots).flatMap(([date, times]) => times.map((t) => ({ id: t.id || `${date}-${t.startTime}`, date, startTime: t.startTime, endTime: t.endTime, })));
-
-                    setSlots(formattedSlots);
+                    setSlots(res.data.slots);
                 } else {
                     toast.error(res.data.message)
                 }
@@ -83,9 +78,9 @@ export default function NextAppoitment({ id, setNextAppoitment, patientId }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center h-screen justify-center bg-black/50 backdrop-blur-sm p-4">
 
-            <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-6">
+            <div className="relative w-full max-w-3xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-xl p-6">
 
-                <button onClick={() => setNextAppoitment(false)} className="absolute p-2 hover:bg-gray-100 rounded top-4 right-4 cursor-pointer text-gray-500 hover:text-red-500">
+                <button onClick={() => setNextAppoitment(false)} className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center  cursor-pointer rounded-lg text-gray-500 hover:text-red-500 hover:bg-zinc-100 transition"    >
                     <RxCross1 size={20} />
                 </button>
 
@@ -127,47 +122,51 @@ export default function NextAppoitment({ id, setNextAppoitment, patientId }) {
                     </div>
                 )}
 
-                <div className="mb-6">
-                    <div className="flex justify-between items-center pr-2">
-                        <h3 className="font-semibold mb-3">Available Slots</h3>
-                        {confirmSlot && (<button onClick={() => confirmAppointment()} className=" px-2 bg-sky-500 text-white cursor-pointer py-1 rounded-lg text-sm font-medium hover:shadow-lg transition">Confirm Appointment</button>)}
+                <div className="flex flex-col overflow-y-auto max-h-[42vh] ">
+                    <div className="mb-6">
+                        <div className="flex justify-between items-center pr-2">
+                            <h3 className="font-semibold mb-3">Available Slots</h3>
+                            {confirmSlot && (<button onClick={() => confirmAppointment()} className=" px-2 cursor-pointer py-1 rounded-lg bg-sky-600 text-white border-sky-600 text-sm font-medium hover:shadow-lg transition">Confirm Appointment</button>)}
+                        </div>
+
+                        <div>
+                            {slots.length === 0 ? (<p className="text-gray-500 text-sm">No slots available</p>) : (
+                                <div className="flex flex-wrap justify-around md:justify-start items-center gap-3">
+                                    {slots.map((slot) => {
+                                        const booked = slot.patientIds.includes(patientId);
+                                        return (
+                                            <button key={slot.id} onClick={() => { setSelectedSlot(slot.id); setConfirmSlot({ ...slot, ...doctor }); }} disabled={booked} className={` px-4 py-3 rounded-2xl border text-sm font-medium min-w-27.5 flex flex-col items-center justify-center gap-1 transition-all duration-200 ease-in-out ${selectedSlot === slot.id && !booked ? "bg-sky-600 text-white border-sky-600 shadow-md scale-[1.03]" : booked ? "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed" : "bg-white text-gray-600 border-gray-200 hover:bg-sky-50 hover:border-sky-300 hover:shadow-sm active:scale-95"} focus:outline-none`}>
+                                                <p className="text-xs font-medium">{slot.date}</p>
+                                                <p className="text-xs">{formatTime(slot.startTime)} – {formatTime(slot.endTime)}</p>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="overflow-y-scroll h-50 sm:h-25">
-                        {slots.length === 0 ? (<p className="text-gray-500 text-sm">No slots available</p>) : (
-                            <div className="flex flex-wrap gap-3">
-                                {slots.map((slot) => (
-                                    <button key={slot.id} onClick={() => { setSelectedSlot(slot.id); setConfirmSlot({ ...slot, ...doctor }) }} className={`p-3 rounded-xl border text-sm transition min-w-27.5 ${selectedSlot === slot.id ? "bg-sky-500 text-white border-sky-500" : "bg-sky-50 border-sky-200 hover:bg-sky-100"}`}>
-                                        <p className="text-xs font-medium">{slot.date}</p>
-                                        <p className="text-xs">{formatTime(slot.startTime)} – {formatTime(slot.endTime)}</p>
-                                    </button>
+                    <div className="mt-8">
+                        <h3 className="font-semibold mb-3">Patient Reviews</h3>
+
+                        {reviews.length === 0 ? (<p className="text-gray-500 text-sm">No reviews yet</p>) : (
+                            <div className="space-y-4">
+                                {reviews.map((review) => (
+                                    <div key={review.id} className="border rounded-xl p-4 bg-white shadow-sm">
+                                        <div className="flex items-center gap-3">
+                                            <img src={review.patientImage || "/user.png"} className="w-10 h-10 rounded-full" />
+
+                                            <div>
+                                                <p className="font-medium text-sm">{review.patientName}</p>
+                                                <div className="flex items-center text-yellow-500 text-xs"><FaStar />{review.rating}</div>
+                                            </div>
+                                        </div>
+                                        {review.reviewText && (<p className="text-sm text-gray-600 mt-2">{review.reviewText}</p>)}
+                                    </div>
                                 ))}
                             </div>
                         )}
                     </div>
-                </div>
-
-
-                <div className="mt-8">
-                    <h3 className="font-semibold mb-3">Patient Reviews</h3>
-
-                    {reviews.length === 0 ? (<p className="text-gray-500 text-sm">No reviews yet</p>) : (
-                        <div className="space-y-4">
-                            {reviews.map((review) => (
-                                <div key={review.id} className="border rounded-xl p-4 bg-white shadow-sm">
-                                    <div className="flex items-center gap-3">
-                                        <img src={review.patientImage || "/user.png"} className="w-10 h-10 rounded-full" />
-
-                                        <div>
-                                            <p className="font-medium text-sm">{review.patientName}</p>
-                                            <div className="flex items-center text-yellow-500 text-xs"><FaStar />{review.rating}</div>
-                                        </div>
-                                    </div>
-                                    {review.reviewText && (<p className="text-sm text-gray-600 mt-2">{review.reviewText}</p>)}
-                                </div>
-                            ))}
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

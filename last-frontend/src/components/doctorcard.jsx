@@ -4,7 +4,7 @@ export default function Doctorcard({ doc, i, setshowDoctorDetail }) {
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-linear-to-r from-sky-100/40 to-blue-100/40"></div>
 
             <div className="flex items-center gap-4 relative z-10">
-                <img src={doc.image} alt="doctor" className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-sky-200" />
+                <img src={doc.image} alt="doctor" className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-black/55" />
                 <div>
                     <h3 className="font-semibold text-gray-800 text-base sm:text-lg">Dr. {doc.fullName}</h3>
                     <p className="text-sky-600 text-sm font-medium">{doc.specialization}</p>
@@ -32,8 +32,11 @@ export default function Doctorcard({ doc, i, setshowDoctorDetail }) {
                 ) : (<p className="text-xs text-gray-400">No slot available</p>)}
             </div>
 
-            {doc.bio && (<p className="mt-3 text-xs text-gray-500 line-clamp-2">  {doc.bio}</p>)}
-            <button onClick={(e) => { e.stopPropagation(); setshowDoctorDetail(doc.doctorId); }} className="mt-5 w-full bg-linear-to-r from-sky-400 to-blue-500 text-white py-2.5 rounded-xl font-medium shadow-sm hover:shadow-lg transition">View Details</button>
+            {doc.bio && (<p className="mt-3 text-xs text-gray-500 line-clamp-2">{doc.bio}</p>)}
+            <div className="mt-4 flex items-center justify-between">
+                <button onClick={(e) => { e.stopPropagation(); setshowDoctorDetail(doc.doctorId); }} className="bg-linear-to-r from-sky-400 to-blue-500 text-white px-4 py-2.5 rounded-lg text-sm shadow-sm hover:shadow-lg transition">View Details</button>
+                <span className="text-xs text-gray-400">ID: {doc.doctorId} </span>
+            </div>
         </div>
     );
 }

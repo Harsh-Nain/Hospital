@@ -1,23 +1,45 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Doctorcard from "./doctorcard";
-import ShowDoctorProfile from "./showDoctorProfile";
+import Doctorcard from "../../components/doctorcard";
+import ShowDoctorProfile from "../../components/showDoctorProfile";
+import { useOutletContext } from "react-router-dom";
 
 export default function Alldoctors() {
   const API_URL = import.meta.env.VITE_BACKEND_URL;
   const [showDoctorDetail, setshowDoctorDetail] = useState(null);
   const [doctors, setDoctors] = useState([]);
+  const { setLoading } = useOutletContext();
+
+  const modals = [showDoctorDetail];
+  const isAnyModalOpen = modals.some(Boolean);
+
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (isAnyModalOpen) {
+      root.classList.add("overflow-hidden");
+    } else {
+      root.classList.remove("overflow-hidden");
+    }
+
+    return () => {
+      root.classList.remove("overflow-hidden");
+    };
+  }, [isAnyModalOpen]);
 
   useEffect(() => {
     const getData = async () => {
       try {
+        setLoading(true)
         const res = await axios.get(`${API_URL}/admin/admin_doctors`, { withCredentials: true });
 
         if (res.data.success) {
           console.log(res.data.doctors);
           setDoctors(res.data.doctors);
+          setLoading(false)
         }
       } catch (error) {
+        setLoading(false)
         console.log(error);
       }
     };
