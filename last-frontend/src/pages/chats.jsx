@@ -39,6 +39,21 @@ export default function Chats() {
     }, []);
 
     useEffect(() => {
+        const handleChatListUpdate = (data) => {
+            setUsers((prev) =>
+                prev.map((user) => String(user.userId) === String(data.userId) ?
+                    { ...user, lastMessage: data.lastMessage || user.lastMessage, updatedAt: data.updatedAt || user.updatedAt, seen: data.seen ?? user.seen, } : user)
+            );
+        };
+
+        socket.on("chatListUpdated", handleChatListUpdate);
+
+        return () => {
+            socket.off("chatListUpdated", handleChatListUpdate);
+        };
+    }, []);
+
+    useEffect(() => {
         if (!currentUser?.id) return;
         socket.auth = { userId: currentUser.id };
         socket.connect();

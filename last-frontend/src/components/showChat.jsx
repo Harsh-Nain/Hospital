@@ -4,11 +4,13 @@ import axios from "axios";
 import socket from "../socket";
 import { useOutletContext } from "react-router-dom";
 import { MdPermMedia } from "react-icons/md";
+import { RxCross2 } from "react-icons/rx";
 
 export default function ChatArea({ selectedUser, currentUser, onBack }) {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState("");
     const [preview, setPreview] = useState(null);
+    const [fils, setFils] = useState([]);
     const [typing, setTyping] = useState(false);
     const { setLoading } = useOutletContext()
 
@@ -69,9 +71,7 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
         const handleSeen = ({ messageIds }) => {
             setMessages((prev) =>
                 prev.map((m) =>
-                    messageIds.includes(m.id) || messageIds.includes(m._id)
-                        ? { ...m, isSeen: true }
-                        : m
+                    messageIds.includes(m.id) || messageIds.includes(m._id) ? { ...m, isSeen: true } : m
                 )
             );
         };
@@ -86,7 +86,7 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
         const unseen = messages.filter(
             (m) =>
                 !m.isSeen &&
-                String(m.senderId) === String(userId) 
+                String(m.senderId) === String(userId)
         );
 
         if (unseen.length > 0) {
@@ -99,11 +99,20 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
     }, [messages, userId, currentUser]);
 
     const sendMessage = async () => {
-        const file = fileRef.current?.files[0];
-        if (!text.trim() && !file) return;
+        const files = []
+
+        if (preview && preview.length > 0) {
+            preview.forEach(img => files.push(img));
+        }
+
+        if (fils && fils.length > 0) {
+            fils.forEach(f => files.push(f));
+        }
+
+        if (!text.trim() && !files) return;
 
         const tempId = Date.now();
-        const tempMsg = { _id: tempId, senderId: currentUser.id, message: text, imageUrl: file ? URL.createObjectURL(file) : null, pending: true, isMe: true, createdAt: new Date(), };
+        const tempMsg = { _id: tempId, senderId: currentUser.id, message: text, imageUrl: files.length > 0 ? files : null, pending: true, isMe: true, createdAt: new Date(), };
 
         setMessages((prev) => [...prev, tempMsg]);
         setText("");
@@ -114,8 +123,9 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
         formData.append("message", tempMsg.message);
         formData.append("appointmentId", selectedUser.appointmentId);
         formData.append("receiverId", userId);
-        if (file) formData.append("file", file);
-
+        files.forEach(file => {
+            formData.append("files", file)
+        });
         try {
             const res = await axios.post(`${API_URL}/chat/message`, formData, { withCredentials: true });
 
@@ -181,6 +191,24 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
         return (<div className="flex-1 flex items-center justify-center text-gray-400 text-sm">Select a chat to start messaging</div>);
     }
 
+    const uploadFiles = (e) => {
+        const files = e.target.files;
+        if (!files) return;
+
+        const fileArray = Array.from(files);
+
+        const imageFiles = fileArray.filter(file =>
+            file.type.startsWith("image/")
+        );
+
+        const pdfFile = fileArray.filter(file =>
+            file.type.endsWith("/pdf")
+        );
+        setFils(pdfFile)
+        const urls = imageFiles.map(file => URL.createObjectURL(file));
+        setPreview(urls);
+    };
+
     return (
         <div className="flex flex-col h-full bg-gray-50 w-full">
 
@@ -228,10 +256,32 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
                     <div className="w-2 h-2 rounded-full bg-black/25 animate-bounce [animation-delay:.3s]"></div>
                 </div>
             )}
-            {preview && (<div className="px-3 pb-2"><img src={preview} className="h-20 rounded" /></div>)}
 
-            <div className="p-2 bg-white border-t border-black/10 flex gap-2 items-center">
-                <input type="file" hidden ref={fileRef} onChange={(e) => { const file = e.target.files[0]; if (file) setPreview(URL.createObjectURL(file)); }} />
+            {(preview?.length > 0 || fils?.length > 0) && (
+                <div className="px-3 pb-2 border-t border-black/10">
+                    <div className="flex gap-2 items-center flex-wrap">
+
+                        {preview?.map((src, index) => (
+                            <div key={index} className="relative">
+                                <p onClick={() => setPreview(preview.filter(i => i !== src))} className="absolute top-0.5 right-0.5 bg-black/15 p-0.2 hover:bg-black/25 cursor-pointer rounded-full text-red-500"><RxCross2 /></p>
+                                <img src={src} alt={`preview-${index}`} className="w-24 h-24 object-cover rounded-md border" />
+                            </div>))}
+
+                        {fils?.map((file, index) => {
+                            return (
+                                <div key={index} className="relative">
+                                    <p onClick={() => setFils(fils.filter(i => i !== file))} className="absolute top-0.5 right-0.5 bg-black/15 p-0.2 hover:bg-black/25 cursor-pointer rounded-full text-red-500"><RxCross2 /></p>
+                                    <p className=" w-24 h-24 rounded-md text-center flex justify-center items-center text-xs wrap-break-words border">{file.type}</p>
+                                </div>
+                            )
+                        })}
+
+                    </div>
+                </div>
+            )}
+
+            <div className="p-2 bg-white border-t border-black/10 flex shadow-lg gap-2 items-center">
+                <input type="file" hidden ref={fileRef} multiple onChange={(e) => uploadFiles(e)} />
                 <button onClick={() => fileRef.current.click()} className="text-lg cursor-pointer"><MdPermMedia /></button>
                 <input value={text} onChange={(e) => { handleTyping(e.target.value); setText(e.target.value) }} onKeyDown={(e) => { if (e.key === "Enter") sendMessage(); }} className="flex-1 bg-gray-100 px-3 py-2 rounded-full outline-none text-sm" placeholder="Message..." />
                 <button onClick={sendMessage} className="bg-blue-500 text-white p-2 rounded-full">

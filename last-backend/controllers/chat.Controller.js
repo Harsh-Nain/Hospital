@@ -48,12 +48,12 @@ export const getChatUsers = async (req, res) => {
             }
         }
 
-        const usersData = await db.select({ id: users.id, fullName: users.fullName, image: users.image, }).from(users).where(inArray(users.id, userIds));
+        const usersData = await db.select({ id: users.id, fullName: users.fullName, image: users.image, role: users.role }).from(users).where(inArray(users.id, userIds));
 
         const result = usersData.map(user => {
             const chat = chatMap.get(user.id);
             const appointment = appointmentMap.get(user.id);
-            return { userId: user.id, fullName: user.id === id ? `${user.fullName} (You)` : user.fullName, image: user.image, appointmentId: appointment.appointmentId, lastMessage: chat?.lastMessage || null, createdAt: chat?.createdAt || null, };
+            return { userId: user.id, fullName: user.id === id ? `${user.fullName} (You)` : user.fullName, image: user.image, role: user.role, appointmentId: appointment.appointmentId, lastMessage: chat?.lastMessage || null, createdAt: chat?.createdAt || null, };
         });
         return res.json({ success: true, users: result, });
 
@@ -67,6 +67,7 @@ export const sendMessage = async (req, res) => {
     try {
         let { appointmentId, receiverId, message } = req.body;
         const { id: senderId } = req.user;
+        console.log(res.files, req.file);
 
         const fileUrl = req.file ? req.file.path : null;
 
@@ -92,11 +93,19 @@ export const sendMessage = async (req, res) => {
         saved.isMe = false
 
         const payload = { ...saved, imageUrl: saved.fileUrl, };
-        console.log(receiverId, senderId);
 
+        io.to(String(senderId)).emit("chatListUpdated", {
+            userId: receiverId,
+            lastMessage: saved.message,
+            updatedAt: saved.createdAt,
+        });
+
+        io.to(String(receiverId)).emit("chatListUpdated", {
+            userId: senderId,
+            lastMessage: saved.message,
+            updatedAt: saved.createdAt,
+        });
         io.to(String(receiverId)).emit("newMessage", payload);
-        // io.to(String(senderId)).emit("newMessage", payload);
-
         res.status(201).json({ success: true, data: payload, });
 
     } catch (error) {

@@ -41,20 +41,20 @@ export default function UserList({ users = [], currentUser, selectedUser, onSele
                     filteredUsers.map((u) => (
                         <div key={u.id} onClick={() => onSelectUser(u)} className={`${selectedUser?.id == u.id ? `${location ? "bg-blue-50" : "bg-green-50"}` : "hover:bg-gray-100"} flex items-center mx-1 rounded-2xl justify-between px-3 py-3 cursor-pointer transition`}>
                             <div className="flex items-center gap-3 min-w-0">
-
                                 <div className="relative">
-                                    <img src={u.image} className="w-12 h-12 rounded-full object-cover" alt="" />
+                                    <img src={u.image} className={`w-12 h-12 rounded-full object-cover border ${u.online ? "border-green-500" : "border-black/55"}`} alt="" />
                                     {u.online && (<span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />)}
                                 </div>
 
                                 <div className="min-w-0">
-                                    <p className="font-semibold text-sm truncate">{location && "Dr."} {u.fullName}</p>
+                                    <p className="font-semibold text-sm truncate">{u.fullName} ({u.role && <span className={`text-xs ${location ? "text-sky-500" : "text-emerald-500"}`}>{u.role}</span>})</p>
                                     <p className="text-xs text-gray-500 truncate">{u.lastMessage}</p>
-                                    {u.role && (<p className="text-[10px] text-blue-500">{u.role}</p>)}
                                 </div>
                             </div>
-
-                            <div className="text-xs text-gray-400 whitespace-nowrap ml-2">{formatTime(u.updatedAt)}</div>
+                            <div>
+                                <p className="text-xs text-gray-400 whitespace-nowrap ml-2">{formatTime(u.updatedAt)}</p>
+                                <p className={`text-xs ${u.online ? "text-green-500" : "text-gray-400"} whitespace-nowrap ml-2`}>{u.online ? "online" : "offline"}</p>
+                            </div>
                         </div>
                     ))
                 ) : (<p className="text-center text-gray-400 mt-10">No users found</p>)}
