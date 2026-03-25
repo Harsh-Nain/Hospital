@@ -12,13 +12,14 @@ import chatRouter from "./routes/chat.route.js"
 import { islogin } from "./middleware/auth.js"
 import { logout } from "./controllers/access.Controller.js";
 import cookieParser from "cookie-parser";
+import http from "http";
+import { ChatSocket } from "./socket.js";
+const app = express();
 
 dotenv.config();
-
-const app = express();
 app.use(cookieParser());
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: ["http://localhost:5173", "http://192.168.1.25:5173"], credentials: true }));
 app.use(express.json());
 
 app.use("/auth", authRouter);
@@ -35,8 +36,17 @@ app.use("/chat", islogin, chatRouter);
 
 app.get("/logout", islogin, logout);
 
+app.get("/test", (req, res) => {
+  res.send("hello")
+})
+
+const server = http.createServer(app);
+
+const io = ChatSocket(server);
+app.set("io", io);
+
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`server start at ${PORT}`);
 });

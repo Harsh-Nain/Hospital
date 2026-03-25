@@ -7,7 +7,7 @@ export const UploadMedicalReport = async (req, res) => {
   try {
     const { diseaseName } = req.body;
     const userId = req.user?.id;
-    const file = req.files; 
+    const file = req.files;
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -306,23 +306,19 @@ export const CreateAppointment = async (req, res) => {
   try {
     const { doctorId, slotId, patientId } = req.body;
 
-    if (!doctorId || !slotId) {
-      return res.json({ success: false, message: "DoctorId and SlotId required", });
+    if (!doctorId || !slotId || !patientId) {
+      return res.json({ success: false, message: "DoctorId, SlotId and PatientId are required", });
     }
 
-    const [slot] = await db.select().from(doctorSlots).where(eq(doctorSlots.id, Number(slotId)));
+    const slot = await db.select().from(doctorSlots).where(eq(doctorSlots.id, slotId));
 
-    if (!slot) {
-      return res.json({ success: false, message: "Slot not found", });
-    }
-    const existing = await db.select().from(appointments).where(eq(appointments.slotId, Number(slotId)));
+    const existingAppointments = await db.select().from(appointments).where(eq(appointments.slotId, slotId));
 
-    if (existing.length > 0) {
-      return res.json({ success: false, message: "Slot already taken", });
+    if (existingAppointments.length >= slot[0].capacity) {
+      return res.status(400).json({ message: "Slot is full", });
     }
 
     await db.insert(appointments).values({ doctorId, patientId, slotId, status: "wait for approval", });
-
     res.json({ success: true, message: "Appointment booked successfully", });
 
   } catch (error) {

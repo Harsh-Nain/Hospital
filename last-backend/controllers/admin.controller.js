@@ -2,7 +2,7 @@ import db from "../db/index.js";
 import { eq, and, or } from "drizzle-orm";
 import { sendApprovalMail, sendReactivationMail, sendRejectionMail, sendSuspensionMail } from "../utils/mailer.js";
 import { users, patients, appointments, doctors, specializations, doctorSlots, payments, } from "../db/schema.js";
-import CreateNotification from "../controllers/response.Controller.js"
+import { CreateNotification } from "./response.Controller.js";
 
 export const AdminDashboard = async (req, res) => {
     try {
@@ -191,21 +191,20 @@ export const SuspandDoctor = async (req, res) => {
 
 export const ReActivate = async (req, res) => {
     try {
-        let { doctorId, userId, name, email } = req.body;
+        let { doctorId, name, email } = req.body;
 
         if (!doctorId) {
             return res.status(400).json({ success: false, message: "Doctor ID is required", });
         }
 
         await sendReactivationMail(email, name);
-
         const result = await db.update(doctors).set({ status: "approved", isApproved: true, }).where(eq(doctors.id, Number(doctorId)));
 
         if (!result) {
             return res.status(404).json({ success: false, message: "Doctor not found", });
         }
 
-        await CreateNotification(userId, "Congratulations, your account has been reactivated.");
+        await CreateNotification({ doctorId, message: "Congratulations, your account has been reactivated." });
         return res.status(200).json({ success: true, message: "Doctor ReActivate successfully", });
 
     } catch (error) {

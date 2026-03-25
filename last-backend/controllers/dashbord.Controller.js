@@ -1,7 +1,12 @@
-import { date } from "drizzle-orm/mysql-core";
 import db from "../db/index.js";
 import { users, patients, appointments, doctors, specializations, doctorSlots, payments, } from "../db/schema.js";
 import { eq, and, sql, desc, or, gt } from "drizzle-orm";
+
+const formatTime = (time) => {
+    if (!time) return "";
+    const [h, m] = time.split(":");
+    return `${h.padStart(2, "0")}:${m}`;
+};
 
 export const PatientInfo = async (req, res) => {
 
@@ -97,12 +102,6 @@ export const PatientDashboard = async (req, res) => {
                 .limit(6);
         }
 
-        const formatTime = (time) => {
-            if (!time) return "";
-            const [h, m] = time.split(":");
-            return `${h.padStart(2, "0")}:${m}`;
-        };
-
         const formattedDoctors = doctorsList.map((d) => {
             const booked = Number(d.bookedCount || 0);
             const remaining = d.capacity - booked;
@@ -110,20 +109,20 @@ export const PatientDashboard = async (req, res) => {
         });
 
         const appointmentList = await db
-            .select({ amount: payments.amount, transactionId: payments.transactionId, paymentStatus: payments.paymentStatus, cancelReason: doctorSlots.cancelReason, isCancelled: doctorSlots.isCancelled, appoitmentCreatedAt: appointments.createdAt, appointmentId: appointments.id, appointmentStatus: appointments.status, meetingLink: appointments.meetingLink, doctorName: users.fullName, doctorImage: users.image, doctorId: doctors.id, consultationFee: doctors.consultationFee, specialization: specializations.name, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, })
+            .select({ amount: payments.amount, transactionId: payments.transactionId, cancelReason: appointments.cancelReason, paymentStatus: payments.paymentStatus, isCancelled: doctorSlots.isCancelled, appoitmentCreatedAt: appointments.createdAt, appointmentId: appointments.id, appointmentStatus: appointments.status, meetingLink: appointments.meetingLink, doctorName: users.fullName, doctorImage: users.image, doctorId: doctors.id, consultationFee: doctors.consultationFee, specialization: specializations.name, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, })
             .from(appointments)
             .leftJoin(doctors, eq(doctors.id, appointments.doctorId))
             .leftJoin(users, eq(users.id, doctors.userId))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
             .leftJoin(payments, eq(payments.appointmentId, appointments.id))
-            .where(eq(appointments.patientId, patient.patientId))
+            .where(and(eq(appointments.patientId, patient.patientId), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, currentTime)))))
             .orderBy(desc(doctorSlots.date), desc(doctorSlots.startTime));
 
         const formattedAppointments = appointmentList.map((a) => {
             const slotDateTime = new Date(`${a.date}T${a.startTime}`);
             const formatDateTime = (date) => { return new Date(date).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, }); }
-            return { appointmentId: a.appointmentId, status: a.appointmentStatus, appoitmentCreatedAt: formatDateTime(a.appoitmentCreatedAt), paymentStatus: a.paymentStatus, amount: a.amount, meetingLink: a.meetingLink, type: slotDateTime > now ? "upcoming" : "past", doctor: { doctorId: a.doctorId, name: a.doctorName, image: a.doctorImage, specialization: a.specialization }, slot: { date: a.date, startTime: formatTime(a.startTime), endTime: formatTime(a.endTime), isCancelled: a.isCancelled, cancelReason: a.cancelReason, }, };
+            return { appointmentId: a.appointmentId, status: a.appointmentStatus, cancelReason: a.cancelReason, appoitmentCreatedAt: formatDateTime(a.appoitmentCreatedAt), paymentStatus: a.paymentStatus, amount: a.amount, meetingLink: a.meetingLink, type: slotDateTime > now ? "upcoming" : "past", doctor: { doctorId: a.doctorId, name: a.doctorName, image: a.doctorImage, specialization: a.specialization }, slot: { date: a.date, startTime: formatTime(a.startTime), endTime: formatTime(a.endTime), isCancelled: a.isCancelled, }, };
         });
 
         res.json({ success: true, patient, doctorsList: formattedDoctors, appointments: formattedAppointments, });
@@ -153,12 +152,6 @@ export const DoctorDashboard = async (req, res) => {
         const now = new Date();
         const today = now.toISOString().split("T")[0];
 
-        const formatTime = (time) => {
-            if (!time) return "";
-            const [h, m] = time.split(":");
-            return `${h.padStart(2, "0")}:${m}`;
-        };
-
         const appointmentsData = await db
             .select({ appointmentId: appointments.id, status: appointments.status, meetingLink: appointments.meetingLink, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, patientId: patients.id, disease: patients.disease, patientName: users.fullName, patientImage: users.image, paymentId: payments.id, amount: payments.amount, paymentStatus: payments.paymentStatus, paymentMethod: payments.paymentMethod, transactionId: payments.transactionId, paidAt: payments.paidAt, })
             .from(appointments)
@@ -168,6 +161,7 @@ export const DoctorDashboard = async (req, res) => {
             .leftJoin(payments, eq(payments.appointmentId, appointments.id))
             .where(eq(appointments.doctorId, doctor.doctorId))
             .orderBy(desc(doctorSlots.date), desc(doctorSlots.startTime));
+
         const slotCounts = await db
             .select({ slotId: appointments.slotId, count: sql`COUNT(*)`, })
             .from(appointments)

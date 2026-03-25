@@ -92,7 +92,6 @@ export const doctorSlots = mysqlTable(
     startTime: varchar("start_time", { length: 10 }).notNull(),
     endTime: varchar("end_time", { length: 10 }).notNull(),
     isCancelled: boolean("isCancelled").default(false),
-    cancelReason: text("cancelReason"),
     capacity: int("capacity").default(1),
     createdAt: timestamp("created_at").defaultNow(),
   },
@@ -110,6 +109,7 @@ export const appointments = mysqlTable(
     slotId: int("slot_id").notNull().references(() => doctorSlots.id),
     status: varchar("status", { length: 20 }).default("upcoming"),
     meetingLink: text("meeting_link"),
+    cancelReason: text("cancelReason"),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
@@ -151,17 +151,16 @@ export const reviews = mysqlTable("reviews",
   })
 );
 
-export const chatMessages = mysqlTable("chat_messages",
-  {
-    id: int("id").primaryKey().autoincrement(),
-    appointmentId: int("appointment_id").notNull().references(() => appointments.id, { onDelete: "cascade" }),
-    senderId: int("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    receiverId: int("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    message: text("message").notNull(),
-    fileUrl: varchar("file_url", { length: 500 }),
-    isSeen: boolean("is_seen").default(false),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
+export const chatMessages = mysqlTable("chat_messages", {
+  id: int("id").primaryKey().autoincrement(),
+  appointmentId: int("appointment_id").notNull().references(() => appointments.id, { onDelete: "cascade" }),
+  senderId: int("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  receiverId: int("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  message: text("message").notNull(),
+  fileUrl: varchar("file_url", { length: 500 }),
+  isSeen: boolean("is_seen").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+},
   (table) => ({
     appointmentIdx: index("chat_appointment_idx").on(table.appointmentId),
     senderIdx: index("chat_sender_idx").on(table.senderId),

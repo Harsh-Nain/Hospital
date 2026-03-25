@@ -31,7 +31,7 @@ export const GetDoctorProfile = async (req, res) => {
         const currentTime = now.toTimeString().slice(0, 5);
 
         const slotsRaw = await db
-            .select({ id: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, bookedCount: sql`COUNT(${appointments.id})`, })
+            .select({ id: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, bookedCount: sql`COUNT(${appointments.id})`, patientIds: sql`GROUP_CONCAT(${appointments.patientId})`, })
             .from(doctorSlots)
             .leftJoin(appointments, eq(appointments.slotId, doctorSlots.id))
             .where(and(eq(doctorSlots.doctorId, Number(doctorId)), eq(doctorSlots.isCancelled, false), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, currentTime)))))
@@ -44,16 +44,21 @@ export const GetDoctorProfile = async (req, res) => {
             return `${h.padStart(2, "0")}:${m}`;
         };
 
-        const slots = {};
+        const grouped = {};
+        const slots = [];
 
         slotsRaw.forEach((slot) => {
             const booked = Number(slot.bookedCount || 0);
-            const remaining = slot.capacity - booked;
+            const remaining = Math.max(0, slot.capacity - booked);
 
-            if (!slots[slot.date]) slots[slot.date] = [];
+            const patientIds = slot.patientIds ? slot.patientIds.split(",").map((id) => Number(id)) : [];
+            const slotObj = { id: slot.id, date: slot.date, startTime: formatTime(slot.startTime), endTime: formatTime(slot.endTime), capacity: slot.capacity, patientIds, booked, remaining, isFull: remaining <= 0, };
 
-            slots[slot.date].push({ id: slot.id, startTime: formatTime(slot.startTime), endTime: formatTime(slot.endTime), capacity: slot.capacity, booked, remaining, isFull: remaining <= 0, });
+            if (!grouped[slot.date]) grouped[slot.date] = [];
+            grouped[slot.date].push(slotObj);
+            slots.push(slotObj);
         });
+
 
         const doctorReviews = await db
             .select({ id: reviews.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, patientImage: users.image, })
@@ -235,7 +240,7 @@ export const getDoctorsBySymptom = async (req, res) => {
             .from(users)
             .leftJoin(doctors, eq(doctors.userId, users.id))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
-            .where(sql`JSON_SEARCH(${specializations.symptoms}, 'one', CONCAT('%', ${symptom}, '%')) IS NOT NULL`)
+            .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', CONCAT('%', ${symptom}, '%')) IS NOT NULL`, eq(doctors.isApproved, true)));
 
         res.json({ success: true, doctors: result, });
     } catch (error) {
