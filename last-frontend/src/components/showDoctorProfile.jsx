@@ -49,7 +49,6 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
           const formattedSlots = Object.entries(groupedSlots).flatMap(([date, times]) => times.map((t) => ({ id: t.id || `${date}-${t.startTime}`, date, startTime: t.startTime, endTime: t.endTime, })));
 
           setSlots(formattedSlots);
-        }
       } catch (error) {
         console.error(error);
         toast.error("Failed to load doctor");

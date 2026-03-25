@@ -40,7 +40,7 @@ export default function Dashboard() {
         const fetchDashboard = async () => {
             try {
                 const res = await axios.get(`${API_URL}/dashboard/patient`, { withCredentials: true, });
-                console.log(res.data);
+console.log(res.data.appointments);
 
                 if (res.data.success) {
                     setPatient(res.data.patient);

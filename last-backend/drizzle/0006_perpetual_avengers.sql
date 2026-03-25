@@ -1,0 +1,1 @@
+ALTER TABLE `doctor_slots` RENAME COLUMN `stage` TO `slotstage`;

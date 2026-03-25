@@ -12,6 +12,8 @@ const DoctorSlots = ({ slots, setAddsote, setSlots }) => {
         startTime: "",
         endTime: "",
         capacity: "",
+        booked: 0,
+        available: 0
     });
 
     const handleChange = (e) => {
@@ -25,7 +27,7 @@ const DoctorSlots = ({ slots, setAddsote, setSlots }) => {
             toast.error("Please fill all fields");
             return;
         }
-       
+
 
         if (newSlot.capacity <= 0) {
             toast.error("Enter valid max patients");
@@ -96,9 +98,10 @@ const DoctorSlots = ({ slots, setAddsote, setSlots }) => {
             date: newSlot.date,
             startTime: newSlot.startTime,
             endTime: newSlot.endTime,
-            capacity: newSlot.capacity,
-            booked: false,
-        };
+            capacity: Number(newSlot.capacity),
+            available: Number(newSlot.capacity),
+            booked: 0,
+        };        
 
         try {
             setLoading(true);
@@ -108,16 +111,15 @@ const DoctorSlots = ({ slots, setAddsote, setSlots }) => {
                 slotPayload,
                 { withCredentials: true }
             );
+            
 
             if (res.data.success) {
                 toast.success(res.data.message || "Slot Added 🎉");
 
-                // ✅ Use backend response (IMPORTANT)
                 const savedSlot = res.data.slot || slotPayload;
-
+                
                 setSlots((prev) => [...prev, savedSlot]);
 
-                // ✅ Reset form
                 setNewSlot({
                     date: "",
                     startTime: "",

@@ -29,6 +29,27 @@
       "when": 1773983358376,
       "tag": "0003_smiling_nicolaos",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1774003009807,
+      "tag": "0004_heavy_echo",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1774324074586,
+      "tag": "0005_sweet_the_liberteens",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1774324589849,
+      "tag": "0006_perpetual_avengers",
+      "breakpoints": true
     }
   ]
 }

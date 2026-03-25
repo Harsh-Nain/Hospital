@@ -92,9 +92,10 @@ export const doctorSlots = mysqlTable(
     startTime: varchar("start_time", { length: 10 }).notNull(),
     endTime: varchar("end_time", { length: 10 }).notNull(),
     isCancelled: boolean("isCancelled").default(false),
-    cancelReason: text("cancelReason"),
     capacity: int("capacity").default(1),
     createdAt: timestamp("created_at").defaultNow(),
+    slotstage: text("slotstage"),
+
   },
   (table) => ({
     doctorIdx: index("slot_doctor_idx").on(table.doctorId),
@@ -110,6 +111,7 @@ export const appointments = mysqlTable(
     slotId: int("slot_id").notNull().references(() => doctorSlots.id),
     status: varchar("status", { length: 20 }).default("upcoming"),
     meetingLink: text("meeting_link"),
+      cancelReason: text("cancelReason"),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
