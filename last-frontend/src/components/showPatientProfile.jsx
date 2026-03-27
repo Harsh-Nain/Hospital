@@ -44,7 +44,7 @@ export default function ShowPatientProfile({ id, setshowPatientDetail, }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center h-screen justify-center bg-black/50 backdrop-blur-sm p-4">
 
-      <div className="relative pb-[30px] w-full max-w-2xl max-h-[90vh] self-start md:self-auto overflow-y-auto bg-white rounded-2xl shadow-xl p-6">
+      <div className="relative pb-[30px] w-full max-w-2xl max-h-[80vh] md:max-h-[90vh] self-start md:self-auto overflow-y-auto bg-white rounded-2xl shadow-xl p-6">
 
         <button onClick={() => setshowPatientDetail(null)} className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center     cursor-pointer rounded-lg     text-gray-500 hover:text-red-500 hover:bg-zinc-100 transition">
           <RxCross1 size={20} />
@@ -67,9 +67,9 @@ export default function ShowPatientProfile({ id, setshowPatientDetail, }) {
           </div>
         </div>
 
-        <div className="my-6 h-px bg-gray-200"></div>
+        <div className="my-4 h-px bg-gray-200"></div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-2 gap-3 text-sm">
 
           <div>
             <p className="text-gray-500">Gender</p>

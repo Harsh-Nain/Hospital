@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import ShowPatientProfile from "../../components/showPatientProfile";
 import toast from "react-hot-toast";
-import DoctorSlots from "../../components/DoctorSlots";
+import DoctorSlots from "../../components/doctorSlots";
 import { FaTrash } from 'react-icons/fa';
 
 
@@ -43,6 +43,8 @@ export default function Dashboard() {
         const filterupcoming = res.data.appointments.upcomingAppointments || [];
         const all = filterupcoming.filter(appointments => appointments.slotstage != "Removed")
 
+        
+        
         setUpcomingAppointments(upcoming); setAllAppointments(all);
         setAppointments(upcoming);
         setStats(res.data.stats || {});
@@ -154,13 +156,22 @@ export default function Dashboard() {
   };
 
   const formatTime12Hour = (timeString) => {
-    if (!timeString) return "";
-    let [hours, minutes] = timeString.split(':');
-    hours = parseInt(hours);
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    if (!timeString || typeof timeString !== "string") return "";
+
+    const parts = timeString.split(":");
+    if (parts.length < 2) return "";
+
+    let hours = parseInt(parts[0], 10);
+    let minutes = parseInt(parts[1], 10);
+
+    if (isNaN(hours) || isNaN(minutes)) return "";
+
+    const ampm = hours >= 12 ? "PM" : "AM";
+
     hours = hours % 12;
-    hours = hours ? hours : 12;
-    return `${hours}:${minutes} ${ampm}`;
+    hours = hours === 0 ? 12 : hours;
+
+    return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
   };
 
   useEffect(() => {
@@ -175,37 +186,41 @@ export default function Dashboard() {
 
 
   const getTimeRemaining = (startTime, date, endtime) => {
-  
-if (!startTime || !date || !endtime) return "";
 
-const now = new Date();
+    if (!startTime || !date || !endtime) return "";
 
-function parseTime(timeStr) {
-  let [h, m] = timeStr.split(":").map(Number);
+    const now = new Date();
 
-  if (h === 12) h = 0;
+    function parseTime(timeStr) {
+      const [time, modifier] = timeStr.split(" ");
+      let [h, m] = time.split(":").map(Number);
 
-  return { h, m };
-}
+      if (modifier === "AM" && h === 12) h = 0;
+      if (modifier === "PM" && h !== 12) h += 12;
 
-// Start
-const { h: sh, m: sm } = parseTime(startTime);
-const start = new Date(date);
-start.setHours(sh, sm, 0, 0);
+      return { h, m };
+    }
 
-let { h: eh, m: em } = parseTime(endtime);
-const end = new Date(date);
-end.setHours(eh, em, 0, 0);
+    const [year, month, day] = date.split("-").map(Number);
 
-if (end <= start) {
-  end.setDate(end.getDate() + 1);
-}
+    const { h: sh, m: sm } = parseTime(startTime);
+    const start = new Date(year, month - 1, day, sh, sm, 0, 0);
 
-if (now > end) return "Completed";
+    const { h: eh, m: em } = parseTime(endtime);
+    const end = new Date(year, month - 1, day, eh, em, 0, 0);
 
-if (now >= start && now <= end) return "Started";
+    // overnight fix
+    if (end <= start) {
+      end.setDate(end.getDate() + 1);
+    }
 
+    // console.log("Now:", now);
+    // console.log("Start:", start);
+    // console.log("End:", end);
 
+    if (now >= end) return "Completed";
+
+    if (now >= start && now < end) return "Started";
 
     const diff = start - now;
     const totalSeconds = Math.floor(diff / 1000);
@@ -321,7 +336,24 @@ if (now >= start && now <= end) return "Started";
             <p className="text-gray-500 text-sm">{doctor?.specialization}</p>
           </div>
         </div>
-        <button onClick={() => setAddSlot(true)} className="cursor-pointer hover:opacity-80 bg-green-500 text-white px-4 py-2 rounded-lg">Add Slots</button>
+        <button
+          onClick={() => setAddSlot(true)}
+          className="
+    cursor-pointer 
+    bg-green-500 text-white 
+    rounded-lg 
+    hover:opacity-80 
+    transition-all duration-200
+    
+    px-2 py-1 text-xs   
+    sm:px-3 sm:py-1.5 sm:text-sm
+    md:px-5 md:py-2 md:text-base
+    lg:px-6 lg:py-3 lg:text-lg
+  "
+        >
+          Add Slots
+        </button>
+
       </div>
 
       {stats && (
@@ -381,9 +413,9 @@ if (now >= start && now <= end) return "Started";
                     <p className="text-xs text-gray-500">{formatTime12Hour(slot.startTime)} – {formatTime12Hour(slot.endTime)}</p>
 
                     {a.status === "confirmed" && (
-                      <p className="text-xs font-medium text-blue-600 mt-1">   {getTimeRemaining(slot.startTime, slot.date, slot.endTime)}  </p>
+                      <p className="text-xs font-medium text-blue-600 mt-1">   {getTimeRemaining(formatTime12Hour(slot.startTime), slot.date, formatTime12Hour(slot.endTime))}  </p>
                     )}
-                    
+
 
                     <p className="text-[10px] text-gray-400 mt-1">{statusLabelMap[a.status] && `${statusLabelMap[a.status]}: `}
                       {new Date(a.createdat).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", })}{" "}  {formatTime12Hour(a.createdat)}
@@ -393,9 +425,11 @@ if (now >= start && now <= end) return "Started";
                   <div className="flex flex-wrap sm:flex-nowrap gap-2 justify-start sm:justify-end">
                     {a.status === "confirmed" || a.status === "Cancelled" ? (
                       <div className="flex flex-col items-start sm:items-center gap-1">
-                        {new Date(slot.date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0) && new Date(slot.date).setHours(0, 0, 0, 0) != new Date().setHours(0, 0, 0, 0) &&(
-                          
-                          <p className="text-xs px-3 py-1 rounded-full bg-orange-100 text-orange-500">  {a.status === "Cancelled" ? "SLOT CANCELLED" : "SLOT COMPLETED"}  </p>
+
+                        {new Date(new Date(slot.date).setHours(...slot.endTime.split(":").map(Number), 0, 0)) < new Date() && (
+                          <p className="text-xs px-3 py-1  text-orange-500">
+                            {a.status === "Cancelled" ? "SLOT CANCELLED" : "SLOT COMPLETED"}
+                          </p>
                         )}
 
                         <p className={`text-xs px-3 py-1 rounded-full ${a.status === "Cancelled" ? "bg-red-100 text-red-500" : "bg-green-100 text-green-600"}`} > {a.status}  </p>
@@ -443,12 +477,12 @@ if (now >= start && now <= end) return "Started";
                     <p className="text-sm text-gray-500">{formatTime12Hour(slot.startTime)} - {formatTime12Hour(slot.endTime)}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    {new Date(slot.date).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0) ? (
+                    {new Date(new Date(slot.date).setHours(...slot.endTime.split(":").map(Number), 0, 0)) > new Date() ? (
                       <span className={`text-xs font-medium px-3 py-1 rounded-full ${!slot.isCancelled ? (slot.booked > 0 ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600") : "bg-orange-100 text-orange-600"}`}>
                         {!slot.isCancelled ? (slot.booked > 0 ? "Booked" : "Available") : "Inactive"}
                       </span>
                     ) : (
-                      <span className={`text-xs font-medium px-3 py-1 rounded-full text-blue-600  `}> Time over </span>)}
+                      <span className={`text-xs font-medium px-3 py-1 rounded-full text-blue-600  `}>  Completed </span>)}
                   </div>
                 </div>
 
@@ -469,7 +503,7 @@ if (now >= start && now <= end) return "Started";
 
                 <div className="my-2 border-t"></div>
 
-                {new Date(slot.date).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0) ? (
+                {new Date(new Date(slot.date).setHours(...slot.endTime.split(":").map(Number), 0, 0)) > new Date() ? (
                   <div className="flex justify-end gap-2 items-center">
                     <p className="text-[10px] font-light italic"> Click here to {slot.isCancelled ? 'Activate' : 'Deactivate'}</p>
                     <label className="relative inline-flex items-center cursor-pointer">

@@ -144,122 +144,139 @@ const DoctorSlots = ({ slots, setAddsote, setSlots }) => {
     }
     return (
 
-        <div className="fixed inset-0 z-50 flex items-center h-screen justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50  flex items-top md:items-center justify-center bg-black/50 backdrop-blur-sm p-3 sm:p-4">
 
-            <div className="relative bg-white border border-sky-200 rounded-3xl p-8 shadow-lg max-w-5xl mx-auto">
+  <div className="relative bg-white border border-sky-200 rounded-2xl sm:rounded-3xl 
+    p-4 sm:p-6 md:p-8 
+    w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl 
+    max-h-[85vh] overflow-y-auto shadow-lg ">
 
-                <button onClick={() => setAddsote(null)}
-                    className="absolute top-4 cursor-pointer right-4 text-gray-500 hover:text-red-500 text-lg"
-                >
-                    <RxCross1 />
-                </button>
+    {/* Close Button */}
+    <button
+      onClick={() => setAddsote(null)}
+      className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-500 hover:text-red-500 text-base sm:text-lg"
+    >
+      <RxCross1 />
+    </button>
 
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">
-                        Doctor Slots
-                    </h2>
-                    <span className="text-sm text-gray-500">
-                        Total: {slots.length}
-                    </span>
-                </div>
+    {/* Header */}
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 sm:mb-6">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">
+        Doctor Slots
+      </h2>
+      <span className="text-xs sm:text-sm text-gray-500">
+        Upcoming slote: {slots.length}
+      </span>
+    </div>
 
-                <div className="bg-white border border-gray-200 rounded-3xl shadow-md p-6 mb-8">
+    {/* Add Slot Card */}
+    <div className="bg-white border border-gray-200 rounded-2xl sm:rounded-3xl shadow-md p-4 sm:p-6 mb-6 sm:mb-8">
 
-                    {/* Header */}
-                    <div className="flex justify-between items-center mb-6">
-                        <div>
-                            <h3 className="text-xl font-bold text-gray-800">
-                                Add New Slot
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                                Configure availability for appointments
-                            </p>
-                        </div>
-
-                        <button
-                            onClick={addSlot}
-                            className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all"
-                        >
-                            + Add Slot
-                        </button>
-                    </div>
-
-                    {/* Form Card */}
-                    <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                        {/* Date */}
-                        <div>
-                            <label className="text-xs font-semibold text-gray-500 mb-2 block">
-                                Select Date
-                            </label>
-                            <input
-                                type="date"
-                                name="date"
-                                min={new Date().toISOString().split("T")[0]}
-                                value={newSlot.date}
-                                onChange={handleChange}
-                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none transition"
-                            />
-                        </div>
-
-                        {/* Max Patients */}
-                        <div>
-                            <label className="text-xs font-semibold text-gray-500 mb-2 block">
-                                Max Patients
-                            </label>
-                            <input
-                                type="number"
-                                name="capacity"
-                                value={newSlot.capacity}
-                                onChange={handleChange}
-                                min="1"
-                                placeholder="e.g. 5"
-                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none"
-                            />
-                        </div>
-
-                        {/* Start Time */}
-                        <div>
-                            <label className="text-xs font-semibold text-gray-500 mb-2 block">
-                                Start Time
-                            </label>
-                            <input
-                                type="time"
-                                name="startTime"
-                                value={newSlot.startTime}
-                                onChange={handleChange}
-                                min={
-                                    newSlot.date === new Date().toLocaleDateString("en-CA")
-                                        ? new Date().toTimeString().slice(0, 5)
-                                        : undefined
-                                }
-                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 outline-none"
-                            />
-                        </div>
-
-                        {/* End Time */}
-                        <div>
-                            <label className="text-xs font-semibold text-gray-500 mb-2 block">
-                                End Time
-                            </label>
-                            <input
-                                type="time"
-                                name="endTime"
-                                value={newSlot.endTime}
-                                onChange={handleChange}
-                                min={newSlot.startTime || undefined}
-                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3"
-                            />
-                        </div>
-
-                    </div>
-                </div>
-
-
-
-            </div>
+      {/* Card Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
+        <div>
+          <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-800">
+            Add New Slot
+          </h3>
+          <p className="text-xs sm:text-sm text-gray-500">
+            Configure availability for appointments
+          </p>
         </div>
+
+        <button
+          onClick={addSlot}
+          className="
+            w-full sm:w-auto
+            text-xs sm:text-sm
+            px-3 py-1.5 sm:px-5 sm:py-2.5
+            rounded-lg sm:rounded-xl
+            bg-gradient-to-r from-sky-500 to-sky-600 
+            hover:from-sky-600 hover:to-sky-700 
+            text-white font-semibold shadow-sm transition-all
+          "
+        >
+          + Add Slot
+        </button>
+      </div>
+
+      {/* Form Grid */}
+      <div className="
+        bg-gray-50 border border-gray-100 rounded-xl sm:rounded-2xl 
+        p-3 sm:p-6 
+        grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 
+        gap-3 sm:gap-6
+      ">
+
+        {/* Date */}
+        <div>
+          <label className="text-[10px] sm:text-xs font-semibold text-gray-500 mb-1 sm:mb-2 block">
+            Select Date
+          </label>
+          <input
+            type="date"
+            name="date"
+            min={new Date().toISOString().split("T")[0]}
+            value={newSlot.date}
+            onChange={handleChange}
+            className="w-full bg-white border border-gray-200 rounded-lg sm:rounded-xl px-2 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none"
+          />
+        </div>
+
+        {/* Max Patients */}
+        <div>
+          <label className="text-[10px] sm:text-xs font-semibold text-gray-500 mb-1 sm:mb-2 block">
+            Max Patients
+          </label>
+          <input
+            type="number"
+            name="capacity"
+            value={newSlot.capacity}
+            onChange={handleChange}
+            min="1"
+            placeholder="e.g. 5"
+            className="w-full bg-white border border-gray-200 rounded-lg sm:rounded-xl px-2 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none"
+          />
+        </div>
+
+        {/* Start Time */}
+        <div>
+          <label className="text-[10px] sm:text-xs font-semibold text-gray-500 mb-1 sm:mb-2 block">
+            Start Time
+          </label>
+          <input
+            type="time"
+            name="startTime"
+            value={newSlot.startTime}
+            onChange={handleChange}
+            min={
+              newSlot.date === new Date().toLocaleDateString("en-CA")
+                ? new Date().toTimeString().slice(0, 5)
+                : undefined
+            }
+            className="w-full bg-white border border-gray-200 rounded-lg sm:rounded-xl px-2 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 outline-none"
+          />
+        </div>
+
+        {/* End Time */}
+        <div>
+          <label className="text-[10px] sm:text-xs font-semibold text-gray-500 mb-1 sm:mb-2 block">
+            End Time
+          </label>
+          <input
+            type="time"
+            name="endTime"
+            value={newSlot.endTime}
+            onChange={handleChange}
+            min={newSlot.startTime || undefined}
+            className="w-full bg-white border border-gray-200 rounded-lg sm:rounded-xl px-2 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm"
+          />
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
     );
 };
 
