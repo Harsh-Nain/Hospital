@@ -29,7 +29,6 @@ export default function Dashboard() {
         return () => { root.classList.remove("overflow-hidden"); };
     }, [isAnyModalOpen]);
 
-
     const sortedAppointments = [...appointments].sort((a, b) => {
         const isConfirmedA = a.status === "confirmed";
         const isConfirmedB = b.status === "confirmed";
@@ -65,7 +64,7 @@ export default function Dashboard() {
             try {
                 setLoading(true)
                 const res = await axios.get(`${API_URL}/dashboard/patient`, { withCredentials: true, });
-console.log(res.data.appointments);
+                console.log(res.data.appointments);
 
                 if (res.data.success) {
                     setPatient(res.data.patient);

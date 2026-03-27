@@ -175,35 +175,35 @@ export default function Dashboard() {
 
 
   const getTimeRemaining = (startTime, date, endtime) => {
-  
-if (!startTime || !date || !endtime) return "";
 
-const now = new Date();
+    if (!startTime || !date || !endtime) return "";
 
-function parseTime(timeStr) {
-  let [h, m] = timeStr.split(":").map(Number);
+    const now = new Date();
 
-  if (h === 12) h = 0;
+    function parseTime(timeStr) {
+      let [h, m] = timeStr.split(":").map(Number);
 
-  return { h, m };
-}
+      if (h === 12) h = 0;
 
-// Start
-const { h: sh, m: sm } = parseTime(startTime);
-const start = new Date(date);
-start.setHours(sh, sm, 0, 0);
+      return { h, m };
+    }
 
-let { h: eh, m: em } = parseTime(endtime);
-const end = new Date(date);
-end.setHours(eh, em, 0, 0);
+    // Start
+    const { h: sh, m: sm } = parseTime(startTime);
+    const start = new Date(date);
+    start.setHours(sh, sm, 0, 0);
 
-if (end <= start) {
-  end.setDate(end.getDate() + 1);
-}
+    let { h: eh, m: em } = parseTime(endtime);
+    const end = new Date(date);
+    end.setHours(eh, em, 0, 0);
 
-if (now > end) return "Completed";
+    if (end <= start) {
+      end.setDate(end.getDate() + 1);
+    }
 
-if (now >= start && now <= end) return "Started";
+    if (now > end) return "Completed";
+
+    if (now >= start && now <= end) return "Started";
 
 
 
@@ -298,7 +298,7 @@ if (now >= start && now <= end) return "Started";
       {addSlot && (<DoctorSlots slots={slots} setAddsote={setAddSlot} setSlots={setSlots} />)}
       {showCancelModal && (
         <div className="fixed h-full inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-[300px] mx-auto rounded-2xl shadow-xl p-5 animate-fadeIn">
+          <div className="bg-white w-full max-w-75 mx-auto rounded-2xl shadow-xl p-5 animate-fadeIn">
             <h2 className="text-lg font-semibold text-gray-800 mb-3">   Reason  </h2>
             <p className="text-xs text-gray-500 mb-3">   Please provide a reason  </p>
 
@@ -383,7 +383,7 @@ if (now >= start && now <= end) return "Started";
                     {a.status === "confirmed" && (
                       <p className="text-xs font-medium text-blue-600 mt-1">   {getTimeRemaining(slot.startTime, slot.date, slot.endTime)}  </p>
                     )}
-                    
+
 
                     <p className="text-[10px] text-gray-400 mt-1">{statusLabelMap[a.status] && `${statusLabelMap[a.status]}: `}
                       {new Date(a.createdat).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", })}{" "}  {formatTime12Hour(a.createdat)}
@@ -393,8 +393,8 @@ if (now >= start && now <= end) return "Started";
                   <div className="flex flex-wrap sm:flex-nowrap gap-2 justify-start sm:justify-end">
                     {a.status === "confirmed" || a.status === "Cancelled" ? (
                       <div className="flex flex-col items-start sm:items-center gap-1">
-                        {new Date(slot.date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0) && new Date(slot.date).setHours(0, 0, 0, 0) != new Date().setHours(0, 0, 0, 0) &&(
-                          
+                        {new Date(slot.date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0) && new Date(slot.date).setHours(0, 0, 0, 0) != new Date().setHours(0, 0, 0, 0) && (
+
                           <p className="text-xs px-3 py-1 rounded-full bg-orange-100 text-orange-500">  {a.status === "Cancelled" ? "SLOT CANCELLED" : "SLOT COMPLETED"}  </p>
                         )}
 
@@ -474,9 +474,9 @@ if (now >= start && now <= end) return "Started";
                     <p className="text-[10px] font-light italic"> Click here to {slot.isCancelled ? 'Activate' : 'Deactivate'}</p>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" checked={!slot.isCancelled} onChange={() => toggleStatus(slot.slotId, slot.isCancelled)} />
-                      <div className="group peer ring-0 bg-gradient-to-tr from-rose-100 via-rose-400 to-rose-500 rounded-full outline-none duration-300 after:duration-300 w-[50px] h-[22px]
-                       shadow-md peer-checked:bg-emerald-500 peer-focus:outline-none after:content-['✖️'] after:rounded-full after:absolute after:bg-gray-50 after:h-[18px] after:w-[18px] 
-                       after:top-[2px] after:left-[2px] after:flex after:justify-center after:items-center after:text-[10px] peer-checked:after:translate-x-[28px] peer-checked:after:content-['✔️']
+                      <div className="group peer ring-0 bg-linear-to-tr from-rose-100 via-rose-400 to-rose-500 rounded-full outline-none duration-300 after:duration-300 w-12.5 h-5.5
+                       shadow-md peer-checked:bg-emerald-500 peer-focus:outline-none after:content-['✖️'] after:rounded-full after:absolute after:bg-gray-50 after:h-4.5 after:w-4.5 
+                       after:top-o.2 after:left-0.5 after:flex after:justify-center after:items-center after:text-[10px] peer-checked:after:translate-x-7 peer-checked:after:content-['✔️']
                       peer-checked:from-green-100 peer-checked:via-lime-400 peer-checked:to-lime-500">
                       </div>
                     </label>

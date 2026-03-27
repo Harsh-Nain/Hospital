@@ -50,6 +50,13 @@
       "when": 1774324589849,
       "tag": "0006_perpetual_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1774498417188,
+      "tag": "0007_heavy_valkyrie",
+      "breakpoints": true
     }
   ]
 }

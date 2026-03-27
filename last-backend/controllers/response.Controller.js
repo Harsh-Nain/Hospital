@@ -111,6 +111,7 @@ export const getUserIds = async ({ doctorId, patientId, allUsers = false }) => {
 
 export const CreateNotification = async ({ doctorId, patientId, message, allUsers }) => {
     try {
+        console.log(doctorId, patientId, message, allUsers);
         if (!message) {
             return ({ message: "Message is required", });
         }
@@ -126,6 +127,8 @@ export const CreateNotification = async ({ doctorId, patientId, message, allUser
         }
 
         const values = userIds.map((userId) => ({ userId, message, }));
+        console.log(values);
+
         await db.insert(notifications).values(values);
         return ({ success: true, sentTo: userIds.length, message: "Notification sent successfully", });
 

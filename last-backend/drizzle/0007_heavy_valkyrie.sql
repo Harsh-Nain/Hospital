@@ -1,0 +1,1 @@
+ALTER TABLE `chat_messages` MODIFY COLUMN `file_url` json DEFAULT ('[]');

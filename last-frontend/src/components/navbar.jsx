@@ -1,11 +1,11 @@
 import { Bell, User, Search, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import ShowDoctorProfile from "./showDoctorProfile";
 import toast from "react-hot-toast";
 
-export default function Navbar() {
+export default function Navbar(patientInfo, setPatientInfo) {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -15,9 +15,7 @@ export default function Navbar() {
 
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-
   const [showDoctorDetail, setshowDoctorDetail] = useState(null);
-  const [getPatient, setPatientInfo] = useState(null);
 
   const searchRef = useRef();
   const dropdownRef = useRef();
@@ -36,24 +34,6 @@ export default function Navbar() {
 
     return () => { document.body.classList.remove("overflow-hidden"); };
   }, [isAnyModalOpen]);
-
-  useEffect(() => {
-    const getPatient = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/dashboard/patient-info`, { withCredentials: true, });
-
-        if (res.data.success) {
-          setPatientInfo(res.data.patient);
-        } else {
-          navigate(`/patient/login`);
-        }
-      } catch (error) {
-        navigate(`/patient/login`);
-      }
-    };
-
-    getPatient();
-  }, [API_URL, navigate]);
 
   useEffect(() => {
     const getNotifications = async () => {
@@ -120,12 +100,9 @@ export default function Navbar() {
 
   const deleteNotification = async (notificationId) => {
     try {
-      console.log(notificationId);
-
       const res = await axios.delete(`${API_URL}/feed/notification?notificationId=${notificationId}`, { withCredentials: true });
 
       if (res.data.success) {
-        toast.success(res.data.message);
         setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       }
     } catch (error) {
@@ -136,7 +113,7 @@ export default function Navbar() {
   return (
     <div className="flex items-center justify-between bg-white border-b border-black/10 px-4 md:px-6 py-4">
 
-      {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={getPatient?.patientId} />)}
+      {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={patientInfo?.patientId} />)}
 
       <div className="flex-1 max-w-xl" ref={searchRef}>
         <div className="relative">
@@ -150,7 +127,6 @@ export default function Navbar() {
               {doctors.length === 0 ? (<p className="text-sm text-center p-3">No result found...</p>) : (
 
                 doctors.map((doc) => (
-
                   <div key={doc.doctorId} onClick={() => setshowDoctorDetail(doc.doctorId)} className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer">
                     <img src={doc.image} className="w-10 h-10 rounded-lg" />
 
@@ -206,7 +182,7 @@ export default function Navbar() {
           </div>
         )}
 
-        <button onClick={() => navigate("/profile")} className="p-2 hover:bg-gray-100 rounded-lg">
+        <button onClick={() => navigate("/patient-profile")} className="p-2 hover:bg-gray-100 rounded-lg">
           <User size={20} className="text-gray-600" />
         </button>
       </div>

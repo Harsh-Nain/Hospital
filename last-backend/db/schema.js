@@ -159,7 +159,7 @@ export const chatMessages = mysqlTable("chat_messages", {
   senderId: int("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   receiverId: int("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   message: text("message").notNull(),
-  fileUrl: varchar("file_url", { length: 500 }),
+  fileUrl: json("file_url").default([]),
   isSeen: boolean("is_seen").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 },

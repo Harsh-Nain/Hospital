@@ -1,21 +1,20 @@
 import axios from "axios";
 import { Home, MessageSquare, FileText, User, LogOut } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
+import { SiCompilerexplorer } from "react-icons/si";
 import { useNavigate, useLocation } from "react-router-dom";
 
-export default function PatientSidebar() {
+export default function PatientSidebar({ patientInfo, setPatientInfo }) {
   const navigate = useNavigate();
   const location = useLocation();
-
   const API_URL = import.meta.env.VITE_BACKEND_URL;
-
-  const [PatientInfo, setPatientInfo] = useState(null);
 
   const menuItems = [
     { icon: Home, label: "Dashboard", path: `/dashboard-patient`, },
     { icon: MessageSquare, label: "Chat", path: "/patient-chats", },
     { icon: FileText, label: "Medical Records", path: "/reports", },
+    { icon: SiCompilerexplorer, label: "Doctors", path: `/Patient-dr.suggession`, },
     { icon: User, label: "Profile", path: `/Patient-profile`, type: "profile", },
   ];
 
@@ -64,13 +63,13 @@ export default function PatientSidebar() {
 
         </div>
 
-        {PatientInfo && (
+        {patientInfo && (
           <div className="flex items-center gap-3 mb-6 p-3 rounded-xl bg-gray-50">
-            <img src={PatientInfo.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-11 h-11 rounded-full object-cover" />
+            <img src={patientInfo.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-11 h-11 rounded-full object-cover" />
 
             <div>
-              <p className="font-semibold text-gray-800">{PatientInfo.fullName}</p>
-              <p className="text-xs text-gray-500">{PatientInfo.email}</p>
+              <p className="font-semibold text-gray-800">{patientInfo.fullName}</p>
+              <p className="text-xs text-gray-500">{patientInfo.email}</p>
             </div>
           </div>
         )}
@@ -83,7 +82,7 @@ export default function PatientSidebar() {
             return (
               <li key={item.path} onClick={() => navigate(item.path)} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition relative  ${active ? "bg-blue-50 text-sky-600 font-medium" : "hover:bg-gray-100 text-gray-600"}`}>
                 {active && (<span className="absolute left-0 top-2 bottom-2 w-1 bg-sky-600 rounded-r"></span>)}
-                {item.type === "profile" ? (<img src={PatientInfo?.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-5 h-5 rounded-full object-cover" />) : (<Icon size={18} />)}
+                {item.type === "profile" ? (<img src={patientInfo?.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-5 h-5 rounded-full object-cover" />) : (<Icon size={18} />)}
                 {item.label}
               </li>
             );

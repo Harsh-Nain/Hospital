@@ -11,6 +11,7 @@ export default function UserList({ users = [], currentUser, selectedUser, onSele
             fullName: u.fullName || u.name || "User",
             image: u.image || "https://via.placeholder.com/40",
             lastMessage: u.lastMessage || "Start chatting...",
+            isSeen: u.isSeen,
             updatedAt: u.updatedAt || u.createdAt,
             online: u.online || false,
             appointmentId: u.appointmentId,
@@ -29,8 +30,8 @@ export default function UserList({ users = [], currentUser, selectedUser, onSele
     };
 
     return (
-        <div className="flex flex-col w-full h-screen bg-white">
-            <div className="p-4.5 font-bold text-lg border-b border-black/10">{currentUser?.fullName || "Chats"}</div>
+        <div className="flex flex-col w-full h-full bg-white">
+            <div className={`p-4.5 font-bold text-lg border-b sticky top-0 bg-white z-10 border-black/10`}>{currentUser?.fullName || "Chats"}</div>
 
             <div className="px-3 py-2">
                 <input className="w-full px-3 py-2 bg-gray-100 rounded-lg outline-none" placeholder="Search users..." value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -39,7 +40,7 @@ export default function UserList({ users = [], currentUser, selectedUser, onSele
             <div className="flex-1 overflow-y-auto">
                 {filteredUsers.length > 0 ? (
                     filteredUsers.map((u) => (
-                        <div key={u.id} onClick={() => onSelectUser(u)} className={`${selectedUser?.id == u.id ? `${location ? "bg-blue-50" : "bg-green-50"}` : "hover:bg-gray-100"} flex items-center mx-1 rounded-2xl justify-between px-3 py-3 cursor-pointer transition`}>
+                        <div key={u.id} onClick={() => { onSelectUser({ ...u, isSeen: true }); }} className={` flex items-center justify-between  px-3 py-3  cursor-pointer  transition rounded-xl ${selectedUser?.id === u.id ? location ? "bg-sky-50" : "bg-emerald-50" : location ? "hover:bg-sky-50" : "hover:bg-emerald-50"} `}>
                             <div className="flex items-center gap-3 min-w-0">
 
                                 <div className="relative">
@@ -48,13 +49,16 @@ export default function UserList({ users = [], currentUser, selectedUser, onSele
                                 </div>
 
                                 <div className="min-w-0">
-                                    <p className="font-semibold text-sm truncate">{location && "Dr."} {u.fullName}</p>
-                                    <p className="text-xs text-gray-500 truncate">{u.lastMessage}</p>
-                                    {u.role && (<p className="text-[10px] text-blue-500">{u.role}</p>)}
+                                    <p className="text-sm font-semibold text-gray-900 truncate">{location && "Dr. "} {u.fullName}</p>
+                                    <p className={`text-sm truncate max-w-35 sm:max-w-50 md:max-w-40 ${!u.isSeen ? "text-gray-900 font-medium" : "text-gray-500"}`}>{u.lastMessage}</p>
                                 </div>
                             </div>
 
-                            <div className="text-xs text-gray-400 whitespace-nowrap ml-2">{formatTime(u.updatedAt)}</div>
+                            <div className="flex flex-col items-end gap-1 ml-2">
+                                <p className="text-[11px] text-gray-400">{formatTime(u.updatedAt)}</p>
+
+                                {!u.isSeen && (<span className="w-2 h-2 bg-blue-500 rounded-full"></span>)}
+                            </div>
                         </div>
                     ))
                 ) : (<p className="text-center text-gray-400 mt-10">No users found</p>)}

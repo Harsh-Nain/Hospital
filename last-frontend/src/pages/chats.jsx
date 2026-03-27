@@ -10,7 +10,6 @@ export default function Chats() {
     const location = useLocation().pathname.startsWith("/patient")
 
     const [users, setUsers] = useState([]);
-    const [allUsers, setAllUsers] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
     const { setLoading } = useOutletContext();
@@ -23,7 +22,6 @@ export default function Chats() {
 
                 if (res.data?.success) {
                     setUsers(res.data.users);
-                    setAllUsers(res.data.users);
                 }
 
                 const info = await axios.get(`${API_URL}/dashboard/${location ? "patient" : "doctor"}-info`, { withCredentials: true, });
@@ -39,6 +37,22 @@ export default function Chats() {
     }, []);
 
     useEffect(() => {
+        const handleChatListUpdate = (data) => {
+            setUsers((prev) =>
+                prev.map((chat) =>
+                    String(chat.userId) === String(data.userId) ? { ...chat, lastMessage: data.lastMessage || chat.lastMessage, updatedAt: data.updatedAt || chat.updatedAt, seen: data.seen ?? chat.seen, } : chat
+                )
+            );
+        };
+
+        socket.on("chatListUpdated", handleChatListUpdate);
+
+        return () => {
+            socket.off("chatListUpdated", handleChatListUpdate);
+        };
+    }, []);
+
+    useEffect(() => {
         if (!currentUser?.id) return;
         socket.auth = { userId: currentUser.id };
         socket.connect();
@@ -51,28 +65,11 @@ export default function Chats() {
             setUsers((prev) => prev.map((u) => ({ ...u, online: ids.includes(String(u.userId)), })));
         });
 
-        socket.on("chatUserUpdate", (data) => {
-            setUsers((prev) => {
-                const filtered = prev.filter((u) => String(u.userId) !== String(data.contactId));
-                return [{ userId: data.contactId, name: data.user, lastMessage: data.lastMessage, updatedAt: data.updatedAt, }, ...filtered,];
-            });
-        });
-
         return () => {
             socket.off("onlineUsers");
-            socket.off("chatUserUpdate");
             socket.disconnect();
         };
     }, [currentUser]);
-
-    useEffect(() => {
-        if (selectedUser && currentUser) {
-            socket.emit("joinChat", {
-                receiverId: selectedUser.userId,
-            });
-        }
-    }, [selectedUser, currentUser]);
-
 
     useEffect(() => {
         if (selectedUser && currentUser) {
@@ -81,15 +78,16 @@ export default function Chats() {
     }, [selectedUser, currentUser]);
 
     return (
-        <div className="h-screen flex w-full justify-center items-center">
+        <div className="h-full flex w-full bg-gray-100">
 
-            <div className={`${selectedUser ? "hidden md:flex" : "flex"} w-full h-screen md:w-87.5 border-r border-black/10`}>
+            <div className={`  ${selectedUser ? "hidden md:flex" : "flex"}  w-full md:w-[320px] lg:w-90 border-r border-black/10 bg-white`}>
                 <UserList users={users} currentUser={currentUser} selectedUser={selectedUser} onSelectUser={setSelectedUser} />
             </div>
 
-            <div className={`${selectedUser ? "flex" : "hidden md:flex"} h-screen flex-1`}>
+            <div className={` ${selectedUser ? "flex" : "hidden md:flex"} flex-1`}>
                 <ChatArea selectedUser={selectedUser} currentUser={currentUser} onBack={() => setSelectedUser(null)} />
             </div>
+
         </div>
     );
 }
