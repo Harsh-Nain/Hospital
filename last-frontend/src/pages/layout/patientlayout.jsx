@@ -33,7 +33,7 @@ export default function PatientLayout() {
                 {!chat && (<div className="fixed top-0 left-0 lg:left-72 right-0 z-30 bg-white shadow-sm"><Navbar patientInfo={patientInfo} setPatientInfo={setPatientInfo} /></div>)}
 
                 <main className={`flex-1 ${!chat ? "mt-16 overflow-y-auto" : "h-full w-full"} pb-15 lg:pb-0`}>
-                    <Outlet context={{ setLoading,patientInfo }} />
+                    <Outlet context={{ setLoading, patientInfo }} />
                 </main>
             </div>
 

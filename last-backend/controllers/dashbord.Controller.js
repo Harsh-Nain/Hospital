@@ -176,9 +176,6 @@ export const DoctorDashboard = async (req, res) => {
             slotCountMap[s.slotId] = Number(s.count);
         });
 
-
-
-        // 🔹 Step 1: format all appointments
         const formattedAppointments = appointmentsData.map((a) => {
 
             const slotDateTime = new Date(`${a.date}T${a.startTime}`);
