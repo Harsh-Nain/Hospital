@@ -5,9 +5,24 @@ CREATE TABLE `appointments` (
 	`slot_id` int NOT NULL,
 	`status` varchar(20) DEFAULT 'upcoming',
 	`meeting_link` text,
+	`cancelReason` text,
 	`created_at` timestamp DEFAULT (now()),
 	CONSTRAINT `appointments_id` PRIMARY KEY(`id`),
-	CONSTRAINT `appointment_slot_unique` UNIQUE(`slot_id`)
+	CONSTRAINT `unique_patient_slot` UNIQUE(`patient_id`,`slot_id`)
+);
+--> statement-breakpoint
+CREATE TABLE `call_logs` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`appointment_id` int,
+	`caller_id` int NOT NULL,
+	`receiver_id` int NOT NULL,
+	`call_type` varchar(20) NOT NULL,
+	`status` varchar(20) DEFAULT 'missed',
+	`started_at` timestamp,
+	`ended_at` timestamp,
+	`duration` int DEFAULT 0,
+	`created_at` timestamp DEFAULT (now()),
+	CONSTRAINT `call_logs_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `chat_messages` (
@@ -16,7 +31,7 @@ CREATE TABLE `chat_messages` (
 	`sender_id` int NOT NULL,
 	`receiver_id` int NOT NULL,
 	`message` text NOT NULL,
-	`file_url` varchar(500),
+	`file_url` json DEFAULT ('[]'),
 	`is_seen` boolean DEFAULT false,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	CONSTRAINT `chat_messages_id` PRIMARY KEY(`id`)
@@ -28,10 +43,10 @@ CREATE TABLE `doctor_slots` (
 	`date` varchar(20) NOT NULL,
 	`start_time` varchar(10) NOT NULL,
 	`end_time` varchar(10) NOT NULL,
-	`is_booked` boolean DEFAULT false,
-	`is_cancelled` boolean DEFAULT false,
-	`cancel_reason` text,
+	`isCancelled` boolean DEFAULT false,
+	`capacity` int DEFAULT 1,
 	`created_at` timestamp DEFAULT (now()),
+	`slotstage` text,
 	CONSTRAINT `doctor_slots_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -134,6 +149,9 @@ CREATE TABLE `users` (
 ALTER TABLE `appointments` ADD CONSTRAINT `appointments_doctor_id_doctors_id_fk` FOREIGN KEY (`doctor_id`) REFERENCES `doctors`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `appointments` ADD CONSTRAINT `appointments_patient_id_patients_id_fk` FOREIGN KEY (`patient_id`) REFERENCES `patients`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `appointments` ADD CONSTRAINT `appointments_slot_id_doctor_slots_id_fk` FOREIGN KEY (`slot_id`) REFERENCES `doctor_slots`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `call_logs` ADD CONSTRAINT `call_logs_appointment_id_appointments_id_fk` FOREIGN KEY (`appointment_id`) REFERENCES `appointments`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `call_logs` ADD CONSTRAINT `call_logs_caller_id_users_id_fk` FOREIGN KEY (`caller_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `call_logs` ADD CONSTRAINT `call_logs_receiver_id_users_id_fk` FOREIGN KEY (`receiver_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `chat_messages` ADD CONSTRAINT `chat_messages_appointment_id_appointments_id_fk` FOREIGN KEY (`appointment_id`) REFERENCES `appointments`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `chat_messages` ADD CONSTRAINT `chat_messages_sender_id_users_id_fk` FOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `chat_messages` ADD CONSTRAINT `chat_messages_receiver_id_users_id_fk` FOREIGN KEY (`receiver_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -148,6 +166,11 @@ ALTER TABLE `reviews` ADD CONSTRAINT `reviews_doctor_id_doctors_id_fk` FOREIGN K
 ALTER TABLE `reviews` ADD CONSTRAINT `reviews_patient_id_patients_id_fk` FOREIGN KEY (`patient_id`) REFERENCES `patients`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX `appointment_doctor_idx` ON `appointments` (`doctor_id`);--> statement-breakpoint
 CREATE INDEX `appointment_patient_idx` ON `appointments` (`patient_id`);--> statement-breakpoint
+CREATE INDEX `appointment_slot_idx` ON `appointments` (`slot_id`);--> statement-breakpoint
+CREATE INDEX `call_caller_idx` ON `call_logs` (`caller_id`);--> statement-breakpoint
+CREATE INDEX `call_receiver_idx` ON `call_logs` (`receiver_id`);--> statement-breakpoint
+CREATE INDEX `call_appointment_idx` ON `call_logs` (`appointment_id`);--> statement-breakpoint
+CREATE INDEX `call_created_idx` ON `call_logs` (`created_at`);--> statement-breakpoint
 CREATE INDEX `chat_appointment_idx` ON `chat_messages` (`appointment_id`);--> statement-breakpoint
 CREATE INDEX `chat_sender_idx` ON `chat_messages` (`sender_id`);--> statement-breakpoint
 CREATE INDEX `chat_receiver_idx` ON `chat_messages` (`receiver_id`);--> statement-breakpoint

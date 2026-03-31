@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "c5af9e74-f1ca-4cbb-897c-523a7df4005d",
-  "prevId": "accbb081-c1ee-44fa-b594-b67c635ac48f",
+  "id": "968490e6-a024-47cb-95ca-6ef060ce7203",
+  "prevId": "9d167115-460a-4661-8627-35ab0aec75d3",
   "tables": {
     "appointments": {
       "name": "appointments",
@@ -45,6 +45,13 @@
         },
         "meeting_link": {
           "name": "meeting_link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cancelReason": {
+          "name": "cancelReason",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -142,6 +149,165 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
+    "call_logs": {
+      "name": "call_logs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "appointment_id": {
+          "name": "appointment_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "caller_id": {
+          "name": "caller_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "receiver_id": {
+          "name": "receiver_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "call_type": {
+          "name": "call_type",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'missed'"
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "duration": {
+          "name": "duration",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "call_caller_idx": {
+          "name": "call_caller_idx",
+          "columns": [
+            "caller_id"
+          ],
+          "isUnique": false
+        },
+        "call_receiver_idx": {
+          "name": "call_receiver_idx",
+          "columns": [
+            "receiver_id"
+          ],
+          "isUnique": false
+        },
+        "call_appointment_idx": {
+          "name": "call_appointment_idx",
+          "columns": [
+            "appointment_id"
+          ],
+          "isUnique": false
+        },
+        "call_created_idx": {
+          "name": "call_created_idx",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "call_logs_appointment_id_appointments_id_fk": {
+          "name": "call_logs_appointment_id_appointments_id_fk",
+          "tableFrom": "call_logs",
+          "tableTo": "appointments",
+          "columnsFrom": [
+            "appointment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "call_logs_caller_id_users_id_fk": {
+          "name": "call_logs_caller_id_users_id_fk",
+          "tableFrom": "call_logs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "caller_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "call_logs_receiver_id_users_id_fk": {
+          "name": "call_logs_receiver_id_users_id_fk",
+          "tableFrom": "call_logs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "receiver_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "call_logs_id": {
+          "name": "call_logs_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "chat_messages": {
       "name": "chat_messages",
       "columns": {
@@ -182,10 +348,11 @@
         },
         "file_url": {
           "name": "file_url",
-          "type": "varchar(500)",
+          "type": "json",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "('[]')"
         },
         "is_seen": {
           "name": "is_seen",
@@ -332,13 +499,6 @@
           "autoincrement": false,
           "default": false
         },
-        "cancelReason": {
-          "name": "cancelReason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "capacity": {
           "name": "capacity",
           "type": "int",
@@ -354,6 +514,13 @@
           "notNull": false,
           "autoincrement": false,
           "default": "(now())"
+        },
+        "slotstage": {
+          "name": "slotstage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -959,7 +1126,7 @@
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": "(now())"
         }
@@ -969,6 +1136,13 @@
           "name": "review_doctor_idx",
           "columns": [
             "doctor_id"
+          ],
+          "isUnique": false
+        },
+        "review_patient_idx": {
+          "name": "review_patient_idx",
+          "columns": [
+            "patient_id"
           ],
           "isUnique": false
         }
@@ -984,7 +1158,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "reviews_patient_id_patients_id_fk": {
@@ -997,7 +1171,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

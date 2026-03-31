@@ -1,1 +1,0 @@
-ALTER TABLE `doctor_slots` ADD `bookedno` int DEFAULT 0;

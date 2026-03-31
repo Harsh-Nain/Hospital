@@ -111,7 +111,7 @@ export const appointments = mysqlTable(
     slotId: int("slot_id").notNull().references(() => doctorSlots.id),
     status: varchar("status", { length: 20 }).default("upcoming"),
     meetingLink: text("meeting_link"),
-      cancelReason: text("cancelReason"),
+    cancelReason: text("cancelReason"),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
@@ -142,14 +142,15 @@ export const payments = mysqlTable("payments",
 export const reviews = mysqlTable("reviews",
   {
     id: int("id").primaryKey().autoincrement(),
-    doctorId: int("doctor_id").notNull().references(() => doctors.id),
-    patientId: int("patient_id").notNull().references(() => patients.id),
+    doctorId: int("doctor_id").notNull().references(() => doctors.id, { onDelete: "cascade" }),
+    patientId: int("patient_id").notNull().references(() => patients.id, { onDelete: "cascade" }),
     rating: int("rating").notNull(),
     reviewText: text("review_text"),
-    createdAt: timestamp("created_at").defaultNow(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
     doctorIdx: index("review_doctor_idx").on(table.doctorId),
+    patientIdx: index("review_patient_idx").on(table.patientId),
   })
 );
 
@@ -168,6 +169,27 @@ export const chatMessages = mysqlTable("chat_messages", {
     senderIdx: index("chat_sender_idx").on(table.senderId),
     receiverIdx: index("chat_receiver_idx").on(table.receiverId),
     createdIdx: index("chat_created_idx").on(table.createdAt),
+  })
+);
+
+export const callLogs = mysqlTable("call_logs",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    appointmentId: int("appointment_id").references(() => appointments.id, { onDelete: "cascade" }),
+    callerId: int("caller_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    receiverId: int("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    callType: varchar("call_type", { length: 20 }).notNull(),
+    status: varchar("status", { length: 20 }).default("missed"),
+    startedAt: timestamp("started_at"),
+    endedAt: timestamp("ended_at"),
+    duration: int("duration").default(0),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    callerIdx: index("call_caller_idx").on(table.callerId),
+    receiverIdx: index("call_receiver_idx").on(table.receiverId),
+    appointmentIdx: index("call_appointment_idx").on(table.appointmentId),
+    createdIdx: index("call_created_idx").on(table.createdAt),
   })
 );
 

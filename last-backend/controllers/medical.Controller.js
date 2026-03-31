@@ -187,7 +187,7 @@ export const CreateAppointment = async (req, res) => {
     }
 
     const slot = await db.select().from(doctorSlots).where(eq(doctorSlots.id, slotId));
-    const [existingAppointments] = await db.select().from(appointments).where(eq(appointments.slotId, slotId));
+    const existingAppointments = await db.select().from(appointments).where(eq(appointments.slotId, slotId));
 
     if (existingAppointments.length >= slot[0].capacity) {
       return res.status(400).json({ message: "Slot is full", });
