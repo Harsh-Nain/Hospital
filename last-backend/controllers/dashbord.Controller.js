@@ -179,9 +179,11 @@ export const DoctorDashboard = async (req, res) => {
 
 
 
-        // 🔹 Step 1: format all appointments
-        const formattedAppointments = appointmentsData.map((a) => {
-
+        const formattedAppointments = appointmentsData
+          .filter(a => a.slotstage !== "Removed")
+        .map((a) => {
+            if (a.slotstage == "Removed")return         
+            
             const slotDateTime = new Date(`${a.date}T${a.startTime}`);
             const booked = slotCountMap[a.slotId] || 0;
             const remaining = a.capacity - booked;
@@ -192,7 +194,6 @@ export const DoctorDashboard = async (req, res) => {
                 meetingLink: a.meetingLink,
                 cancelReason: a.cancelReason,
                 createdat: a.createdat,
-                slotstage: a.slotstage,
                 type: slotDateTime > now ? "upcoming" : "past",
 
                 patient: {
@@ -225,14 +226,7 @@ export const DoctorDashboard = async (req, res) => {
         
 
 
-        const upcomingAppointments = formattedAppointments.filter(
-            (a) => a.type === "upcoming"
-        );
-
-
-
-
-
+   
 
         let totalAppointments = 0,
             confirmed = 0,
@@ -240,24 +234,22 @@ export const DoctorDashboard = async (req, res) => {
             Cancelled = 0,
             todayAppointments = 0,
             totalRevenue = 0,
-            fullSlots = 0;
+            fullSlots = 0;            
 
-        if (formattedAppointments && Array.isArray(formattedAppointments) && formattedAppointments.length > 0) {
-            const validAppointments = formattedAppointments.filter((a) => a.slotstage !== "Removed");
-
-            totalAppointments = validAppointments.length;
-            confirmed = validAppointments.filter((a) => a.status === "confirmed").length;
-            pending = validAppointments.filter((a) => a.status === "wait for approval").length;
-            Cancelled = validAppointments.filter((a) => a.status === "Cancelled").length;
-            todayAppointments = validAppointments.filter((a) => a.slot.date === today).length;
-            totalRevenue = validAppointments.reduce((sum, a) => sum + (a.payment?.amount || 0), 0); // Safely accessing payment.amount
-            fullSlots = validAppointments.filter((a) => a.slot.isFull).length;
+            if (formattedAppointments && Array.isArray(formattedAppointments) && formattedAppointments.length > 0) {
+            totalAppointments = formattedAppointments.length;            
+            confirmed = formattedAppointments.filter((a) => a.status === "confirmed").length;
+            pending = formattedAppointments.filter((a) => a.status === "wait for approval").length;
+            Cancelled = formattedAppointments.filter((a) => a.status === "Cancelled").length;
+            todayAppointments = formattedAppointments.filter((a) => a.slot.date === today).length;
+            totalRevenue = formattedAppointments.reduce((sum, a) => sum + (a.payment?.amount || 0), 0); // Safely accessing payment.amount
+            fullSlots = formattedAppointments.filter((a) => a.slot.isFull).length;
         }
 
 
 
         res.json({ success: true, doctor, stats: { totalAppointments, confirmed, pending, Cancelled, todayAppointments, totalRevenue, fullSlots, },
-             appointments: { formattedAppointments, upcomingAppointments } });
+             formattedAppointments  });
     } catch (error) {
         console.error("DoctorDashboard Error:", error);
         res.status(500).json({ success: false, message: "Server error", });

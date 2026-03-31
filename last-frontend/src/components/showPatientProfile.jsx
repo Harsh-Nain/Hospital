@@ -12,6 +12,8 @@ export default function ShowPatientProfile({ id, setshowPatientDetail, }) {
   const [appointments, setAppointments] = useState([]);
   const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -124,9 +126,43 @@ export default function ShowPatientProfile({ id, setshowPatientDetail, }) {
                     {new Date(r.uploadedAt).toLocaleDateString()}
                   </p>
 
-                  <a href={r.fileUrl} target="_blank" rel="noreferrer" className="text-sky-600 text-xs underline">
-                    View Report
-                  </a>
+
+
+                  <div>
+                    <button
+                      onClick={() => setOpen(true)}
+                      className="text-sky-600 text-xs underline"
+                    >
+                      View Report
+                    </button>
+
+                    {open && (
+                      <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+
+                        <button
+                          onClick={() => setOpen(false)}
+                          className="absolute top-4 right-4 text-white text-2xl font-bold"
+                        >
+                          ✖
+                        </button>
+
+                        {r.fileUrl.endsWith(".pdf") ? (
+                          <iframe
+                            src={r.fileUrl}
+                            title="Report"
+                            className="w-[90%] h-[90%] bg-white rounded"
+                          />
+                        ) : (
+                          <img
+                            src={r.fileUrl}
+                            alt="Report"
+                            className="max-w-[90%] max-h-[90%] rounded"
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                 </div>
               ))}
             </div>

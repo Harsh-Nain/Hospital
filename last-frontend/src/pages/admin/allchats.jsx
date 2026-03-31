@@ -45,7 +45,7 @@ export default function Allchat() {
     };
 
     return (
-        <div className="flex  w-full h-[87vh]">
+        <>
             {showChat ? (
                 <AdminChatDoc
                     users={DoctorChatlist}
@@ -53,7 +53,7 @@ export default function Allchat() {
                     goback={() => setShowChat(false)}
                 />
             ) : (
-                <div className="p-8 bg-slate-50 min-h-screen w-full">
+                <div className="p-8 bg-slate-50 h-full  w-full">
                     <div className="mb-10">
                         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Communication Hub</h1>
                         <p className="text-slate-500 mt-1">Monitor and manage conversations between doctors and patients.</p>
@@ -63,7 +63,7 @@ export default function Allchat() {
                     <div className="relative max-w-xl mb-10">
                         <input
                             type="text"
-                            placeholder="Search by doctor name or specialty..."
+                            placeholder="Search by doctor name..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 transition-all outline-none"
@@ -103,6 +103,6 @@ export default function Allchat() {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 }

@@ -56,7 +56,7 @@ export default function Adminshowchat({ selectedUser, currentUser, onBack }) {
 
     return (
             <>
-            <div className="p-3 border-b border-black/10 flex items-center gap-3 bg-white sticky top-0 z-10">
+            <div className="p-3 border-b border-black/10 flex items-center gap-3 bg-white sticky top-0 z-10 ">
                 <button onClick={onBack} className="md:hidden">
                     <FiArrowLeft size={20} />
                 </button>
@@ -71,7 +71,7 @@ export default function Adminshowchat({ selectedUser, currentUser, onBack }) {
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col overflow-y-auto p-3 space-y-3">
+            <div className="flex-1 flex flex-col overflow-y-auto p-3 space-y-3 h-[86%] w-[100%] md:w-[39%] pt-18 absolute">
                 {messages.length === 0 ? (
                     <p className="text-center text-gray-400 text-sm m-auto">No messages yet</p>
                 ) : (

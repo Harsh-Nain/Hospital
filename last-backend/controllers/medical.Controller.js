@@ -7,7 +7,9 @@ export const UploadMedicalReport = async (req, res) => {
   try {
     const { diseaseName } = req.body;
     const userId = req.user?.id;
-    const file = req.files;
+    const file = req.file;
+
+
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -30,7 +32,9 @@ export const UploadMedicalReport = async (req, res) => {
       });
     }
 
-    // Find patient
+
+
+
     const patient = await db
       .select()
       .from(patients)
@@ -46,13 +50,12 @@ export const UploadMedicalReport = async (req, res) => {
 
     const patientId = patient[0].id;
 
-    // Insert report
     const result = await db
       .insert(medicalReports)
       .values({
         patientId,
         diseaseName: diseaseName.trim(),
-        fileUrl: file[0].path,
+        fileUrl: file.path,
         uploadedAt: new Date(),
       })
       ;
@@ -212,22 +215,34 @@ export const GetDoctorSlots = async (req, res) => {
       .where(eq(doctorSlots.doctorId, doctorId))
       .groupBy(doctorSlots.id);
 
-    const formattedSlots = slots.map((slot) => {
-      const booked = Number(slot.booked || 0);
-      const capacity = Number(slot.capacity || 0);
 
-      return {
-        ...slot,
-        booked,
-        available: capacity - booked,
-      };
-    });
+    //  const formattedAppointments = appointmentsData
+    //     .filter(a => a.slotstage !== "Removed")
+    //   .map((a) => {
+    //       if (a.slotstage == "Removed")return   
+
+    const formattedSlots = slots.filter(slot => slot.slotstage !== "Removed")
+      .map((slot) => {
+        if (slot.slotstage == "Removed") return
+
+
+
+        const booked = Number(slot.booked || 0);
+        const capacity = Number(slot.capacity || 0);
+
+        return {
+          ...slot,
+          booked,
+          available: capacity - booked,
+        };
+      });
+
 
     const now = new Date();
 
-    const futureSlots = formattedSlots.filter((slot) => {
+    const futureSlots = slots.filter(slot => {
       const slotDateTime = new Date(`${slot.date}T${slot.startTime}`);
-      return slotDateTime >= now;
+      return slotDateTime > now && !slot.isCancelled;
     });
 
     res.json({

@@ -39,15 +39,15 @@ export default function AdminChatDoc({ users = [], currentUser, goback }) {
 
   return (
    <>
-  <div className="flex flex-col md:flex-row w-full h-screen bg-white overflow-hidden">
+  <div className="flex flex-col md:flex-row w-full h-full  bg-white overflow-hidden">
     
     {/* --- Left Sidebar (User List) --- */}
     <div
-      className={`flex flex-col w-full md:w-[380px] border-r border-gray-200 bg-gray-50/50 
+      className={`flex flex-col w-full md:w-[45%] border-r border-gray-200 bg-gray-50/50 
           ${showChatPage ? 'hidden md:flex' : 'flex'}`}
     >
       {/* Header */}
-      <div className="p-5 flex justify-between items-center bg-white border-b border-gray-200">
+      <div className="md:p-5 p-3 flex justify-between items-center bg-white border-b border-gray-200">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => goback(false)} 
@@ -65,7 +65,7 @@ export default function AdminChatDoc({ users = [], currentUser, goback }) {
       </div>
 
       {/* Search Input */}
-      <div className="p-4 bg-white">
+      <div className="md:p-4 p-2 bg-white">
         <div className="relative">
           <input
             type="text"
@@ -85,7 +85,7 @@ export default function AdminChatDoc({ users = [], currentUser, goback }) {
               <div
                 key={u.id}
                 onClick={() => handleSelectUser(u)}
-                className={`flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 
+                className={`flex items-center justify-between md:px-4 px-2 md:py-3 py-1.5 rounded-xl cursor-pointer transition-all duration-200 
                   ${isActive 
                     ? 'bg-sky-600 text-white shadow-md shadow-blue-200' 
                     : 'hover:bg-white hover:shadow-sm text-gray-700'}`}
@@ -136,7 +136,7 @@ export default function AdminChatDoc({ users = [], currentUser, goback }) {
 
     {/* --- Right Side (Chat Area) --- */}
     <div
-      className={`flex-1 bg-white relative
+      className={`flex-1 bg-white 
           ${!showChatPage ? 'hidden md:flex flex-col items-center justify-center' : 'flex flex-col'}`}
     >
       {showChatPage ? (
