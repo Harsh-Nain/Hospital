@@ -125,6 +125,8 @@ export const PatientDashboard = async (req, res) => {
             return { appointmentId: a.appointmentId, status: a.appointmentStatus, cancelReason: a.cancelReason, appoitmentCreatedAt: formatDateTime(a.appoitmentCreatedAt), paymentStatus: a.paymentStatus, amount: a.amount, meetingLink: a.meetingLink, type: slotDateTime > now ? "upcoming" : "past", doctor: { doctorId: a.doctorId, name: a.doctorName, image: a.doctorImage, specialization: a.specialization }, slot: { date: a.date, startTime: formatTime(a.startTime), endTime: formatTime(a.endTime), isCancelled: a.isCancelled, }, };
         });
 
+
+
         res.json({ success: true, patient, doctorsList: formattedDoctors, appointments: formattedAppointments, });
 
     } catch (error) {
@@ -173,8 +175,13 @@ export const DoctorDashboard = async (req, res) => {
             slotCountMap[s.slotId] = Number(s.count);
         });
 
-        const formattedAppointments = appointmentsData.map((a) => {
 
+
+        const formattedAppointments = appointmentsData
+          .filter(a => a.slotstage !== "Removed")
+        .map((a) => {
+            if (a.slotstage == "Removed")return         
+            
             const slotDateTime = new Date(`${a.date}T${a.startTime}`);
             const booked = slotCountMap[a.slotId] || 0;
             const remaining = a.capacity - booked;
@@ -185,7 +192,6 @@ export const DoctorDashboard = async (req, res) => {
                 meetingLink: a.meetingLink,
                 cancelReason: a.cancelReason,
                 createdat: a.createdat,
-                slotstage: a.slotstage,
                 type: slotDateTime > now ? "upcoming" : "past",
 
                 patient: {
@@ -215,21 +221,33 @@ export const DoctorDashboard = async (req, res) => {
                 },
             };
         });
-
-        const upcomingAppointments = formattedAppointments.filter(
-            (a) => a.type === "upcoming"
-        );
+        
 
 
-        const totalAppointments = formattedAppointments.length;
-        const confirmed = formattedAppointments.filter((a) => a.status === "confirmed").length;
-        const pending = formattedAppointments.filter((a) => a.status === "wait for approval").length;
-        const Cancelled = formattedAppointments.filter((a) => a.status === "Cancelled").length;
-        const todayAppointments = formattedAppointments.filter((a) => a.slot.date === today).length;
-        const totalRevenue = formattedAppointments.reduce((sum, a) => sum + (a.payment.amount || 0), 0);
-        const fullSlots = formattedAppointments.filter((a) => a.slot.isFull).length;
+   
 
-        res.json({ success: true, doctor, stats: { totalAppointments, confirmed, pending, Cancelled, todayAppointments, totalRevenue, fullSlots, }, appointments: { formattedAppointments, upcomingAppointments } });
+        let totalAppointments = 0,
+            confirmed = 0,
+            pending = 0,
+            Cancelled = 0,
+            todayAppointments = 0,
+            totalRevenue = 0,
+            fullSlots = 0;            
+
+            if (formattedAppointments && Array.isArray(formattedAppointments) && formattedAppointments.length > 0) {
+            totalAppointments = formattedAppointments.length;            
+            confirmed = formattedAppointments.filter((a) => a.status === "confirmed").length;
+            pending = formattedAppointments.filter((a) => a.status === "wait for approval").length;
+            Cancelled = formattedAppointments.filter((a) => a.status === "Cancelled").length;
+            todayAppointments = formattedAppointments.filter((a) => a.slot.date === today).length;
+            totalRevenue = formattedAppointments.reduce((sum, a) => sum + (a.payment?.amount || 0), 0); // Safely accessing payment.amount
+            fullSlots = formattedAppointments.filter((a) => a.slot.isFull).length;
+        }
+
+
+
+        res.json({ success: true, doctor, stats: { totalAppointments, confirmed, pending, Cancelled, todayAppointments, totalRevenue, fullSlots, },
+             formattedAppointments  });
     } catch (error) {
         console.error("DoctorDashboard Error:", error);
         res.status(500).json({ success: false, message: "Server error", });

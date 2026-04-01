@@ -12,6 +12,7 @@ export default function PatientRecord() {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -24,6 +25,7 @@ export default function PatientRecord() {
       const res = await axios.get(`${API_URL}/medical/reports`, { withCredentials: true });
 
       if (res.data.success) {
+
 
         const formatted = res.data.reports.map((report) => ({
           id: report.id,
@@ -50,16 +52,32 @@ export default function PatientRecord() {
       return toast.error("Please select a file");
     }
 
+    if (
+      !file.type.startsWith("image/") &&
+      file.type !== "application/pdf"
+    ) {
+      return toast.error("Only image or PDF allowed");
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      return toast.error("File size must be less than 5MB");
+    }
+
     try {
       setLoading(true);
 
       const formData = new FormData();
-      formData.append("diseaseName", title);
+      formData.append("diseaseName", title.trim());
       formData.append("file", file);
 
-      const res = await axios.post(`${API_URL}/medical/add-report`, formData, { withCredentials: true });
+      const res = await axios.post(`${API_URL}/medical/add-report`,
+        formData, {
+        withCredentials: true, headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      if (res.data.success) {
+      if (res?.data?.success) {
         const report = res.data.data;
 
         setReports((prev) => [...prev, { id: report.id, title: report.diseaseName, fileUrl: report.fileUrl, date: new Date(report.uploadedAt).toLocaleDateString() }]);
@@ -71,7 +89,13 @@ export default function PatientRecord() {
 
     } catch (err) {
       console.error(err);
-      toast.error("Upload failed");
+
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Upload failed";
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -96,8 +120,9 @@ export default function PatientRecord() {
     const selected = e.target.files?.[0];
     if (!selected) return;
 
-    if (!selected.type.startsWith("image/")) {
-      toast.error("Only image files allowed");
+    if (!selected.type.startsWith("image/") &&
+      selected.type !== "application/pdf") {
+      toast.error("Only image or PDF files allowed");
       return;
     }
 
@@ -157,26 +182,62 @@ export default function PatientRecord() {
 
             <div>
               <label className="text-sm text-gray-600">
-                Upload Image
+                Upload Image / PDF
               </label>
 
-              <div className="mt-2 bg-gray-50 relative flex items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-sky-500 transition overflow-hidden" onDragOver={(e) => e.preventDefault()} onDrop={handleDrop} onClick={() => document.getElementById("fileUpload").click()}>
+              <div
+                className="mt-2 bg-gray-50 relative flex items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-sky-500 transition overflow-hidden"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current.click()}
+              >
                 {previewUrl ? (
                   <>
-                    <img src={previewUrl} alt="preview" className="absolute inset-0 w-full h-full object-contain py-1" />
-                    <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setPreviewUrl(null); fileInputRef.current.value = "" }} className="absolute top-2 right-2 bg-white rounded-full p-1 shadow">
-                      <RxCross2 size={16} color="red" />
+                    {file?.type === "application/pdf" ? (
+                      <div className="text-center">
+                        <p className="text-red-500 text-sm">PDF Selected</p>
+                        <p className="text-xs text-gray-400 mt-1">{file.name}</p>
+                      </div>
+                    ) : (
+                      <img
+                        src={previewUrl}
+                        alt="preview"
+                        className="absolute inset-0 w-full h-full object-contain py-1"
+                      />
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFile(null);
+                        setPreviewUrl(null);
+                        fileInputRef.current.value = "";
+                      }}
+                      className="absolute top-2 right-2 bg-white rounded-full p-1 shadow"
+                    >
+                      ✕
                     </button>
                   </>
-
                 ) : (
                   <div className="text-center">
-                    <p className="text-gray-500 text-sm">Drag & Drop Image</p>
-                    <p className="text-xs text-gray-400 mt-1">or Click to Browse</p>
+                    <p className="text-gray-500 text-sm">
+                      Drag & Drop Image or PDF
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      or Click to Browse
+                    </p>
                   </div>
                 )}
               </div>
-              <input ref={fileInputRef} id="fileUpload" type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={handleFileChange}
+                className="hidden"
+              />
             </div>
           </div>
         </div>
@@ -202,6 +263,7 @@ export default function PatientRecord() {
 
                 <tbody>
                   {reports.map((report) => (
+
                     <tr key={report.id} className="border-b hover:bg-gray-50 transition" >
                       <td className="px-4 py-3 font-medium">{report.title}</td>
                       <td className="px-4 py-3 text-gray-600">{report.date}</td>
@@ -209,26 +271,67 @@ export default function PatientRecord() {
 
                         <div className="flex justify-center gap-2">
 
-                          <a href={report.fileUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100">
-                            <Eye size={18} />
-                          </a>
 
-                          <a href={report.fileUrl} download className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100">
+                          <button
+                            onClick={() => setSelectedReport(report)}
+                            className="text-sky-600 text-xs underline"
+                          >
+                            <Eye size={18} />
+                          </button>
+
+
+
+                          <a
+                            href={report.fileUrl}
+                            download
+                            className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100"
+                          >
                             <Download size={18} />
                           </a>
 
                           <button onClick={() => deleteReport(report.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100">
                             <Trash2 size={18} />
                           </button>
+
                         </div>
+
                       </td>
+
                     </tr>
+
+
                   ))}
                 </tbody>
               </table>
+              
             </div>
+
           )}
         </div>
+              {selectedReport && (
+                <div className="fixed h-100% inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+                  <button
+                    onClick={() => setSelectedReport(null)}
+                    className="absolute top-4 right-4 text-white text-2xl font-bold"
+                  >
+                    ✖
+                  </button>
+
+                  {selectedReport.fileUrl.includes(".pdf") || selectedReport.fileUrl.includes("/raw/") ? (
+                    <iframe
+                      src={selectedReport.fileUrl}
+                      title="Report"
+                      className="w-[90%] h-[90%] bg-white rounded"
+                    />
+                  ) : (
+                    <img
+                      src={selectedReport.fileUrl}
+                      alt="Report"
+                      className="max-w-[90%] max-h-[90%] rounded"
+                    />
+                  )}
+                </div>
+              )}
       </div>
     </div>
   );

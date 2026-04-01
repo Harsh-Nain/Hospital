@@ -19,6 +19,8 @@ export default function ShowPatientProfile({ id, setshowPatientDetail, }) {
   const [appointments, setAppointments] = useState([]);
   const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+
 
   useEffect(() => {
     const fetchPatient = async () => {

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Stethoscope, Users } from "lucide-react";
+import { ChartScatter, LayoutDashboard, Stethoscope, Users } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 export default function AdminSidebar() {
@@ -9,6 +9,7 @@ export default function AdminSidebar() {
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin_dashboard", bgactive: "from-sky-100 to-emerald-100 text-sky-600", text: "" },
     { icon: Stethoscope, label: "Doctors", path: "/admin_doctors", bgactive: "from-sky-100 to-white", hover: "group-hover:text-sky-500", text: "text-sky-500" },
     { icon: Users, label: "Patients", path: "/admin_patients", bgactive: "from-emerald-100 to-white", hover: "group-hover:text-emerald-500", text: "text-emerald-500" },
+    { icon: ChartScatter, label: "Conversation", path: "/admin_chat", bgactive: "from-blue-100 to-white", hover: "group-hover:text-blut-500", text: "" },
   ];
 
   return (
