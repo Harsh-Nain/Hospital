@@ -1,5 +1,4 @@
 export default function PatientCard({ pat, i, setshowPatientDetail }) {
-        
     return (
         <div key={i} onClick={() => setshowPatientDetail(pat.patientId)} className="group relative bg-white border border-emerald-100 rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-linear-to-r from-emerald-100/40 to-green-100/40"></div>
