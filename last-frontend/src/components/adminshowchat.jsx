@@ -55,7 +55,7 @@ export default function Adminshowchat({ selectedUser, currentUser, onBack }) {
     }
 
     return (
-            <>
+        <>
             <div className="p-3 border-b border-black/10 flex items-center gap-3 bg-white sticky top-0 z-10 ">
                 <button onClick={onBack} className="md:hidden">
                     <FiArrowLeft size={20} />
@@ -71,7 +71,7 @@ export default function Adminshowchat({ selectedUser, currentUser, onBack }) {
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col overflow-y-auto p-3 space-y-3 h-[86%] w-[100%] md:w-[39%] pt-18 absolute">
+            <div className="flex-1 flex flex-col md:pb-0 pb-11  overflow-y-auto p-3 space-y-3 h-[86%] w-[100%] md:w-auto pt-18 absolute">
                 {messages.length === 0 ? (
                     <p className="text-center text-gray-400 text-sm m-auto">No messages yet</p>
                 ) : (
@@ -85,7 +85,7 @@ export default function Adminshowchat({ selectedUser, currentUser, onBack }) {
                                     />
                                 )}
                                 {msg.message && (
-                                    <div className={`px-3 py-2 rounded-2xl text-sm shadow-sm break-words ${msg.isMe ? "bg-blue-500 text-white" : "bg-black/5 text-gray-800"}`}>
+                                    <div className={`px-3 py-2 rounded-2xl text-sm shadow-sm break-words ${msg.isMe ? "bg-gradient-to-r from-sky-400 to-blue-500 text-white " : "bg-black/5 text-gray-800"}`}>
                                         {msg.message}
                                     </div>
                                 )}
@@ -101,7 +101,7 @@ export default function Adminshowchat({ selectedUser, currentUser, onBack }) {
                 )}
                 <div ref={bottomRef} />
             </div>
-            </>
-        
+        </>
+
     );
 }

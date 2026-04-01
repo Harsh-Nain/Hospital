@@ -53,13 +53,12 @@ export default function Allchat() {
                     goback={() => setShowChat(false)}
                 />
             ) : (
-                <div className="p-8 bg-slate-50 h-full  w-full">
+                <div className="p-6 bg-slate-50 h-full  w-full">
                     <div className="mb-10">
                         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Communication Hub</h1>
                         <p className="text-slate-500 mt-1">Monitor and manage conversations between doctors and patients.</p>
                     </div>
 
-                    {/* Search Bar - Modern & Centered */}
                     <div className="relative max-w-xl mb-10">
                         <input
                             type="text"
@@ -71,7 +70,6 @@ export default function Allchat() {
                         <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                     </div>
 
-                    {/* Grid Layout */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                         {filteredDoctors.map((doctor) => (
                             <div
@@ -93,9 +91,13 @@ export default function Allchat() {
                                     <h3 className="text-lg font-bold text-slate-800">Dr. {doctor.name}</h3>
                                     <p className="text-xs text-slate-500 font-medium">{doctor.email || ""}</p>
 
-                                    <div className="mt-6 w-full flex items-center justify-between px-4 py-2 bg-slate-50 rounded-xl group-hover:bg-blue-600 transition-colors">
-                                        <span className="text-xs font-semibold text-slate-500 group-hover:text-white">View Chats</span>
-                                        <FiChevronRight className="text-slate-400 group-hover:text-white" />
+                                    <div className="mt-6 w-[90%] flex items-center gap-3 group">
+                                        <button className="flex-1 flex items-center justify-center gap-2 
+                                        bg-gradient-to-r from-sky-400 to-blue-500 text-sm text-white py-2.5 px-4 rounded-xl font-medium 
+                                        shadow-sm hover:shadow-md hover:from-sky-500 hover:to-blue-600 active:scale-[0.98] transition-all duration-200" >
+                                            View Details
+                                            <FiChevronRight className="text-white opacity-80 group-hover:translate-x-1 transition-transform duration-200" />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
