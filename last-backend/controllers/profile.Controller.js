@@ -59,7 +59,6 @@ export const GetDoctorProfile = async (req, res) => {
             slots.push(slotObj);
         });
 
-
         const doctorReviews = await db
             .select({ id: reviews.id, patientId: patients.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, patientImage: users.image, })
             .from(reviews)

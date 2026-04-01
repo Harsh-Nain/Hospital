@@ -214,8 +214,6 @@ export const ReActivate = async (req, res) => {
     }
 };
 
-
-
 export const getChatList = async (req, res) => {
     try {
 
@@ -239,7 +237,7 @@ export const getChatList = async (req, res) => {
             if (sender?.role === "doctor") {
                 const exists = Doctorlist.find(d => d.id === sender.id);
 
-                
+
                 if (!exists) {
                     Doctorlist.push({
                         id: sender.id,

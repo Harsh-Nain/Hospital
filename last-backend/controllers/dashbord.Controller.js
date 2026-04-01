@@ -178,53 +178,53 @@ export const DoctorDashboard = async (req, res) => {
 
 
         const formattedAppointments = appointmentsData
-          .filter(a => a.slotstage !== "Removed")
-        .map((a) => {
-            if (a.slotstage == "Removed")return         
-            
-            const slotDateTime = new Date(`${a.date}T${a.startTime}`);
-            const booked = slotCountMap[a.slotId] || 0;
-            const remaining = a.capacity - booked;
+            .filter(a => a.slotstage !== "Removed")
+            .map((a) => {
+                if (a.slotstage == "Removed") return
 
-            return {
-                appointmentId: a.appointmentId,
-                status: a.status,
-                meetingLink: a.meetingLink,
-                cancelReason: a.cancelReason,
-                createdat: a.createdat,
-                type: slotDateTime > now ? "upcoming" : "past",
+                const slotDateTime = new Date(`${a.date}T${a.startTime}`);
+                const booked = slotCountMap[a.slotId] || 0;
+                const remaining = a.capacity - booked;
 
-                patient: {
-                    id: a.patientId,
-                    name: a.patientName,
-                    image: a.patientImage,
-                    disease: a.disease,
-                },
+                return {
+                    appointmentId: a.appointmentId,
+                    status: a.status,
+                    meetingLink: a.meetingLink,
+                    cancelReason: a.cancelReason,
+                    createdat: a.createdat,
+                    type: slotDateTime > now ? "upcoming" : "past",
 
-                slot: {
-                    date: a.date,
-                    startTime: formatTime(a.startTime),
-                    endTime: formatTime(a.endTime),
-                    capacity: a.capacity,
-                    booked,
-                    remaining,
-                    isFull: remaining <= 0,
-                },
+                    patient: {
+                        id: a.patientId,
+                        name: a.patientName,
+                        image: a.patientImage,
+                        disease: a.disease,
+                    },
 
-                payment: {
-                    id: a.paymentId,
-                    amount: a.amount,
-                    status: a.paymentStatus,
-                    method: a.paymentMethod,
-                    transactionId: a.transactionId,
-                    paidAt: a.paidAt,
-                },
-            };
-        });
-        
+                    slot: {
+                        date: a.date,
+                        startTime: formatTime(a.startTime),
+                        endTime: formatTime(a.endTime),
+                        capacity: a.capacity,
+                        booked,
+                        remaining,
+                        isFull: remaining <= 0,
+                    },
+
+                    payment: {
+                        id: a.paymentId,
+                        amount: a.amount,
+                        status: a.paymentStatus,
+                        method: a.paymentMethod,
+                        transactionId: a.transactionId,
+                        paidAt: a.paidAt,
+                    },
+                };
+            });
 
 
-   
+
+
 
         let totalAppointments = 0,
             confirmed = 0,
@@ -232,10 +232,10 @@ export const DoctorDashboard = async (req, res) => {
             Cancelled = 0,
             todayAppointments = 0,
             totalRevenue = 0,
-            fullSlots = 0;            
+            fullSlots = 0;
 
-            if (formattedAppointments && Array.isArray(formattedAppointments) && formattedAppointments.length > 0) {
-            totalAppointments = formattedAppointments.length;            
+        if (formattedAppointments && Array.isArray(formattedAppointments) && formattedAppointments.length > 0) {
+            totalAppointments = formattedAppointments.length;
             confirmed = formattedAppointments.filter((a) => a.status === "confirmed").length;
             pending = formattedAppointments.filter((a) => a.status === "wait for approval").length;
             Cancelled = formattedAppointments.filter((a) => a.status === "Cancelled").length;
@@ -246,8 +246,10 @@ export const DoctorDashboard = async (req, res) => {
 
 
 
-        res.json({ success: true, doctor, stats: { totalAppointments, confirmed, pending, Cancelled, todayAppointments, totalRevenue, fullSlots, },
-             formattedAppointments  });
+        res.json({
+            success: true, doctor, stats: { totalAppointments, confirmed, pending, Cancelled, todayAppointments, totalRevenue, fullSlots, },
+            formattedAppointments
+        });
     } catch (error) {
         console.error("DoctorDashboard Error:", error);
         res.status(500).json({ success: false, message: "Server error", });
@@ -285,11 +287,8 @@ export const PatientGetDoctor = async (req, res) => {
                         eq(doctors.isApproved, true),
                         eq(doctors.status, "approved"),
                         // eq(doctorSlots.isCancelled, false),
-                        or(
-                            ...cat.match.map((m) =>
-                                sql`LOWER(${specializations.name}) LIKE LOWER(${`%${m}%`})`
-                            )
-                        )
+                        or(gt(doctorSlots.date, sql`CURDATE()`), and(eq(doctorSlots.date, sql`CURDATE()`), gt(doctorSlots.startTime, sql`CURTIME()`))),
+                        or(...cat.match.map((m) => sql`LOWER(${specializations.name}) LIKE LOWER(${`%${m}%`})`))
                     )
                 )
                 .groupBy(doctors.id, users.fullName, users.image, doctors.experienceYears, specializations.name)
