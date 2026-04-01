@@ -18,10 +18,81 @@ export default function DoctorRegister() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (Loading) return;
+
+        if (!formData.fullName?.trim()) {
+            toast.error("Full name is required");
+            return;
+        }
+
+        if (!formData.email?.trim()) {
+            toast.error("Email is required");
+            return;
+        }
+
+        if (!formData.password?.trim()) {
+            toast.error("Password is required");
+            return;
+        }
+
+
+        if (!formData.specialization?.trim()) {
+            toast.error("Specialization is required");
+            return;
+        }
+
+        if (!formData.experienceYears?.trim()) {
+            toast.error("Experience year is required");
+            return;
+        }
+
+        if (formData.experienceYears < 1) {
+            toast.error("must have  1 year experience");
+            return;
+        }
+
+        const license = formData.licenseNumber?.trim().toUpperCase();
+
+        if (!license) {
+            toast.error("License number is required");
+            return;
+        }
+
+        if (license.length < 6 || license.length > 15) {
+            toast.error("License must be 6 to 15 characters long");
+            return;
+        }
+
+        const licenseRegex = /^[A-Z]{2,5}-?[0-9]{3,10}$/;
+
+        if (!licenseRegex.test(license)) {
+            toast.error("Invalid license Number");
+            return;
+        }
+
+        if (license.includes("--") || license.startsWith("-") || license.endsWith("-")) {
+            toast.error("License cannot contain consecutive hyphens");
+            return;
+        }
+
+        if (!formData.consultationFee?.trim()) {
+            toast.error("Consultation fee is required");
+            return;
+        }
+        if (formData.consultationFee < 0) {
+            toast.error("invalid Consultation fee ");
+            return;
+        }
+
         try {
             setLoading(true);
-            let formdata = { ...formData, symptoms: formData.symptoms.split(",").map((s) => s.trim()).filter(Boolean) };
-            console.log(formdata);
+
+            let formdata
+            if (formData.symptoms == []) {
+                formdata = { ...formData, symptoms: formData.symptoms.split(",").map((s) => s.trim()).filter(Boolean) };
+            } else {
+                formdata = formData
+            }
 
             const res = await axios.post(`${API_URL}/auth/send-otp`, { ...formdata, role: "doctor" });
 
@@ -31,13 +102,17 @@ export default function DoctorRegister() {
             }
 
         } catch (err) {
+
+
             toast.error(err.response?.data?.message || "Failed to send OTP");
+        } finally {
+            setLoading(false); 
         }
     };
 
     return (
         <div className="h-screen flex flex-col md:flex-row bg-gray-50 overflow-hidden">
-            {OtpVerification && (<VerifyOtp formdata={formData} role="doctor" />)}
+            {OtpVerification && (<VerifyOtp formdata={formData} role="doctor" close={setOtpVerification} />)}
 
             <div className="hidden md:flex w-1/2 bg-linear-to-br from-emerald-300 via-emerald-400 to-emerald-600 items-center justify-center p-12 text-white">
 
@@ -96,13 +171,38 @@ export default function DoctorRegister() {
                             <input type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange} placeholder="Consultation Fee (₹)" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none border-emerald-100 focus:ring-2 focus:ring-emerald-400 transition" />
                         </div>
 
-                        <div className="relative">
-                            <FaNotesMedical className="absolute top-4 left-3 text-gray-400" />
-                            <input type="text" name="symptoms" value={formData.symptoms} onChange={handleChange} placeholder="Enter Symptoms" className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none border-emerald-100 focus:ring-2 focus:ring-emerald-400 transition" />
+                        <div className="space-y-1">
+
+
+
+                            <div className="relative">
+                                <FaNotesMedical className="absolute top-4 left-3 text-gray-400" />
+
+                                <input
+                                    type="text"
+                                    name="symptoms"
+                                    value={formData.symptoms}
+                                    onChange={handleChange}
+                                    placeholder="e.g. skin rash, cough"
+                                    className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none border-emerald-100 focus:ring-2 focus:ring-emerald-400 transition"
+                                />
+                            </div>
+
+                            <p className="text-xs text-gray-500">
+                                Add symptoms for faster and accurate doctor search  </p>
+
                         </div>
 
-                        <button type="submit" className="w-full py-3 rounded-lg bg-linear-to-r from-emerald-400 to-emerald-600 text-white font-semibold shadow-md hover:opacity-90 transition">
-                            Verify Email
+                        <button
+                            type="submit"
+                            disabled={Loading}
+                            className={`w-full py-3 rounded-lg text-white font-semibold shadow-md transition
+                                ${Loading
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-gradient-to-r from-emerald-400 to-emerald-600 hover:opacity-90"
+                                }`}
+                        >
+                            {Loading ? "Sending Otp..." : "Create Account"}
                         </button>
 
                     </form>

@@ -14,12 +14,26 @@ export default function PatientLogin() {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({ email: "", password: "" });
     const handleChange = (e) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
+    const [Loading, setLoading] = useState(false)
 
     const handleSubmit = async (e) => {
+        if (Loading) return;
+
         const API_URL = import.meta.env.VITE_BACKEND_URL
         e.preventDefault();
+        if (!formData.email?.trim()) {
+            toast.error("Email is required");
+            return;
+        }
+
+        if (!formData.password?.trim()) {
+            toast.error("Password is required");
+            return;
+        }
 
         try {
+            setLoading(true);
+
             const res = await axios.post(`${API_URL}/auth/login-patient`, formData, { withCredentials: true });
             if (res.data.success) {
                 toast.success("Login Successful 🎉");
@@ -33,6 +47,8 @@ export default function PatientLogin() {
             } else {
                 toast.error("Server error! please try again.");
             }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -80,20 +96,12 @@ export default function PatientLogin() {
                             <p className="text-sky-600 hover:underline">Forget Password?</p>
                         </div>
 
-                        <button type="submit" className="w-full py-3 rounded-lg bg-linear-to-r from-blue-400 to-blue-600 text-white font-semibold shadow-md hover:opacity-90 transition">Login</button>
-
+                        <button type="submit"  disabled={Loading} className={`w-full py-3 rounded-lg text-white font-semibold shadow-md transition ${Loading  ? "bg-gray-400 cursor-not-allowed"  : "bg-gradient-to-r from-blue-400 to-blue-600 hover:opacity-90"
+                                }`}   >
+                            {Loading ? "Logging in..." : "Login"}
+                        </button>
                     </form>
 
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1 h-px bg-gray-200"></div>
-                        <span className="text-sm text-gray-400">OR</span>
-                        <div className="flex-1 h-px bg-gray-200"></div>
-                    </div>
-
-                    <button className="w-full flex items-center justify-center gap-3 py-3 border rounded-lg hover:bg-gray-50 transition">
-                        <FaGoogle className="text-red-500" />
-                        Continue with Google
-                    </button>
 
                     <p className="text-center text-sm text-gray-500">
                         Don’t have an account?{" "}

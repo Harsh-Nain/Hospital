@@ -22,7 +22,7 @@ import Allpatients from "../pages/admin/allpatients"
 import Allchats from "../pages/admin/allchats";
 import Chats from "../pages/chats"
 import PatientGetDoctors from "../components/patientGetDoctors";
-
+import Webintro from "../interface/Home";
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -31,6 +31,7 @@ function AppRoutes() {
       <Routes>
 
         <Route path="/" element={<RoleSelection />} />
+        <Route path="/web" element={<Webintro/>} />
 
         <Route path="/patient/login" element={<PatientLogin />} />
         <Route path="/patient/register" element={<PatientRegister />} />

@@ -18,6 +18,23 @@ export default function PatientRegister() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (Loading) return;
+
+        if (!formData.fullName?.trim()) {
+            toast.error("Full name is required");
+            return;
+        }
+
+        if (!formData.email?.trim()) {
+            toast.error("Email is required");
+            return;
+        }
+
+        if (!formData.password?.trim()) {
+            toast.error("Password is required");
+            return;
+        }
+
         try {
             setLoading(true);
             const res = await axios.post(`${API_URL}/auth/send-otp`, { ...formData, role: "patient" });
@@ -31,12 +48,14 @@ export default function PatientRegister() {
         } catch (err) {
             setLoading(false);
             toast.error(err.response?.data?.message || "Failed to send OTP");
+        }finally {
+            setLoading(false); 
         }
     };
 
     return (
         <div className="h-screen flex flex-col md:flex-row bg-gray-100 overflow-hidden">
-            {OtpVerification && (<VerifyOtp formdata={formData} role="patient" />)}
+            {OtpVerification && (<VerifyOtp formdata={formData} role="patient" close={setOtpVerification} />)}
 
             <div className="hidden md:flex w-1/2 bg-linear-to-br from-blue-300 via-blue-400 to-blue-600 items-center justify-center p-12 text-white">
 
@@ -82,8 +101,16 @@ export default function PatientRegister() {
                             <input type="text" name="disease" placeholder="Disease / Health Issue" value={formData.disease} onChange={handleChange} className="w-full pl-10 pr-4 py-3 border focus:outline-none border-sky-100 focus:ring-2 focus:ring-sky-400 transition rounded-xl" />
                         </div>
 
-                        <button type="submit" className="w-full py-3 rounded-xl bg-linear-to-r from-blue-400 to-sky-600 text-white font-semibold" >
-                            {!Loading ? "Verify Email" : "Sending Otp..."}
+                         <button
+                            type="submit"
+                            disabled={Loading}
+                            className={`w-full py-3 rounded-lg text-white font-semibold shadow-md transition
+                                ${Loading
+                                    ? "bg-blue-400 cursor-not-allowed"
+                                    : "bg-linear-to-r from-blue-400 to-sky-600 hover:opacity-90"
+                                }`}
+                        >
+                            {Loading ? "Sending Otp..." : "Create Account"}
                         </button>
 
                     </form>
