@@ -131,7 +131,7 @@ export default function Navbar({ patientInfo }) {
             )}
           </div>
 
-          {!searching && (
+          {searching && (
             <div className="absolute top-18 left-0 right-0 z-999 overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
               <div className="p-3 border-b border-slate-100">
                 <p className="text-sm font-semibold text-slate-700">Searching...</p>
