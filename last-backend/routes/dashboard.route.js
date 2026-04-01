@@ -1,11 +1,12 @@
 import express from "express";
 const router = express.Router();
-import { PatientInfo, PatientDashboard, DoctorDashboard, DoctorInfo } from "../controllers/dashbord.Controller.js"
+import { PatientInfo, PatientDashboard, DoctorDashboard, PatientGetDoctor, DoctorInfo } from "../controllers/dashbord.Controller.js"
 
 router.get("/patient-info", PatientInfo);
 router.get("/patient", PatientDashboard);
+router.get("/doctor-info", DoctorInfo);
 router.get("/doctor", DoctorDashboard);
 
-router.get("/doctor-info", DoctorInfo);
+router.get("/patientgetdoctor", PatientGetDoctor);
 
 export default router;

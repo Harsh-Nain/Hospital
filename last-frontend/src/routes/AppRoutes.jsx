@@ -21,6 +21,7 @@ import Alldoctors from "../pages/admin/allDoctors"
 import Allpatients from "../pages/admin/allpatients"
 import Allchats from "../pages/admin/allchats";
 import Chats from "../pages/chats"
+import PatientGetDoctors from "../components/patientGetDoctors";
 
 function AppRoutes() {
   return (
@@ -51,6 +52,7 @@ function AppRoutes() {
           <Route path="/patient-chats" element={<Chats />} />
           <Route path="/reports" element={<PatientRecord />} />
           <Route path="/patient-profile" element={<PatientProfile />} />
+          <Route path="/Patient-dr.suggession" element={<PatientGetDoctors />} />
         </Route>
 
         <Route element={<DoctorLayout />}>

@@ -61,12 +61,13 @@ export const GetDoctorProfile = async (req, res) => {
 
 
         const doctorReviews = await db
-            .select({ id: reviews.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, patientImage: users.image, })
+            .select({ id: reviews.id, patientId: patients.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, patientImage: users.image, })
             .from(reviews)
             .leftJoin(patients, eq(patients.id, reviews.patientId))
             .leftJoin(users, eq(users.id, patients.userId))
             .where(eq(reviews.doctorId, Number(doctorId)))
-            .orderBy(desc(reviews.createdAt));
+            .orderBy(desc(reviews.createdAt))
+            .limit(10)
 
         const [ratingSummary] = await db
             .select({ avgRating: sql`AVG(${reviews.rating})`, totalReviews: sql`COUNT(${reviews.id})`, })

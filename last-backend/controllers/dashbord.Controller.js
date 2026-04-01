@@ -9,7 +9,6 @@ const formatTime = (time) => {
 };
 
 export const PatientInfo = async (req, res) => {
-
     try {
         const { id } = req.user;
 
@@ -121,7 +120,6 @@ export const PatientDashboard = async (req, res) => {
 
 
         const formattedAppointments = appointmentList.map((a) => {
-
             const slotDateTime = new Date(`${a.date}T${a.startTime}`);
             const formatDateTime = (date) => { return new Date(date).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, }); }
             return { appointmentId: a.appointmentId, status: a.appointmentStatus, cancelReason: a.cancelReason, appoitmentCreatedAt: formatDateTime(a.appoitmentCreatedAt), paymentStatus: a.paymentStatus, amount: a.amount, meetingLink: a.meetingLink, type: slotDateTime > now ? "upcoming" : "past", doctor: { doctorId: a.doctorId, name: a.doctorName, image: a.doctorImage, specialization: a.specialization }, slot: { date: a.date, startTime: formatTime(a.startTime), endTime: formatTime(a.endTime), isCancelled: a.isCancelled, }, };
@@ -253,5 +251,57 @@ export const DoctorDashboard = async (req, res) => {
     } catch (error) {
         console.error("DoctorDashboard Error:", error);
         res.status(500).json({ success: false, message: "Server error", });
+    }
+};
+
+export const PatientGetDoctor = async (req, res) => {
+    try {
+        const categories = [
+            { label: "Heart", match: ["Cardiologist"] },
+            { label: "Brain", match: ["Neurologist"] },
+            { label: "Bones & Joints", match: ["Orthopedic"] },
+            { label: "Lungs", match: ["Pulmonologist"] },
+            { label: "Stomach & Liver", match: ["Gastroenterologist"] },
+            { label: "Skin", match: ["Dermatologist"] },
+            { label: "General Health", match: ["General Physician"] },
+            { label: "Child Care", match: ["Pediatrician"] },
+        ];
+
+        const result = [];
+
+        for (const cat of categories) {
+
+            const doctorsData = await db
+                .select({
+                    doctorId: doctors.id, fullName: users.fullName, image: users.image, experienceYears: doctors.experienceYears, specialization: specializations.name,
+                    slots: sql`COALESCE(JSON_ARRAYAGG( JSON_OBJECT( 'slotId', ${doctorSlots.id}, 'date', ${doctorSlots.date}, 'startTime', ${doctorSlots.startTime}, 'endTime', ${doctorSlots.endTime}, 'capacity', ${doctorSlots.capacity}, 'bookedCount', ( SELECT COUNT(*) FROM ${appointments} WHERE ${appointments.slotId} = ${doctorSlots.id}))),JSON_ARRAY()) `
+                })
+                .from(doctors)
+                .leftJoin(users, eq(users.id, doctors.userId))
+                .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
+                .leftJoin(doctorSlots, eq(doctorSlots.doctorId, doctors.id))
+                .where(
+                    and(
+                        eq(doctors.isApproved, true),
+                        eq(doctors.status, "approved"),
+                        // eq(doctorSlots.isCancelled, false),
+                        or(
+                            ...cat.match.map((m) =>
+                                sql`LOWER(${specializations.name}) LIKE LOWER(${`%${m}%`})`
+                            )
+                        )
+                    )
+                )
+                .groupBy(doctors.id, users.fullName, users.image, doctors.experienceYears, specializations.name)
+                .limit(5);
+
+            result.push({ category: cat.label, doctors: doctorsData });
+        }
+
+        return res.json({ success: true, doctors: result });
+
+    } catch (error) {
+        console.error(error);
+        return res.json({ success: false, message: "Error patient get doctors" });
     }
 };

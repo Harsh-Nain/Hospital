@@ -5,50 +5,15 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1773899652447,
-      "tag": "0000_soft_phantom_reporter",
+      "when": 1774931546100,
+      "tag": "0000_light_adam_warlock",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "5",
-      "when": 1773911168120,
-      "tag": "0001_watery_toad",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1773981669040,
-      "tag": "0002_classy_sphinx",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1773983358376,
-      "tag": "0003_smiling_nicolaos",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1774003009807,
-      "tag": "0004_heavy_echo",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1774324074586,
-      "tag": "0005_sweet_the_liberteens",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1774324589849,
-      "tag": "0006_perpetual_avengers",
+      "when": 1774949521126,
+      "tag": "0001_square_the_phantom",
       "breakpoints": true
     }
   ]

@@ -35,9 +35,10 @@ export const getChatUsers = async (req, res) => {
             return res.json({ success: true, users: [] });
         }
 
-        const chats = await db.select({ appointmentId: chatMessages.appointmentId, otherUserId: sql`CASE WHEN ${chatMessages.senderId} = ${id} THEN ${chatMessages.receiverId} ELSE ${chatMessages.senderId} END`.as("otherUserId"), lastMessage: chatMessages.message, createdAt: chatMessages.createdAt, })
+        const chats = await db
+            .select({ appointmentId: chatMessages.appointmentId, otherUserId: sql`CASE WHEN ${chatMessages.senderId} = ${id} THEN ${chatMessages.receiverId} ELSE ${chatMessages.senderId}   END`.as("otherUserId"), lastMessage: chatMessages.message, isSeen: sql`CASE WHEN ${chatMessages.receiverId} = ${id} THEN ${chatMessages.isSeen} ELSE TRUE END`.as("isSeen"), createdAt: chatMessages.createdAt, })
             .from(chatMessages)
-            .where(and(or(eq(chatMessages.senderId, id), eq(chatMessages.receiverId, id)), inArray(sql`CASE WHEN ${chatMessages.senderId} = ${id} THEN ${chatMessages.receiverId} ELSE ${chatMessages.senderId} END `, userIds)))
+            .where(and(or(eq(chatMessages.senderId, id), eq(chatMessages.receiverId, id)), inArray(sql`CASE WHEN ${chatMessages.senderId} = ${id} THEN ${chatMessages.receiverId} ELSE ${chatMessages.senderId} END`, userIds)))
             .orderBy(desc(chatMessages.createdAt));
 
         const chatMap = new Map();
@@ -48,13 +49,14 @@ export const getChatUsers = async (req, res) => {
             }
         }
 
-        const usersData = await db.select({ id: users.id, fullName: users.fullName, image: users.image, }).from(users).where(inArray(users.id, userIds));
+        const usersData = await db.select({ id: users.id, fullName: users.fullName, image: users.image, role: users.role }).from(users).where(inArray(users.id, userIds));
 
         const result = usersData.map(user => {
             const chat = chatMap.get(user.id);
             const appointment = appointmentMap.get(user.id);
-            return { userId: user.id, fullName: user.id === id ? `${user.fullName} (You)` : user.fullName, image: user.image, appointmentId: appointment.appointmentId, lastMessage: chat?.lastMessage || null, createdAt: chat?.createdAt || null, };
+            return { userId: user.id, fullName: user.id === id ? `${user.fullName} (You)` : user.fullName, image: user.image, role: user.role, appointmentId: appointment.appointmentId, lastMessage: chat?.lastMessage || null, isSeen: (chat?.isSeen == undefined) ? true : chat.isSeen, createdAt: chat?.createdAt || null, };
         });
+
         return res.json({ success: true, users: result, });
 
     } catch (error) {
@@ -68,34 +70,40 @@ export const sendMessage = async (req, res) => {
         let { appointmentId, receiverId, message } = req.body;
         const { id: senderId } = req.user;
 
-        const fileUrl = req.file ? req.file.path : null;
+        const files = req.files?.map(file => ({ url: file.path, name: file.originalname, type: file.mimetype, size: file.size, })) || [];
 
         if (!appointmentId || !receiverId) {
             return res.status(400).json({ success: false, message: "Required fields missing", });
         }
 
-        if (!message && !fileUrl) {
+        if (!message && files.length === 0) {
             return res.status(400).json({ success: false, message: "Message or file required", });
         }
 
         let finalMessage = message?.trim() || "";
 
-        if (!finalMessage && fileUrl) {
-            finalMessage = "📷 Image";
-        }
-
-        const [inserted] = await db.insert(chatMessages).values({ appointmentId: Number(appointmentId), senderId, receiverId: Number(receiverId), message: finalMessage, fileUrl, isSeen: false, }).$returningId();
+        const [inserted] = await db.insert(chatMessages).values({ appointmentId: Number(appointmentId), senderId, receiverId: Number(receiverId), message: finalMessage, fileUrl: files, isSeen: false, }).$returningId();
         const insertedId = inserted.id;
 
         const [saved] = await db.select().from(chatMessages).where(eq(chatMessages.id, insertedId));
+        saved.isMe = false;
         const io = req.app.get("io");
-        saved.isMe = false
 
-        const payload = { ...saved, imageUrl: saved.fileUrl, };
-        console.log(receiverId, senderId);
+        const payload = { ...saved, files: saved.fileUrl };
+
+        io.to(String(senderId)).emit("chatListUpdated", {
+            userId: receiverId,
+            lastMessage: saved.message,
+            updatedAt: saved.createdAt,
+        });
+
+        io.to(String(receiverId)).emit("chatListUpdated", {
+            userId: senderId,
+            lastMessage: saved.message,
+            updatedAt: saved.createdAt,
+        });
 
         io.to(String(receiverId)).emit("newMessage", payload);
-        // io.to(String(senderId)).emit("newMessage", payload);
 
         res.status(201).json({ success: true, data: payload, });
 
@@ -136,25 +144,6 @@ export const getMessages = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ success: false, message: "Error getting messages", });
-    }
-};
-
-export const editMessage = async (req, res) => {
-    try {
-
-        const { messageId } = req.query;
-        const { message } = req.body;
-
-        if (!message) {
-            return res.status(400).json({ success: false, message: "Message required" });
-        }
-
-        await db.update(chatMessages).set({ message: message.trim() }).where(eq(chatMessages.id, Number(messageId)));
-        return res.json({ success: true, message: "Message updated" });
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ success: false, message: "Error editing message" });
     }
 };
 
