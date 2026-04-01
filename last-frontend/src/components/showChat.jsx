@@ -283,7 +283,7 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 w-full">
+        <div className="flex flex-col h-[88vh] sm:h-screen bg-gray-50 w-full">
             <div className="p-3 border-b border-gray-200 flex items-center justify-between bg-white/95 backdrop-blur-md sticky top-0 z-10 shadow-sm">
 
                 <div className="flex items-center gap-3 min-w-0">
@@ -394,11 +394,11 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
                 </div>
             )}
 
-            <div className="p-2 sm:p-3 bg-white border-t border-black/10 flex gap-2 items-center sticky bottom-0">
+            <div className="p-3 bg-white border-t border-black/10 flex gap-2 items-center sticky bottom-0">
                 <input type="file" hidden ref={fileRef} multiple onChange={(e) => { const selected = Array.from(e.target.files); const newFiles = selected.map(file => ({ file, preview: URL.createObjectURL(file) })); setFiles(prev => [...prev, ...newFiles]); }} />
                 <button onClick={() => fileRef.current.click()} className="text-lg cursor-pointer"><MdPermMedia /></button>
                 <input value={text} onChange={(e) => { handleTyping(e.target.value); setText(e.target.value) }} onKeyDown={(e) => { if (e.key === "Enter") sendMessage(); }} className="flex-1 bg-gray-100 px-3 py-2 rounded-full outline-none text-sm" placeholder="Message..." />
-                <button onClick={sendMessage} className="bg-blue-500 text-white p-2 rounded-full"><FiSend size={16} /></button>
+                <button onClick={sendMessage} className="bg-sky-500 text-white p-2 rounded-full"><FiSend size={16} /></button>
             </div>
         </div>
     );

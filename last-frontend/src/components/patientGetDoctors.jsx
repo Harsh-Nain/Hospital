@@ -65,7 +65,7 @@ export default function PatientGetDoctors() {
                         </div>
 
                         {item.doctors.length === 0 ? (
-                            <div className="text-center py-8 sm:py-10 bg-gray-50 rounded-xl border w-full">
+                            <div className="text-center py-8 sm:py-10 bg-gray-50 rounded-xl border border-black/10 w-full">
                                 <p className="text-gray-400 text-sm">No doctors available</p>
                             </div>
                         ) : (

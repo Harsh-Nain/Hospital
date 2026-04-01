@@ -120,13 +120,10 @@ export const PatientDashboard = async (req, res) => {
 
 
         const formattedAppointments = appointmentList.map((a) => {
-
             const slotDateTime = new Date(`${a.date}T${a.startTime}`);
             const formatDateTime = (date) => { return new Date(date).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, }); }
             return { appointmentId: a.appointmentId, status: a.appointmentStatus, cancelReason: a.cancelReason, appoitmentCreatedAt: formatDateTime(a.appoitmentCreatedAt), paymentStatus: a.paymentStatus, amount: a.amount, meetingLink: a.meetingLink, type: slotDateTime > now ? "upcoming" : "past", doctor: { doctorId: a.doctorId, name: a.doctorName, image: a.doctorImage, specialization: a.specialization }, slot: { date: a.date, startTime: formatTime(a.startTime), endTime: formatTime(a.endTime), isCancelled: a.isCancelled, }, };
         });
-
-
 
         res.json({ success: true, patient, doctorsList: formattedDoctors, appointments: formattedAppointments, });
 
