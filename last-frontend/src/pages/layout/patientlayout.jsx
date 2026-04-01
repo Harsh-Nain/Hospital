@@ -17,11 +17,7 @@ export default function PatientLayout() {
     return (
         <div className="flex min-h-screen bg-white">
 
-            {loading && (
-                <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-100">
-                    <Loading />
-                </div>
-            )}
+            {loading && <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-100"><Loading /></div>}
 
             <div className={`fixed lg:static top-0 left-0 h-full w-72 bg-white transition-transform duration-300 
                  ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
@@ -30,7 +26,7 @@ export default function PatientLayout() {
 
             <div className="flex-1 flex flex-col  h-screen">
 
-                {!chat && (<div className="fixed top-0 left-0 lg:left-72 right-0 z-30 bg-white shadow-sm"><Navbar patientInfo={patientInfo} setPatientInfo={setPatientInfo} /></div>)}
+                {!chat && (<div className="fixed top-0 left-0 lg:left-72 right-0 z-30 bg-white shadow-sm"><Navbar patientInfo={patientInfo} /></div>)}
 
                 <main className={`flex-1 ${!chat ? "mt-16 overflow-y-auto" : "h-full w-full"} pb-15 lg:pb-0`}>
                     <Outlet context={{ setLoading, patientInfo }} />

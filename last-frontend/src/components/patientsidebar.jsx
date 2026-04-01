@@ -65,7 +65,7 @@ export default function PatientSidebar({ patientInfo, setPatientInfo }) {
 
         {patientInfo && (
           <div className="flex items-center gap-3 mb-6 p-3 rounded-xl bg-gray-50">
-            <img src={patientInfo.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-11 h-11 rounded-full object-cover" />
+            <img src={patientInfo.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-11 h-11 border border-sky-600 rounded-full object-cover" />
 
             <div>
               <p className="font-semibold text-gray-800">{patientInfo.fullName}</p>
@@ -82,7 +82,7 @@ export default function PatientSidebar({ patientInfo, setPatientInfo }) {
             return (
               <li key={item.path} onClick={() => navigate(item.path)} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition relative  ${active ? "bg-blue-50 text-sky-600 font-medium" : "hover:bg-gray-100 text-gray-600"}`}>
                 {active && (<span className="absolute left-0 top-2 bottom-2 w-1 bg-sky-600 rounded-r"></span>)}
-                {item.type === "profile" ? (<img src={patientInfo?.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-5 h-5 rounded-full object-cover" />) : (<Icon size={18} />)}
+                {item.type === "profile" ? (<img src={patientInfo?.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-5 h-5 border-[1.5px] border-sky-600 rounded-full object-cover" />) : (<Icon size={18} />)}
                 {item.label}
               </li>
             );

@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from "react";
-import { FiArrowLeft, FiSend } from "react-icons/fi";
+import { FiArrowLeft, FiMoreVertical, FiPhoneCall, FiSearch, FiSend, FiVideo } from "react-icons/fi";
 import axios from "axios";
 import "../index.css";
 import socket from "../socket";
 import { FiCopy, FiTrash2, FiCornerUpLeft } from "react-icons/fi";
 import { MdDownload, MdPermMedia } from "react-icons/md";
+import CallSection from "./CallSection";
 
 export default function ChatArea({ selectedUser, currentUser, onBack }) {
     const [messages, setMessages] = useState([]);
@@ -219,10 +220,6 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
         };
     }, [userId]);
 
-    const handleCopy = (text) => {
-        navigator.clipboard.writeText(text);
-    };
-
     const handleDelete = async (id) => {
         try {
             const res = await axios.delete(`${API_URL}/chat/message?messageId=${id}`, { withCredentials: true });
@@ -237,12 +234,30 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
 
     };
 
-    const handleReply = (msg) => {
-        setText(`Replying to: ${msg.message}`);
-    };
-
     if (!selectedUser) {
-        return (<div className="flex-1 flex items-center justify-center text-gray-400 text-sm">Select a chat to start messaging</div>);
+        return (
+            <div className="flex-1 flex items-center justify-center bg-white">
+                <div className="flex flex-col items-center justify-center text-center px-6">
+
+                    <div className="relative mb-6">
+                        <div className="w-28 h-28 rounded-full bg-sky-100 flex items-center justify-center shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h8M8 14h5m-9 6l2.5-2.5A9 9 0 1112 21a8.96 8.96 0 01-3.5-.7L3 20z" />
+                            </svg>
+                        </div>
+
+                        <div className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-emerald-50 shadow-md flex items-center justify-center border border-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v7a2 2 0 01-2 2H7l-4 4v-4H4a2 2 0 01-2-2V5z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-2">Your Messages</h2>
+                    <p className="text-gray-500 max-w-sm leading-relaxed">Select a conversation from the sidebar to start chatting with your friends, team, or clients.</p>
+                </div>
+            </div>
+        );
     }
 
     const handleDownload = async (m) => {
@@ -261,7 +276,6 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
             window.URL.revokeObjectURL(url);
         } catch (err) {
             console.error("Download error:", err);
@@ -270,14 +284,31 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
 
     return (
         <div className="flex flex-col h-full bg-gray-50 w-full">
+            <div className="p-3 border-b border-gray-200 flex items-center justify-between bg-white/95 backdrop-blur-md sticky top-0 z-10 shadow-sm">
 
-            <div className={`p-3 border-b border-black/10 flex items-center gap-3 bg-white sticky top-0 z-10`}>
-                <button onClick={onBack} className="md:hidden"><FiArrowLeft size={20} /></button>
-                <img src={selectedUser.image} className="w-10 h-10 rounded-full" alt="" />
+                <div className="flex items-center gap-3 min-w-0">
+                    <button onClick={onBack} className="md:hidden p-2 rounded-full hover:bg-gray-100 transition">
+                        <FiArrowLeft size={20} />
+                    </button>
 
-                <div className="flex flex-col cursor-pointer">
-                    <p className="font-semibold">{selectedUser.fullName}</p>
-                    <span className="text-xs text-gray-500">{selectedUser.online ? "Online" : "Offline"}</span>
+                    <img src={selectedUser.image} className="w-11 h-11 rounded-full object-cover border border-black/15" alt={selectedUser.fullName} />
+
+                    <div className="flex flex-col min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{selectedUser.fullName}</p>
+
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                            <span className={`w-2 h-2 rounded-full ${selectedUser.online ? "bg-green-500" : "bg-gray-400"}`} />
+                            {selectedUser.online ? "Online" : "Last seen recently"}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <CallSection selectedUser={selectedUser} currentUser={currentUser} />
+
+                    <button className="w-10 h-10 rounded-full bg-white flex items-center justify-center transition-all duration-200">
+                        <FiMoreVertical size={18} />
+                    </button>
                 </div>
             </div>
 
@@ -288,19 +319,20 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
 
                 {messages != [] && (
                     messages.map((m, i) => {
+
                         return (
                             <div key={i} className={`flex ${m.isMe ? "justify-end" : "justify-start"} group relative px-2`} onClick={(e) => { e.stopPropagation(); setActiveMsg((prev) => (prev === i ? null : i)); }}>
 
-                                {activeMsg === i && (
+                                {(activeMsg === i && m.isMe) && (
                                     <div className={` absolute z-30 ${m.isMe ? "right-2" : "left-2"} -top-14 flex items-center gap-3 px-3 py-2 rounded-full backdrop-blur-xl bg-white/80 shadow-xl border border-white/40 animate-fadeIn`}>
-                                        {m.message && (<button onClick={() => handleCopy(m.message)} className="p-2 rounded-full hover:bg-sky-100 transition"><FiCopy size={16} /></button>)}
-                                        <button onClick={() => handleReply(m)} className="p-2 rounded-full hover:bg-emerald-100 transition"><FiCornerUpLeft size={16} /></button>
+                                        {m.message && (<button onClick={() => navigator.clipboard.writeText(m.message)} className="p-2 rounded-full hover:bg-sky-100 transition"><FiCopy size={16} /></button>)}
+                                        <button onClick={() => setText(`Replying to: ${m.message}`)} className="p-2 rounded-full hover:bg-emerald-100 transition"><FiCornerUpLeft size={16} /></button>
                                         <button onClick={() => handleDelete(m.id || m._id)} className="p-2 rounded-full hover:bg-red-100 text-red-500 transition"><FiTrash2 size={16} /></button>
                                         {m.fileUrl?.length > 0 && (<button onClick={() => handleDownload(m)} className="p-2 rounded-full hover:bg-sky-100 text-sky-500 transition"><MdDownload size={16} /></button>)}
                                     </div>
                                 )}
 
-                                <div className={`flex flex-col ${m.isMe ? "items-end" : "items-start"} max-w-[80%]`}>
+                                <div className={`flex flex-col ${m.isMe ? "items-end cursor-default" : "items-start"} max-w-[80%]`}>
 
                                     {m.fileUrl && m.fileUrl.map((file, i) => {
                                         const isImage = file.type.startsWith("image/");
@@ -308,7 +340,7 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
 
                                         return (
                                             <div key={i} className="mb-2 rounded-2xl overflow-hidden shadow-md border border-white/40 backdrop-blur-md">
-                                                {isImage && (<img src={file.url} alt={file.name} className="w-full max-h-60 object-cover hover:scale-[1.02] transition" />)}
+                                                {isImage && (<img src={file.url} alt={file.name} className={`w-full max-h-60 object-cover ${m.isMe && "hover:scale-[1.02]"} transition`} />)}
                                                 {isPDF && (<iframe src={file.url} title={file.name} className="w-full h-56" />)}
                                                 {!isImage && !isPDF && (<a href={file.url} target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/70 hover:bg-white transition text-sm">📄 {file.name}</a>)}
                                             </div>
@@ -316,7 +348,7 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
                                     })}
 
                                     {m.message && (
-                                        <div className={` px-4 py-2 rounded-2xl text-sm shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-[1.02] wrap-break-words ${m.isMe ? ` bg-[linear-gradient(135deg,#0ea5e9,#38bdf8,#34d399)] text-white rounded-br-none shadow-sm ` : ` bg-white text-gray-800 rounded-bl-none border border-gray-200 shadow-sm`}`}>
+                                        <div className={` px-4 py-2 rounded-2xl text-sm shadow-lg backdrop-blur-md transition-all duration-200 wrap-break-words ${m.isMe ? ` bg-[linear-gradient(135deg,#0ea5e9,#38bdf8,#34d399)] text-white rounded-br-none shadow-sm hover:scale-[1.02]` : ` bg-white text-gray-800 rounded-bl-none border border-gray-200 shadow-sm`}`}>
                                             <p className={`${m.isMe ? "text-right" : "text-left"} leading-relaxed`}>{m.message}</p>
                                         </div>
                                     )}

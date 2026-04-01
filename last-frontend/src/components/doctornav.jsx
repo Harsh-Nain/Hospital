@@ -72,7 +72,7 @@ export default function Doctornav() {
 
                 <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 rounded-lg hover:bg-gray-100 transition">
                     <Bell size={20} className="text-emerald-600" />
-                    {notifications.length > 0 && (<span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></span>)}
+                    {notifications.some((n) => !n.isRead) && (<span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>)}
                 </button>
 
                 {showNotifications && (

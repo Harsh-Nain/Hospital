@@ -1,11 +1,10 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { RxCross1 } from "react-icons/rx";
-import { FaStar } from "react-icons/fa";
 import Loading from "../components/loading";
 import toast from "react-hot-toast";
 import PaymentCard from "../components/paymentcard"
-import { FaClock, FaCalendarAlt, FaUsers } from "react-icons/fa";
+import { FaClock, FaCalendarAlt, FaUsers, FaPlus, FaTimes, FaStar } from "react-icons/fa";
 
 export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, isAdmin, }) {
   const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -13,11 +12,64 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
   const [doctor, setDoctor] = useState(null);
   const [slots, setSlots] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [rating, setRating] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [confirmSlot, setConfirmSlot] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [pay, setPay] = useState(null);
+
+  const [addReview, setAddReview] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [hoveredStar, setHoveredStar] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+
+    if (rating === 0) {
+      toast.error("Please select a rating")
+      return
+    }
+
+    if (!reviewText.trim()) {
+      toast.error("Review text is required");
+      return
+    } else if (reviewText.trim().length < 20) {
+      toast.error("Review should be at least 20 characters")
+      return
+    }
+
+    try {
+      setLoading(true);
+      const res = await axios.post(`${API_URL}/feed/review`, { doctorId: doctor.doctorId, rating, reviewText }, { withCredentials: true });
+
+      if (res.data.success) {
+        console.log(res.data);
+
+        setReviews(r => [res.data.review, ...r]);
+        setLoading(false);
+        setRating(0);
+        setReviewText("");
+        setAddReview(false);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.data.message)
+    }
+  };
+
+  const deleteReview = async (id) => {
+    try {
+      setLoading(true);
+      const res = await axios.delete(`${API_URL}/feed/review?reviewId=${id}`, { withCredentials: true });
+
+      if (res.data.success) {
+        console.log(res.data);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.data.message)
+    }
+  }
 
   const formatTime = (time) => {
     const [hour, minute] = time.split(":");
@@ -30,6 +82,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
+        setLoading(true)
         const res = await axios.get(`${API_URL}/profile/doctor?doctorId=${id}`, { withCredentials: true });
 
         if (res.data.success) {
@@ -121,8 +174,8 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
 
               <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs">{doctor?.experience} yrs exp</span>
 
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${doctor.status === "suspanded" ? "bg-yellow-300 text-black" : "bg-emerald-300 text-black"}`}>
-                {doctor.status === "suspanded" ? "Suspended" : "Active"}
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${doctor?.status === "suspanded" ? "bg-yellow-300 text-black" : "bg-emerald-300 text-black"}`}>
+                {doctor?.status === "suspanded" ? "Suspended" : "Active"}
               </span>
             </div>
 
@@ -131,9 +184,10 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
               <span className="font-semibold">{rating?.avgRating || "0.0"}</span>
               <span className="text-sm opacity-80">({rating?.totalReviews || 0})</span>
             </div>
+
             {(isAdmin) && (
               <button onClick={profileControler} className={`px-4 py-2 rounded-xl bottom-2 right-17 absolute bg-linear-to-r ${doctor.status == "approved" ? "from-orange-400 to-red-500" : "from-emerald-300 to-green-500"} text-white text-sm shadow hover:shadow-lg hover:scale-[1.03] transition`}>
-                {doctor.status == "approved" ? "Suspand Doctor" : "Re-activate Doctor"}
+                {doctor?.status == "approved" ? "Suspand Doctor" : "Re-activate Doctor"}
               </button>
             )}
           </div>
@@ -220,11 +274,75 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
           </div>
 
           <div>
-            <h3 className="font-semibold mb-3 text-gray-800">Patient Reviews</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Patient Reviews</h3>
+                <p className="text-sm text-gray-500">See what patients are saying</p>
+              </div>
 
-            {reviews.length === 0 ? (
-              <p className="text-gray-400 text-sm">No reviews yet</p>
-            ) : (
+              {addReview && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="w-full max-w-lg rounded-3xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+
+                    <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">Add Review</h2>
+                        <p className="text-sm text-gray-500">Share your experience with others</p>
+                      </div>
+
+                      <button onClick={() => setAddReview(false)} className="rounded-full p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-500">
+                        <FaTimes size={18} />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSubmitReview} className="space-y-5 px-6">
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-gray-700">Rating</label>
+
+                        <div className="flex items-center gap-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button key={star} type="button" onClick={() => setRating(star)} onMouseEnter={() => setHoveredStar(star)} onMouseLeave={() => setHoveredStar(0)} className="transition hover:scale-110">
+                              <FaStar className={`text-3xl ${star <= (hoveredStar || rating) ? "text-yellow-400" : "text-gray-300"}`} />
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="mt-2 text-sm text-gray-500">
+                          {rating === 1 && "Poor"}
+                          {rating === 2 && "Fair"}
+                          {rating === 3 && "Good"}
+                          {rating === 4 && "Very Good"}
+                          {rating === 5 && "Excellent"}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-1.5 block text-sm font-semibold text-gray-700">Review Description</label>
+                        <textarea rows={5} value={reviewText} onChange={(e) => setReviewText(e.target.value)} placeholder="Tell people about your experience..." className={`w-full resize-none rounded-xl border border-black/25 px-4 py-3 text-sm outline-none transition focus:ring-2 ring-sky-600`} />
+
+                        <div className="mt-1 flex items-center justify-between">
+                          <p className="text-sm text-gray-400">Minimum 20 characters required</p>
+                          <span className={`text-xs ${reviewText.length > 250 ? "text-red-500" : "text-gray-400"}`}>{reviewText.length}/300</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-3 border-t border-gray-100 pt-4 pb-6">
+                        <button type="button" onClick={() => setAddReview(false)} className="rounded-xl border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100">Cancel</button>
+                        <button type="submit" disabled={loading} className="rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70">{loading ? "Submitting..." : "Submit Review"}</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              <button onClick={() => setAddReview(true)} className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-sky-700 hover:shadow-md active:scale-95">
+                <FaPlus size={12} />
+                Add Review
+              </button>
+            </div>
+
+            {reviews.length === 0 ? (<p className="text-gray-400 text-sm">No reviews yet</p>) : (
               <div className="space-y-4">
 
                 {reviews.map((review) => (

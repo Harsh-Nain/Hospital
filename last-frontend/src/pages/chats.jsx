@@ -39,9 +39,7 @@ export default function Chats() {
     useEffect(() => {
         const handleChatListUpdate = (data) => {
             setUsers((prev) =>
-                prev.map((chat) =>
-                    String(chat.userId) === String(data.userId) ? { ...chat, lastMessage: data.lastMessage || chat.lastMessage, updatedAt: data.updatedAt || chat.updatedAt, seen: data.seen ?? chat.seen, } : chat
-                )
+                prev.map((chat) => String(chat.userId) === String(data.userId) ? { ...chat, lastMessage: data.lastMessage || chat.lastMessage, updatedAt: data.updatedAt || chat.updatedAt, seen: data.seen ?? chat.seen, } : chat)
             );
         };
 

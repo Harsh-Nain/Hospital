@@ -1,11 +1,10 @@
 import { Bell, User, Search, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ShowDoctorProfile from "./showDoctorProfile";
-import toast from "react-hot-toast";
 
-export default function Navbar(patientInfo, setPatientInfo) {
+export default function Navbar({patientInfo}) {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -113,7 +112,7 @@ export default function Navbar(patientInfo, setPatientInfo) {
   return (
     <div className="flex items-center justify-between bg-white border-b border-black/10 px-4 md:px-6 py-4">
 
-      {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={patientInfo?.patientId} />)}
+      {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={patientInfo.patientId} />)}
 
       <div className="flex-1 max-w-xl" ref={searchRef}>
         <div className="relative">
