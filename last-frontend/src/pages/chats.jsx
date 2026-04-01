@@ -10,20 +10,18 @@ export default function Chats() {
     const location = useLocation().pathname.startsWith("/patient")
 
     const [users, setUsers] = useState([]);
-    const [allUsers, setAllUsers] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
-    const { setLoading } = useOutletContext();
+    const [pageLoading, setPageLoading] = useState(true);
 
     useEffect(() => {
         const init = async () => {
             try {
-                setLoading(true)
+                setPageLoading(true)
                 const res = await axios.get(`${API_URL}/chat/user`, { withCredentials: true, });
 
                 if (res.data?.success) {
                     setUsers(res.data.users);
-                    setAllUsers(res.data.users);
                 }
 
                 const info = await axios.get(`${API_URL}/dashboard/${location ? "patient" : "doctor"}-info`, { withCredentials: true, });
@@ -31,11 +29,25 @@ export default function Chats() {
             } catch (err) {
                 console.error(err);
             } finally {
-                setLoading(false);
+                setPageLoading(false);
             }
         };
 
         init();
+    }, []);
+
+    useEffect(() => {
+        const handleChatListUpdate = (data) => {
+            setUsers((prev) =>
+                prev.map((chat) => String(chat.userId) === String(data.userId) ? { ...chat, lastMessage: data.lastMessage || chat.lastMessage, updatedAt: data.updatedAt || chat.updatedAt, seen: data.seen ?? chat.seen, } : chat)
+            );
+        };
+
+        socket.on("chatListUpdated", handleChatListUpdate);
+
+        return () => {
+            socket.off("chatListUpdated", handleChatListUpdate);
+        };
     }, []);
 
     useEffect(() => {
@@ -51,28 +63,11 @@ export default function Chats() {
             setUsers((prev) => prev.map((u) => ({ ...u, online: ids.includes(String(u.userId)), })));
         });
 
-        socket.on("chatUserUpdate", (data) => {
-            setUsers((prev) => {
-                const filtered = prev.filter((u) => String(u.userId) !== String(data.contactId));
-                return [{ userId: data.contactId, name: data.user, lastMessage: data.lastMessage, updatedAt: data.updatedAt, }, ...filtered,];
-            });
-        });
-
         return () => {
             socket.off("onlineUsers");
-            socket.off("chatUserUpdate");
             socket.disconnect();
         };
     }, [currentUser]);
-
-    useEffect(() => {
-        if (selectedUser && currentUser) {
-            socket.emit("joinChat", {
-                receiverId: selectedUser.userId,
-            });
-        }
-    }, [selectedUser, currentUser]);
-
 
     useEffect(() => {
         if (selectedUser && currentUser) {
@@ -80,16 +75,80 @@ export default function Chats() {
         }
     }, [selectedUser, currentUser]);
 
-    return (
-        <div className="h-screen flex w-full justify-center items-center">
+    if (pageLoading) {
+        return (
+            <div className="h-screen flex w-full bg-gray-100 animate-pulse">
 
-            <div className={`${selectedUser ? "hidden md:flex" : "flex"} w-full h-screen md:w-87.5 border-r border-black/10`}>
+                <div className="w-full md:w-[320px] lg:w-90 border-r border-black/10 bg-white p-4">
+                    <div className="h-12 bg-gray-200 rounded-2xl mb-6"></div>
+
+                    <div className="space-y-4">
+                        {[1, 2, 3, 4, 5].map((item) => (
+                            <div key={item} className="flex items-center gap-3 p-3 rounded-2xl">
+                                <div className="w-14 h-14 rounded-full bg-gray-200"></div>
+
+                                <div className="flex-1">
+                                    <div className="h-4 w-32 bg-gray-200 rounded mb-2"></div>
+                                    <div className="h-3 w-48 bg-gray-200 rounded mb-2"></div>
+                                    <div className="h-3 w-20 bg-gray-200 rounded"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="hidden md:flex flex-1 flex-col bg-gray-50">
+                    <div className="h-20 bg-white border-b border-black/10 px-6 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gray-200"></div>
+
+                        <div>
+                            <div className="h-4 w-32 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-3 w-20 bg-gray-200 rounded"></div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 p-6 space-y-4">
+                        <div className="flex justify-start">
+                            <div className="h-14 w-52 bg-gray-200 rounded-2xl"></div>
+                        </div>
+
+                        <div className="flex justify-end">
+                            <div className="h-14 w-40 bg-gray-200 rounded-2xl"></div>
+                        </div>
+
+                        <div className="flex justify-start">
+                            <div className="h-20 w-64 bg-gray-200 rounded-2xl"></div>
+                        </div>
+
+                        <div className="flex justify-end">
+                            <div className="h-12 w-32 bg-gray-200 rounded-2xl"></div>
+                        </div>
+
+                        <div className="flex justify-start">
+                            <div className="h-16 w-44 bg-gray-200 rounded-2xl"></div>
+                        </div>
+                    </div>
+
+                    <div className="p-4 border-t border-black/10 bg-white flex items-center gap-3">
+                        <div className="flex-1 h-12 bg-gray-200 rounded-full"></div>
+                        <div className="w-12 h-12 rounded-full bg-gray-200"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="h-screen flex w-full bg-white">
+
+            <div className={`  ${selectedUser ? "hidden md:flex" : "flex"}  w-full md:w-[320px] lg:w-90 border-r border-black/10 bg-white`}>
                 <UserList users={users} currentUser={currentUser} selectedUser={selectedUser} onSelectUser={setSelectedUser} />
             </div>
 
-            <div className={`${selectedUser ? "flex" : "hidden md:flex"} h-screen flex-1`}>
+            <div className={` ${selectedUser ? "flex" : "hidden md:flex"} flex-1`}>
                 <ChatArea selectedUser={selectedUser} currentUser={currentUser} onBack={() => setSelectedUser(null)} />
             </div>
+
         </div>
     );
 }

@@ -1,18 +1,28 @@
 import { doctors, notifications, patients, users } from "../db/schema.js";
 import { reviews } from "../db/schema.js";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import db from "../db/index.js";
 
 export const CreateReview = async (req, res) => {
     try {
-        const { doctorId, patientId, rating, reviewText } = req.body;
+        const { doctorId, rating, reviewText } = req.body;
+        const { id: userId } = req.user;
 
-        await db.insert(reviews).values({ doctorId, patientId, rating, reviewText });
-        res.json({ success: true, message: "Review submitted" });
+        const [patient] = await db.select({ patientId: patients.id }).from(patients).where(eq(patients.userId, userId));
 
+        if (!patient) {
+            return res.status(404).json({ success: false, message: "Patient not found", });
+        }
+
+        await db.insert(reviews).values({ doctorId, patientId: patient.patientId, rating, reviewText, });
+
+        const [user] = await db.select().from(users).where(eq(users.id, userId));
+        const [review] = await db.select().from(reviews).where(and(eq(reviews.doctorId, doctorId), eq(reviews.patientId, patient.patientId), eq(reviews.rating, rating), eq(reviews.reviewText, reviewText)));
+
+        return res.json({ success: true, message: "Review submitted", review: { ...review, patientImage: user?.image || null, patientName: user?.fullName }, });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -111,6 +121,7 @@ export const getUserIds = async ({ doctorId, patientId, allUsers = false }) => {
 
 export const CreateNotification = async ({ doctorId, patientId, message, allUsers }) => {
     try {
+        console.log(doctorId, patientId, message, allUsers);
         if (!message) {
             return ({ message: "Message is required", });
         }
@@ -126,6 +137,8 @@ export const CreateNotification = async ({ doctorId, patientId, message, allUser
         }
 
         const values = userIds.map((userId) => ({ userId, message, }));
+        console.log(values);
+
         await db.insert(notifications).values(values);
         return ({ success: true, sentTo: userIds.length, message: "Notification sent successfully", });
 

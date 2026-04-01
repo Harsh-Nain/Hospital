@@ -230,7 +230,6 @@ export const sendReactivationMail = async (email, name) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-
     return { success: true, messageId: info.messageId };
 
   } catch (error) {

@@ -179,7 +179,7 @@ const DoctorSlots = ({ slots, setAddsote, setSlots }) => {
 
                         <button
                             onClick={addSlot}
-                            className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all"
+                            className="bg-linear-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all"
                         >
                             + Add Slot
                         </button>
