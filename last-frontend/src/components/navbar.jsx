@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ShowDoctorProfile from "./showDoctorProfile";
 
-export default function Navbar({ patientInfo }) {
+export default function Navbar({ patientInfo, showDoctorDetail,setshowDoctorDetail }) {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -15,7 +15,6 @@ export default function Navbar({ patientInfo }) {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [showDoctorDetail, setshowDoctorDetail] = useState(null);
 
   const searchRef = useRef();
   const dropdownRef = useRef();
@@ -138,21 +137,15 @@ export default function Navbar({ patientInfo }) {
               </div>
 
               <div className="max-h-105 overflow-y-auto animate-pulse">
-                {[1, 2, 3, 4].map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-4 p-4 border-b border-slate-100"
-                  >
-                    {/* Doctor Image */}
+                {[1, 2, 3].map((item) => (
+                  <div key={item} className="flex items-center gap-4 p-4 border-b border-slate-100" >
                     <div className="w-12 h-12 rounded-2xl bg-slate-200 shrink-0"></div>
 
-                    {/* Doctor Info */}
                     <div className="flex-1 min-w-0">
                       <div className="h-4 w-32 sm:w-40 bg-slate-200 rounded mb-2"></div>
                       <div className="h-3 w-20 sm:w-28 bg-slate-200 rounded"></div>
                     </div>
 
-                    {/* Fee */}
                     <div className="text-right shrink-0">
                       <div className="h-4 w-12 sm:w-16 bg-slate-200 rounded mb-2 ml-auto"></div>
                       <div className="h-3 w-16 sm:w-20 bg-slate-200 rounded ml-auto"></div>

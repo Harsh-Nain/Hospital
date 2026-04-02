@@ -17,7 +17,7 @@ export default function PatientGetDoctors() {
         const getPatient = async () => {
             try {
                 const res = await axios.get(`${API_URL}/dashboard/patientgetdoctor`, { withCredentials: true });
-                if (res.data.success) {
+                if (res.data.success) {                    
                     setData(res.data.doctors);
                 }
             } catch (error) {
@@ -36,7 +36,7 @@ export default function PatientGetDoctors() {
     return (
         <div className="w-full mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-6">
 
-            {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={patientInfo.patientId} isAdmin={true} />)}
+            {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={patientInfo.patientId} />)}
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 sm:mb-6">
                 <div>

@@ -210,7 +210,7 @@ export default function Dashboard() {
                         <p className="text-slate-500 text-sm mt-1">Track and manage your upcoming visits</p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 bg-white border border-slate-200 rounded-2xl p-2 shadow-sm w-full lg:w-auto">
+                    <div className="flex gap-2 bg-white border border-slate-200 rounded-2xl p-2 shadow-sm w-full lg:w-auto">
                         {[
                             { label: "All", value: "all" },
                             { label: "Confirmed", value: "confirmed" },
@@ -270,7 +270,7 @@ export default function Dashboard() {
                                         </p>
                                     </div>
 
-                                    <div className="flex flex-col gap-3 xl:items-end">
+                                    <div className="flex flex-col absolute lg:static top-2 right-2 gap-3 xl:items-end">
                                         <div className={`px-4 py-2 rounded-full text-xs font-semibold capitalize w-fit ${a.isCancelled || a.status === "Cancelled" ? "bg-red-100 text-red-600" : a.status === "confirmed" ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-700"}`}>
                                             {a.status || "Unknown"}
                                         </div>

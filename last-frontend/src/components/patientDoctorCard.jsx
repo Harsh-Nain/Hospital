@@ -2,7 +2,6 @@ import { FaUserMd, FaClock, FaCalendarAlt, FaUsers } from "react-icons/fa";
 
 export default function PatientDoctorCard({ doc, i, setshowDoctorDetail }) {
     const slot = doc.slots?.[0] || {};
-
     const capacity = slot.capacity || 0;
     const booked = slot.bookedCount || 0;
     const available = capacity - booked;
@@ -32,7 +31,6 @@ export default function PatientDoctorCard({ doc, i, setshowDoctorDetail }) {
                         </h3>
 
                         <p className="text-sky-600 text-sm">{doc.specialization}</p>
-
                         <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${status.color}`}>{status.text}</span>
                     </div>
                 </div>

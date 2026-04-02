@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [pageLoading, setPageLoading] = useState(true);
   const API_URL = import.meta.env.VITE_BACKEND_URL;
   const [data, setData] = useState(null);
+  const { setLoading } = useOutletContext()
   const [statusFilter, setStatusFilter] = useState("all");
 
   const filteredAppointments = useMemo(() => {
@@ -220,7 +221,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {data.doctorsForApproval.length > 0 ? (
           data.doctorsForApproval.map((doc, i) => (
-            <DoctorApprovalCard key={i} doc={doc} setLoading={setPageLoading} />
+            <DoctorApprovalCard key={i} doc={doc} setLoading={setLoading} />
           ))
         ) : (
           <div className="col-span-full text-center text-gray-500 py-10">

@@ -2,22 +2,15 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "../../components/navbar";
 import PatientSidebar from "../../components/Patientsidebar";
-import {
-    Home,
-    FileText,
-    User,
-    MessageCircle,
-    Menu,
-    X,
-} from "lucide-react";
+import { Home, FileText, User, MessageCircle, Menu, X, } from "lucide-react";
 import { Link } from "react-router-dom";
-import Loading from "../../components/loading";
 import { SiCompilerexplorer } from "react-icons/si";
 
 export default function PatientLayout() {
     const location = useLocation();
     const [patientInfo, setPatientInfo] = useState([]);
     const [open, setOpen] = useState(false);
+    const [openFix, setOpenFix] = useState(false);
 
     const chat = location.pathname.startsWith("/patient-chats");
 
@@ -64,10 +57,10 @@ export default function PatientLayout() {
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col h-screen w-full overflow-hidden">
 
                 {!chat && (
-                    <div className="fixed top-0 left-0 lg:left-72 right-0 z-999 px-3 sm:px-5 pt-3">
+                    <div className={`fixed top-0 left-0 ${!openFix && "lg:left-72 px-3 sm:px-5 pt-3"} right-0 z-50`}>
                         <div className="rounded-[1.8rem] border border-white/70 bg-white/80 backdrop-blur-xl shadow-[0_10px_40px_rgba(15,23,42,0.06)]">
                             <div className="flex items-center">
 
@@ -76,15 +69,15 @@ export default function PatientLayout() {
                                 </button> */}
 
                                 <div className="flex-1">
-                                    <Navbar patientInfo={patientInfo} />
+                                    <Navbar patientInfo={patientInfo} showDoctorDetail={openFix} setshowDoctorDetail={setOpenFix} />
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                <main className={`flex-1 overflow-y-auto ${!chat ? "pt-24 sm:pt-28 px-3 sm:px-5 lg:px-6 pb-24 lg:pb-6" : "h-full w-full"}`}>
-                    <div className={!chat ? "max-w-450 mx-auto" : ""}>
+                <main className={`flex-1 overflow-y-auto ${!chat ? "pt-24 sm:pt-28 px-3 sm:px-5 lg:px-6 pb-24 lg:pb-6" : "h-screen w-full"}`}>
+                    <div className={!chat ? " mx-auto" : ""}>
                         <Outlet context={{ patientInfo }} />
                     </div>
                 </main>
@@ -100,9 +93,7 @@ export default function PatientLayout() {
                             return (
                                 <Link key={item.path} to={item.path} className={`relative flex flex-col items-center justify-center gap-1 rounded-2xl py-2 transition-all duration-300 ${active ? "bg-linear-to-r from-sky-500 to-cyan-500 text-white shadow-lg" : "text-slate-500 hover:bg-slate-100"}`}>
                                     {active && (<div className="absolute inset-0 rounded-2xl bg-white/10"></div>)}
-
                                     <div className="relative z-10"><Icon size={18} /></div>
-
                                     <span className="relative z-10 text-[11px] font-medium">{item.label}</span>
                                 </Link>
                             );

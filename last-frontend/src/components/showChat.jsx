@@ -317,7 +317,7 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
                     {hasMore && (<p onClick={handleLoadMore} className="px-5 border border-black/25 text-gray-500 hover:text-gray-700 cursor-pointer rounded-2xl text-xs">{loading ? "Loading..." : "Load More"}</p>)}
                 </div>
 
-                {messages != [] && (
+                {messages.length > 0 ? (
                     messages.map((m, i) => {
 
                         return (
@@ -360,7 +360,21 @@ export default function ChatArea({ selectedUser, currentUser, onBack }) {
                             </div>
                         );
                     })
-                )}
+                ) : (<div class="flex h-100 flex-col items-center justify-center px-6 text-center">
+                    <div class="flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-emerald-500 to-sky-500 p-0.5 shadow-lg">
+                        <div class="flex h-full w-full items-center justify-center rounded-full bg-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 14h5" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <h2 class="mt-6 text-2xl font-semibold text-gray-900">Your Messages</h2>
+                    <p class="mt-2 max-w-sm text-sm leading-6 text-gray-500">Send private photos and messages to a friend or Doctor.</p>
+                </div>)}
+                
                 <div ref={bottomRef} />
             </div>
 
