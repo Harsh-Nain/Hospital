@@ -69,6 +69,48 @@ export const AllPatients = async (req, res) => {
     }
 };
 
+export const Webdata = async (req, res) => {
+    try {
+        const patientsList = (await db.select().from(patients)).length;
+
+
+
+
+        const doctorsdata = await db
+            .select({
+                doctorId: doctors.id,
+                experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, bio: doctors.bio,
+                userId: users.id, fullName: users.fullName, email: users.email, image: users.image,
+                specialization: specializations.name,
+            })
+            .from(doctors)
+            .where(or(eq(doctors.isApproved, true), eq(doctors.status, "suspanded")))
+            .leftJoin(users, eq(users.id, doctors.userId))
+            .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
+
+        const doctorsMap = {};
+
+        doctorsdata.forEach((row) => {
+            if (!doctorsMap[row.doctorId]) {
+                doctorsMap[row.doctorId] = { doctorId: row.doctorId, fullName: row.fullName, email: row.email, image: row.image, specialization: row.specialization, experienceYears: row.experienceYears, consultationFee: row.consultationFee, };
+            }
+
+
+        });
+
+        const doctorsList = Object.values(doctorsMap);
+
+
+
+
+        res.json({ success: true, patients: patientsList, doctorsList: doctorsList });
+
+    } catch (error) {
+        console.error("webdata Error:", error);
+        res.status(500).json({ success: false, message: "Server error", });
+    }
+}
+
 export const AllDoctors = async (req, res) => {
     try {
         const data = await db
@@ -239,7 +281,7 @@ export const getChatList = async (req, res) => {
             if (sender?.role === "doctor") {
                 const exists = Doctorlist.find(d => d.id === sender.id);
 
-                
+
                 if (!exists) {
                     Doctorlist.push({
                         id: sender.id,

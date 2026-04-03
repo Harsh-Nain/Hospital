@@ -23,6 +23,9 @@ import Allchats from "../pages/admin/allchats";
 import Chats from "../pages/chats"
 import PatientGetDoctors from "../components/patientGetDoctors";
 import Webintro from "../interface/Home";
+import WebDoctor from "../interface/Doctors";
+import WebAbout from "../interface/About";
+import WebContact from "../interface/Contact";
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -32,6 +35,9 @@ function AppRoutes() {
 
         <Route path="/" element={<RoleSelection />} />
         <Route path="/web" element={<Webintro/>} />
+        <Route path="/web/doctor" element={<WebDoctor/>} />
+        <Route path="/web/about" element={<WebAbout/>} />
+        <Route path="/web/contact" element={<WebContact/>} />
 
         <Route path="/patient/login" element={<PatientLogin />} />
         <Route path="/patient/register" element={<PatientRegister />} />
