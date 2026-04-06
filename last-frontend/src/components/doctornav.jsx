@@ -1,9 +1,9 @@
-import { Bell, User, X } from "lucide-react";
+import { Bell, Stethoscope, User, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export default function Doctornav() {
+export default function Doctornav({ doctorInfo }) {
     const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -64,52 +64,88 @@ export default function Doctornav() {
     };
 
     return (
-        <div className="flex items-center justify-between bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between gap-3 sm:px-5 py-3">
+            <div className="flex items-center gap-3">
+                <div className="hidden md:flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-xl shadow-sm">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#10b981,#34d399,#6ee7b7)] text-white shadow-md">
+                        <Stethoscope size={20} />
+                    </div>
+                    <div>
+                        <h2 className="text-sm font-semibold text-slate-800"> Welcome back</h2>
+                        <p className="text-xs text-slate-500">Manage appointments & notifications</p>
+                    </div>
+                </div>
+            </div>
 
-            <div className="flex items-center gap-3 flex-1 max-w-xl"></div>
+            <div className="flex items-center gap-2 sm:gap-3 ml-2 sm:ml-4 relative" ref={dropdownRef}>
 
-            <div className="flex items-center gap-4 ml-6 relative" ref={dropdownRef}>
+                <button onClick={() => setShowNotifications(!showNotifications)} className="relative w-12 h-12 rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-xl flex items-center justify-center text-slate-600 hover:bg-sky-50 hover:text-sky-600 transition-all shadow-sm" >
+                    <Bell size={19} />
 
-                <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 rounded-lg hover:bg-gray-100 transition">
-                    <Bell size={20} className="text-emerald-600" />
-                    {notifications.some((n) => !n.isRead) && (<span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>)}
+                    {notifications.some((n) => !n.isRead) && (
+                        <>
+                            <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+                            <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-sky-500 animate-ping"></span>
+                        </>
+                    )}
                 </button>
 
                 {showNotifications && (
-                    <div className="absolute right-0 top-12 w-80 bg-white border rounded-xl shadow-lg p-3 z-50">
+                    <div className="absolute top-14 right-0 w-85 sm:w-95 overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_60px_rgba(15,23,42,0.15)] z-50">
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                            <div>
+                                <h3 className="font-bold text-slate-800">Notifications</h3>
+                                <p className="text-xs text-slate-500">Stay updated with recent activity</p>
+                            </div>
 
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-sm font-semibold">Notifications</h3>
-                            <button onClick={() => notifications.forEach((n) => { if (!n.isRead) readNotification(n.id); })} className="text-xs text-blue-500 hover:underline">Mark all read</button>
+                            <button onClick={() => notifications.forEach((n) => { if (!n.isRead) readNotification(n.id); })} className="text-xs font-medium text-sky-600 hover:text-sky-700">
+                                Mark all read
+                            </button>
                         </div>
 
-                        {notifications.length === 0 ? (<p className="text-sm text-gray-500">No notifications</p>) : (
-                            <div className="max-h-64 overflow-y-auto space-y-2">
-
+                        {notifications.length === 0 ? (
+                            <div className="p-8 text-center">
+                                <Bell size={30} className="mx-auto text-slate-300 mb-3" />
+                                <p className="text-sm text-slate-500">No notifications yet</p>
+                            </div>
+                        ) : (
+                            <div className="max-h-100 overflow-y-auto p-3 space-y-2">
                                 {notifications.map((item) => (
-                                    <div key={item.id} className={`p-3 rounded-lg ${item.isRead ? "bg-white" : "bg-blue-50"}`}>
-                                        <div className="flex justify-between gap-2">
-
+                                    <div key={item.id} className={`rounded-2xl border p-4 transition-all ${item.isRead ? "bg-slate-50 border-slate-100" : "bg-sky-50 border-sky-100"}`}>
+                                        <div className="flex justify-between gap-3">
                                             <div className="flex-1 cursor-pointer" onClick={() => readNotification(item.id)}>
-                                                <p className="text-sm font-medium">{item.title}</p>
-                                                <p className="text-xs text-gray-500">{item.message}</p>
-                                                <p className="text-xs text-gray-400 mt-1">{new Date(item.createdAt).toLocaleString()}</p>
+                                                <div className="flex items-start gap-2">
+                                                    {!item.isRead && (<span className="mt-2 w-2 h-2 rounded-full bg-sky-500 shrink-0"></span>)}
+
+                                                    <div>
+                                                        <p className="text-sm font-semibold text-slate-800">{item.title}</p>
+                                                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.message}</p>
+                                                        <p className="text-[11px] text-slate-400 mt-2">{new Date(item.createdAt).toLocaleString()}</p>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            <button onClick={() => deleteNotification(item.id)} className="text-gray-400 hover:text-red-500"><X size={16} /></button>
+                                            <button onClick={() => deleteNotification(item.id)} className="text-slate-400 hover:text-red-500 transition">
+                                                <X size={16} />
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
-
                             </div>
                         )}
                     </div>
                 )}
 
-                <button onClick={() => navigate("/doctor-profile")} className="p-2 rounded-lg hover:bg-gray-100 transition" >
-                    <User size={20} className="text-gray-600" />
+                <button onClick={() => navigate("/doctor-profile")} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-xl px-2.5 py-2 pr-4 hover:bg-slate-50 transition-all shadow-sm">
+                    <img src={doctorInfo?.image || "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg"} alt="profile" className="w-9 h-9 rounded-xl object-cover border border-slate-200" />
+
+                    <div className="hidden md:block text-left">
+                        <p className="text-sm font-semibold text-slate-800 leading-none">{doctorInfo?.fullName || "Doctor"} </p>
+                        <p className="text-xs text-slate-500 mt-1">View Profile</p>
+                    </div>
                 </button>
             </div>
         </div>
+
     );
 }

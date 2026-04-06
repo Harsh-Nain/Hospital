@@ -3,7 +3,7 @@ import axios from "axios";
 import socket from "../socket";
 import UserList from "../components/chatUser";
 import ChatArea from "../components/showChat";
-import { useLocation, useOutletContext } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 export default function Chats() {
     const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -139,7 +139,7 @@ export default function Chats() {
     }
 
     return (
-        <div className="h-screen flex w-full bg-white">
+        <div className="h-screen flex w-full bg-linear-to-br from-slate-50 via-white to-sky-50">
 
             <div className={`  ${selectedUser ? "hidden md:flex" : "flex"}  w-full md:w-[320px] lg:w-90 border-r border-black/10 bg-white`}>
                 <UserList users={users} currentUser={currentUser} selectedUser={selectedUser} onSelectUser={setSelectedUser} />

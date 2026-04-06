@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ShowDoctorProfile from "./showDoctorProfile";
 
-export default function Navbar({ patientInfo, showDoctorDetail,setshowDoctorDetail }) {
+export default function Navbar({ patientInfo, showDoctorDetail, setshowDoctorDetail }) {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -130,13 +130,13 @@ export default function Navbar({ patientInfo, showDoctorDetail,setshowDoctorDeta
             )}
           </div>
 
-          {searching && (
-            <div className="absolute top-18 left-0 right-0 z-999 overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+          {(searching) && (
+            <div className="absolute top-18 left-0 right-0 z-999 min-w-75 max-w-full overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
               <div className="p-3 border-b border-slate-100">
                 <p className="text-sm font-semibold text-slate-700">Searching...</p>
               </div>
 
-              <div className="max-h-105 overflow-y-auto animate-pulse">
+              <div className="max-h-105 overflow-y-auto animate-pulse w-full">
                 {[1, 2, 3].map((item) => (
                   <div key={item} className="flex items-center gap-4 p-4 border-b border-slate-100" >
                     <div className="w-12 h-12 rounded-2xl bg-slate-200 shrink-0"></div>
@@ -156,8 +156,8 @@ export default function Navbar({ patientInfo, showDoctorDetail,setshowDoctorDeta
             </div>
           )}
 
-          {showResults && (
-            <div className="absolute top-18 left-0 right-0 z-999 overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+          {(showResults && !searching) && (
+            <div className="absolute top-18 -left-3.5 sm:left-0 right-0 z-999 min-w-75 max-w-full overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
               <div className="p-3 border-b border-slate-100">
                 <p className="text-sm font-semibold text-slate-700">Search Results</p>
               </div>
@@ -167,7 +167,7 @@ export default function Navbar({ patientInfo, showDoctorDetail,setshowDoctorDeta
                   <p className="text-sm text-slate-500">No doctors found...</p>
                 </div>
               ) : (
-                <div className="max-h-105 overflow-y-auto">
+                <div className="max-h-75 overflow-y-auto w-full">
                   {doctors.map((doc) => (
                     <div key={doc.doctorId} onClick={() => { setshowDoctorDetail(doc.doctorId); setShowResults(false); }} className="flex items-center gap-4 p-4 border-b border-slate-100 hover:bg-sky-50/70 cursor-pointer transition-all duration-300">
                       <img src={doc.image} className="w-12 h-12 rounded-2xl object-cover border border-slate-200" />

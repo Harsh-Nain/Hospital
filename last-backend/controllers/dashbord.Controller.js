@@ -292,7 +292,7 @@ export const PatientGetDoctor = async (req, res) => {
                     )
                 )
                 .groupBy(doctors.id, users.fullName, users.image, doctors.experienceYears, specializations.name)
-                .limit(5);
+                .limit(10);
 
             result.push({ category: cat.label, doctors: doctorsData });
         }

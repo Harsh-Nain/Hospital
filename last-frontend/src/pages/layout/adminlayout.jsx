@@ -11,14 +11,7 @@ export default function AdminLayout() {
 
     return (
         <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-sky-50 flex overflow-hidden">
-
-            {loading && (
-                <div className="fixed inset-0 z-999 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
-                    <div className="rounded-2xl bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_20px_60px_rgba(15,23,42,0.18)] px-8 py-7">
-                        <Loading />
-                    </div>
-                </div>
-            )}
+            {loading && (<div className="fixed inset-0 z-999 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm"><Loading /></div>)}
 
             {open && (<div onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden" />)}
 
@@ -36,7 +29,7 @@ export default function AdminLayout() {
                     </div>
                 </div>
 
-                <main className="flex-1 overflow-y-auto pt-24 sm:pt-28 px-3 sm:px-5 lg:px-6 pb-24 lg:pb-6">
+                <main className="flex-1 overflow-y-auto pt-21 sm:pt-23 pb-24 lg:pb-0">
                     <div className="w-full mx-auto">
                         <Outlet context={{ setLoading }} />
                     </div>

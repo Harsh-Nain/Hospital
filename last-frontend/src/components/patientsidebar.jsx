@@ -1,11 +1,10 @@
 import axios from "axios";
 import { Home, MessageSquare, FileText, User, LogOut } from "lucide-react";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
 import { SiCompilerexplorer } from "react-icons/si";
 import { useNavigate, useLocation } from "react-router-dom";
 
-export default function PatientSidebar({ patientInfo, setPatientInfo }) {
+export default function PatientSidebar({ patientInfo, setPatientInfo, setShowLogoutConfirm }) {
   const navigate = useNavigate();
   const location = useLocation();
   const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -37,20 +36,8 @@ export default function PatientSidebar({ patientInfo, setPatientInfo }) {
     getPatient();
   }, [API_URL, navigate]);
 
-  const handleLogout = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/logout`, { withCredentials: true, });
-
-      if (res.data.success) {
-        navigate("/patient/login");
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Server error!");
-    }
-  };
-
   return (
-    <div className="w-72 h-screen bg-white border-r border-gray-200 p-6 flex flex-col justify-between">
+    <div className="w-72 h-screen bg-linear-to-br from-slate-50 via-white to-sky-50 border-r border-gray-200 p-6 flex flex-col justify-between">
       <div>
 
         <div className="flex items-center gap-3 mb-6">
@@ -90,7 +77,7 @@ export default function PatientSidebar({ patientInfo, setPatientInfo }) {
         </ul>
       </div>
 
-      <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 p-3 rounded-xl hover:bg-red-50 transition font-medium">
+      <button onClick={() => setShowLogoutConfirm(true)} className="flex items-center gap-2 text-red-500 p-3 rounded-xl hover:bg-red-50 transition font-medium">
         <LogOut size={18} /> Logout
       </button>
 

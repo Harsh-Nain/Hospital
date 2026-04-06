@@ -284,7 +284,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                           <div className="mb-4 flex items-start justify-between">
                             <div>
                               <p className={`text-xs uppercase tracking-wider ${selectedSlot === slot.id ? "text-white/70" : "text-gray-400"}`}>  Appointment Time</p>
-                              <h4 className={`mt-2 text-lg font-bold ${selectedSlot === slot.id ? "text-white" : "text-gray-900"}`}>  {formatTime(slot.startTime)} - {formatTime(slot.endTime)}</h4>
+                              <h4 className={`mt-2 text-lg font-bold ${selectedSlot === slot.id ? "text-white" : "text-gray-900"}`}>  {slot.startTime} - {slot.endTime}</h4>
                             </div>
 
                             {booked && (<span className="rounded-full bg-yellow-100 px-3 py-1 text-[11px] font-semibold text-yellow-700">Requested</span>)}
