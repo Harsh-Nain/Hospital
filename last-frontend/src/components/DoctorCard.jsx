@@ -33,7 +33,7 @@ export default function Doctorcard({ doc, i, setshowDoctorDetail }) {
             </div>
 
             {doc.bio && (<p className="mt-3 text-xs text-gray-500 line-clamp-2">  {doc.bio}</p>)}
-            <button onClick={(e) => { e.stopPropagation(); setshowDoctorDetail(doc.doctorId); }} className="mt-5 w-full bg-linear-to-r from-sky-400 to-blue-500 text-white py-2.5 rounded-xl font-medium shadow-sm hover:shadow-lg transition">View Details</button>
+            <button onClick={(e) => { e.stopPropagation(); setshowDoctorDetail(doc.doctorId); }} className="mt-5 w-full bg-linear-to-r from-sky-400 to-violet-500 text-white py-2.5 rounded-xl font-medium shadow-sm hover:shadow-lg transition">View Details</button>
         </div>
     );
 }
