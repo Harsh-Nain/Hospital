@@ -1,7 +1,7 @@
 import db from "../db/index.js";
 import { eq, and, or, sql, desc, inArray } from "drizzle-orm";
 import { sendApprovalMail, sendReactivationMail, sendRejectionMail, sendSuspensionMail } from "../utils/mailer.js";
-import { users, patients, appointments, doctors, specializations, doctorSlots, payments, chatMessages } from "../db/schema.js";
+import { users, patients, appointments, doctors, specializations, doctorSlots, payments, chatMessages, contactMessages } from "../db/schema.js";
 import { CreateNotification } from "./response.Controller.js";
 import { alias } from "drizzle-orm/gel-core";
 
@@ -257,7 +257,6 @@ export const ReActivate = async (req, res) => {
 };
 
 
-
 export const getChatList = async (req, res) => {
     try {
 
@@ -412,3 +411,35 @@ export const getChatData = async (req, res) => {
         return res.status(500).json({ success: false, message: "Error getting messages", });
     }
 };
+
+export const addcontactMessages = async (req, res) => {
+    try {
+        const { name, email, message } = req.body
+
+        if (!name || !email || !message) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required",
+            });
+        }
+
+        await db.insert(contactMessages).values({
+            name,
+            email,
+            message,
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "Message send successfully"
+        })
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+        });
+
+    }
+}

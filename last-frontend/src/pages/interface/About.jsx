@@ -40,6 +40,54 @@ export default function About() {
         </div>
       </section>
 
+      <section className="relative bg-gradient-to-br from-green-600 via-emerald-700 to-green-800 py-16 sm:py-20 px-6 sm:px-10 lg:px-16 text-white overflow-hidden">
+
+        {/* Background Blur Effect */}
+        <div className="absolute top-0 left-0 w-72 h-72 bg-white/10 rounded-full blur-3xl -z-10"></div>
+        <div className="absolute bottom-0 right-0 w-72 h-72 bg-black/10 rounded-full blur-3xl -z-10"></div>
+
+        <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center gap-12">
+
+          {/* Image */}
+          <div className="md:w-1/2 flex justify-center">
+            <img
+              src="https://img.freepik.com/free-vector/online-doctor-concept-illustration_114360-1783.jpg"
+              alt="Online consultation"
+              className="w-full max-w-sm sm:max-w-md rounded-3xl shadow-2xl object-cover transform transition duration-500 hover:scale-105 hover:shadow-green-900/40"
+            />
+          </div>
+
+          {/* Text Content */}
+          <div className="md:w-1/2 space-y-6 text-center md:text-left">
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">
+              Online Doctor <span className="text-green-200">Consultations</span>
+            </h2>
+
+            <p className="text-base sm:text-lg lg:text-xl  leading-relaxed max-w-xl mx-auto md:mx-0">
+              Connect with certified doctors anytime, anywhere. Get expert advice,
+              prescriptions, and follow-ups without stepping out of your home.
+            </p>
+
+            {/* Features */}
+            <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm sm:text-base ">
+              <span className="bg-white/10 px-4 py-2 rounded-full backdrop-blur">
+                ✔  24/7 Availability
+              </span>
+              <span className="bg-white/10 px-4 py-2 rounded-full backdrop-blur">
+                ✔ Secure & Private
+              </span>
+              <span className="bg-white/10 px-4 py-2 rounded-full backdrop-blur">
+                ✔ Instant Booking
+              </span>
+            </div>
+
+
+
+          </div>
+        </div>
+      </section>
+
       {/* Mission, Vision, Values */}
       <section className="py-20 px-6 sm:px-10 lg:px-16 bg-gray-50">
         <div className="max-w-6xl mx-auto grid gap-8 sm:grid-cols-2 lg:grid-cols-3 text-center">

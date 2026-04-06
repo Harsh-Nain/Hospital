@@ -2,28 +2,71 @@ import React, { useState } from "react";
 import { Phone, MapPin, Mail } from "lucide-react";
 import Nav from "./Nav";
 import Footer from "./Footer";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-  const [status, setStatus] = useState(""); // "", "loading", "success", "error"
+  const [status, setStatus] = useState(false); 
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("loading");
 
-    // Simulate API call
-    setTimeout(() => {
-      if (formData.name && formData.email && formData.message) {
-        setStatus("success");
+    if (status) return;
+
+    const API_URL = import.meta.env.VITE_BACKEND_URL;
+
+    const name = formData.name?.trim();
+    const email = formData.email?.trim();
+    const message = formData.message?.trim();
+
+    if (!name) return toast.error("Name is required");
+    if (!email) return toast.error("Email is required");
+    if (!message) return toast.error("Message is required");
+
+    if (message.length < 10) {
+      return toast.error("Message must be at least 10 characters");
+    }
+
+    try {
+      setStatus(true);
+
+      const response = await axios.post(
+        `${API_URL}/admin/contact_messages`,
+        { name, email, message },
+        { withCredentials: true }
+      );
+
+      const data = response?.data;
+
+      if (data?.success) {
+        toast.success("Message sent successfully 🎉");
+
         setFormData({ name: "", email: "", message: "" });
+       
       } else {
-        setStatus("error");
+        throw new Error(data?.message || "Something went wrong");
       }
-    }, 1500);
+
+    } catch (error) {
+      console.error("Submit error:", error);
+
+      const errorMessage =
+        error?.response?.data?.message ||
+        error.message ||
+        "Server error! Please try again.";
+
+      toast.error(errorMessage);
+
+    } finally {
+     
+      setStatus(false);
+      
+    }
   };
 
   return (
@@ -119,27 +162,13 @@ export default function Contact() {
                   className="w-full border border-gray-300 rounded-lg p-3 h-32 focus:outline-none focus:ring-2 focus:ring-emerald-600"
                 ></textarea>
               </div>
-
-              {/* Status Message */}
-              {status === "loading" && (
-                <p className="text-blue-600 text-center">Sending message...</p>
-              )}
-              {status === "success" && (
-                <p className="text-green-600 text-center font-semibold">
-                  Message sent successfully!
-                </p>
-              )}
-              {status === "error" && (
-                <p className="text-red-600 text-center font-semibold">
-                  Please fill in all fields.
-                </p>
-              )}
-
+           
+            
               <button
                 type="submit"
                 className="w-full bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700 transition"
               >
-                Send Message
+              {status ? "Sending.." : "Send Message"} 
               </button>
             </form>
           </div>

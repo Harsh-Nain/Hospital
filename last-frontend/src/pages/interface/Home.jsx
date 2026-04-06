@@ -39,21 +39,21 @@ const services = [
     description: "24/7 emergency care with highly trained medical professionals.",
     icon: <Phone size={26} />,
     color: "from-red-500 to-red-400",
-    link: "/web/contact"
+    link: "/contact"
   },
   {
     title: "Online Consultations",
     description: "Get personalized consultations with experienced doctors from the comfort of your home.",
     icon: <HiVideoCamera size={26} />,
     color: "from-indigo-500 to-indigo-400",
-    link: "/web/about"
+    link: "/about"
   },
   {
     title: "Qualified Doctors",
     description: "Expert doctors with years of experience providing personalized care.",
     icon: <UserCheck size={26} />,
     color: "from-emerald-500 to-green-400",
-    link: "/web/doctor"
+    link: "/doctor"
   },
 ];
 
@@ -96,7 +96,7 @@ const StarRating = ({ rating }) => {
 export default function Home() {
 
   const [doctor, setdocter] = useState([])
-  const [patient, setpatient] = useState([])
+  const [patient, setpatient] = useState()
   const [PageLoading, setPageLoading] = useState(false)
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -107,7 +107,7 @@ export default function Home() {
 
         const res = await axios.get(`${API_URL}/admin/webdata`, { withCredentials: true });
 
-        if (res.data.success) {
+        if (res.data.success) {          
           setdocter(res.data.doctorsList)
           setpatient(res.data.patients)
         } 
@@ -161,7 +161,7 @@ export default function Home() {
                     <Calendar size={18} />  Book Appointment</button>
                 </Link>
 
-                <Link to="/web/contact">
+                <Link to="/contact">
 
                   <button className="flex cursor-pointer items-center gap-2 bg-red-500 text-white px-6 py-3 rounded-xl shadow-md hover:bg-red-600 transition hover:scale-105">
                     <Phone size={18} />   Emergency </button>
@@ -172,11 +172,11 @@ export default function Home() {
 
               <div className="grid grid-cols-3 gap-6 pt-6">
                 <div>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">  {!PageLoading ? `${doctor?.length || 0}+` : "..."}</h3>
+                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">  {!PageLoading ? `${doctor?.length - 1  || 0}+` : "..."}</h3>
                   <p className="text-gray-500 text-sm">Doctors</p>
                 </div>
                 <div>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900"> {!PageLoading ? `${patient || 0}+` : "..."}</h3>
+                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900"> {!PageLoading ? `${patient - 1 || 0}+` : "..."}</h3>
                   <p className="text-gray-500 text-sm">Happy Patients</p>
                 </div>
                 <div>
@@ -294,7 +294,7 @@ export default function Home() {
             </div>
 
             <h2 className="mt-4 text-lg sm:text-2xl font-bold text-emerald-800">
-              Become a Doctor
+             Join Our Doctor Community
             </h2>
 
             <p className="text-emerald-700 text-sm mt-2 sm:text-base">

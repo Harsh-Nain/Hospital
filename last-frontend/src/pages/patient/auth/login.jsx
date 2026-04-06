@@ -67,7 +67,7 @@ export default function PatientLogin() {
 
             <div className="flex w-full md:w-1/2 items-center h-screen justify-center p-6">
 
-                <button onClick={() => navigate("/")} className="absolute cursor-pointer top-4 left-6 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/30 hover:shadow-sm hover:bg-white/70 transition text-gray-700">
+                <button onClick={() => navigate(-1)} className="absolute cursor-pointer top-4 left-6 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/30 hover:shadow-sm hover:bg-white/70 transition text-gray-700">
                     <MdKeyboardBackspace size={20} />
                     <span className="text-sm font-medium">Back</span>
                 </button>
