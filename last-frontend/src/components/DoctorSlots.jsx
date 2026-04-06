@@ -9,7 +9,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote }) => {
   const API_URL = import.meta.env.VITE_BACKEND_URL;
   const [loading, setLoading] = useState(false);
 
-  const timeOptions = ["01:00 AM","01:30 AM","02:00 AM","02:30 AM","03:00 AM","03:30 AM","04:00 AM","04:30 AM","05:00 AM","05:30 AM","06:00 AM","06:30 AM","07:00 AM","07:30 AM","08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM", "08:00 PM", "08:30 PM",];
+  const timeOptions = ["01:00 AM", "01:30 AM", "02:00 AM", "02:30 AM", "03:00 AM", "03:30 AM", "04:00 AM", "04:30 AM", "05:00 AM", "05:30 AM", "06:00 AM", "06:30 AM", "07:00 AM", "07:30 AM", "08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM", "07:30 PM", "08:00 PM", "08:30 PM",];
   const [newSlot, setNewSlot] = useState({ date: "", startTime: "", endTime: "", capacity: "", booked: 0, available: 0, });
 
   const morningTimes = timeOptions.filter((time) => time.includes("AM"));
@@ -197,6 +197,8 @@ const DoctorSlots = ({ slots, setSlots, setAddsote }) => {
         toast.success(res.data.message || "Slot added successfully");
 
         const savedSlot = res.data.slot || slotPayload;
+        console.log(savedSlot);
+
         setSlots((prev) => [...prev, savedSlot]);
         resetForm();
       }
@@ -225,7 +227,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote }) => {
             <RxCross1 size={16} />
           </button>
 
-          <div className="mr-8 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mr-8 flex flex-col gap-2 sm:flex-row items-baseline sm:justify-between">
             <div>
               <h2 className="text-xl font-bold text-slate-800 sm:text-2xl">Manage Doctor Slots</h2>
               <p className="mt-1 text-sm text-slate-500">Add appointment availability for patients</p>

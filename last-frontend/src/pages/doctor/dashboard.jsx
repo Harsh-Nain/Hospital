@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import ShowPatientProfile from "../../components/showPatientProfile";
 import toast from "react-hot-toast";
-import DoctorSlots from "../../components/doctorSlots";
+import DoctorSlots from "../../components/DoctorSlots";
 import { FaTrash, FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, } from "react-icons/fi";
 const statusLabelMap = { "wait for approval": "Requested", confirmed: "Confirmed At", Cancelled: "Cancelled At", };
@@ -315,7 +315,7 @@ export default function Dashboard() {
         {filteredAppointments.length === 0 ? (<EmptyState icon={<FiCalendar className="h-7 w-7 text-blue-500" />} title="No appointments found" description="There are no appointments for the selected filter." />) : (
 
           <div className="space-y-4">
-            {filteredAppointments.map((a) => {
+            {filteredAppointments.map((a, i) => {
               const patient = a.patient || {};
               const slot = a.slot || {};
               const createdAt = a.createdAt || a.createdat;
@@ -323,7 +323,7 @@ export default function Dashboard() {
               const isPast = slotEnd ? slotEnd < new Date() : false;
 
               return (
-                <div key={a.appointmentId} onClick={() => setShowPatientDetail(a.patient?.id)} className="relative cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+                <div key={i} onClick={() => setShowPatientDetail(a.patient?.id)} className="relative cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
                   <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-sky-100/40 blur-3xl" />
 
                   <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -386,13 +386,13 @@ export default function Dashboard() {
         {filteredSlots.length === 0 ? (<EmptyState icon={<FiClock className="h-7 w-7 text-purple-500" />} title="No slots available" description="You haven’t added your availability yet, or none match the selected filter." />) : (
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredSlots.map((slot) => {
+            {filteredSlots.map((slot, i) => {
               const slotEnd = getSlotDateTime(slot.date, slot.endTime);
               const isFuture = slotEnd ? slotEnd > new Date() : false;
               const isCompleted = slotEnd ? slotEnd <= new Date() : false;
 
               return (
-                <div key={slot.slotId} className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                <div key={i} className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
                       <p className="text-base font-semibold text-gray-800">{slot.date || "N/A"}</p>

@@ -1,25 +1,19 @@
-import {
-  ChartScatter,
-  LayoutDashboard,
-  LogOut,
-  Stethoscope,
-  Users,
-} from "lucide-react";
+import { ChartScatter, Contact, Info, InfoIcon, LayoutDashboard, LogOut, Stethoscope, Users, } from "lucide-react";
+import { FaInfoCircle } from "react-icons/fa";
+import { MdDetails } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import toast from "react-hot-toast";
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const API_URL = import.meta.env.VITE_BACKEND_URL;
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin_dashboard", activeColor: "from-sky-500 to-cyan-500 text-white shadow-sky-200", iconBg: "bg-sky-100 text-sky-500", },
     { icon: Stethoscope, label: "Doctors", path: "/admin_doctors", activeColor: "from-violet-400 to-indigo-400 text-white shadow-violet-200", iconBg: "bg-violet-100 text-violet-500", },
     { icon: Users, label: "Patients", path: "/admin_patients", activeColor: "from-emerald-400 to-teal-400 text-white shadow-emerald-200", iconBg: "bg-emerald-100 text-emerald-500", },
     { icon: ChartScatter, label: "Conversation", path: "/admin_chat", activeColor: "from-orange-400 to-amber-400 text-white shadow-orange-200", iconBg: "bg-orange-100 text-orange-500", },
-  ];
+    { icon: Contact, label: "Contact Details", path: "/admin_contact-details", activeColor: "from-rose-400 to-pink-500 text-white shadow-rose-200", iconBg: "bg-rose-100 text-rose-500", },
+  ]
 
   return (
     <div className="w-72 h-screen bg-linear-to-b from-slate-50 via-white to-sky-50 border-r border-slate-200/80 px-5 py-6 flex flex-col justify-between shadow-[8px_0_30px_rgba(15,23,42,0.04)]">
