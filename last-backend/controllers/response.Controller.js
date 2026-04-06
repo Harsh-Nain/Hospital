@@ -27,9 +27,12 @@ export const CreateReview = async (req, res) => {
 };
 
 export const getNotifications = async (req, res) => {
-
     try {
-        const { id } = req.user;
+        let { id } = req.user;
+        const { notifId } = req.query;
+        if (notifId) {
+            id = notifId
+        }
 
         const notif = await db.select().from(notifications).where(eq(notifications.userId, id)).orderBy(desc(notifications.createdAt));
         res.json({ success: true, notifications: notif });
@@ -93,10 +96,20 @@ export const DeleteNotification = async (req, res) => {
     }
 };
 
-export const getUserIds = async ({ doctorId, patientId, allUsers = false }) => {
-    if (allUsers) {
+export const getUserIds = async ({ doctorId, patientId, messageFor }) => {
+    if (messageFor == "allUsers") {
         const all = await db.select({ userId: users.id }).from(users);
-        return all.map(u => u.userId);
+        return all.map((u) => u.userId);
+    }
+
+    if (messageFor == "allDoctors") {
+        const allDoctorUsers = await db.select({ userId: doctors.userId }).from(doctors);
+        return allDoctorUsers.map((d) => d.userId);
+    }
+
+    if (messageFor == "allPatients") {
+        const allPatientUsers = await db.select({ userId: patients.userId }).from(patients);
+        return allPatientUsers.map((p) => p.userId);
     }
 
     let userIds = [];
@@ -116,34 +129,34 @@ export const getUserIds = async ({ doctorId, patientId, allUsers = false }) => {
             userIds.push(patient[0].userId);
         }
     }
+
     return userIds;
 };
 
-export const CreateNotification = async ({ doctorId, patientId, message, allUsers }) => {
+export const CreateNotification = async ({ doctorId, patientId, message, messageFor }) => {
     try {
-        console.log(doctorId, patientId, message, allUsers);
+        console.log({ doctorId, patientId, message });
+
         if (!message) {
-            return ({ message: "Message is required", });
+            return { success: false, message: "Message is required", };
         }
 
-        if (!doctorId && !patientId && !allUsers) {
-            return ({ message: "Provide doctorId, patientId, or allUsers=true", });
+        if (!doctorId && !patientId && !messageFor) {
+            return { success: false, message: "Provide us doctorId, patientId, messageFor", };
         }
 
-        const userIds = await getUserIds({ doctorId, patientId, allUsers });
+        const userIds = await getUserIds({ doctorId, patientId, messageFor });
 
         if (!userIds.length) {
-            return ({ message: "No users found", });
+            return { success: false, message: "No users found", };
         }
 
         const values = userIds.map((userId) => ({ userId, message, }));
-        console.log(values);
-
         await db.insert(notifications).values(values);
-        return ({ success: true, sentTo: userIds.length, message: "Notification sent successfully", });
+        return { success: true, sentTo: userIds.length, message: "Notification sent successfully", };
 
     } catch (error) {
         console.error(error);
-        return ({ message: "Server error", });
+        return { success: false, message: "Server error", };
     }
 };

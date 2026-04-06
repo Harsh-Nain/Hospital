@@ -83,8 +83,7 @@ export const medicalReports = mysqlTable("medical_reports",
   })
 );
 
-export const doctorSlots = mysqlTable(
-  "doctor_slots",
+export const doctorSlots = mysqlTable("doctor_slots",
   {
     id: int("id").primaryKey().autoincrement(),
     doctorId: int("doctor_id").notNull().references(() => doctors.id),
@@ -102,8 +101,7 @@ export const doctorSlots = mysqlTable(
   })
 );
 
-export const appointments = mysqlTable(
-  "appointments",
+export const appointments = mysqlTable("appointments",
   {
     id: int("id").primaryKey().autoincrement(),
     doctorId: int("doctor_id").notNull().references(() => doctors.id),
@@ -154,7 +152,8 @@ export const reviews = mysqlTable("reviews",
   })
 );
 
-export const chatMessages = mysqlTable("chat_messages", {
+export const chatMessages = mysqlTable("chat_messages", 
+  {
   id: int("id").primaryKey().autoincrement(),
   appointmentId: int("appointment_id").notNull().references(() => appointments.id, { onDelete: "cascade" }),
   senderId: int("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -202,13 +201,12 @@ export const notifications = mysqlTable("notifications",
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
-    userIdx: index("notification_user_idx").on(table.userId),
+    id: index("notification_idx").on(table.id),
   })
 );
 
 
-export const contactMessages = mysqlTable(
-  "contact_messages",
+export const contactMessages = mysqlTable("contact_messages",
   {
     id: int("id").primaryKey().autoincrement(),
 

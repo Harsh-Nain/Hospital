@@ -36,7 +36,7 @@ export const DoctorInfo = async (req, res) => {
         const { id } = req.user;
 
         const [doctor] = await db
-            .select({ id: users.id, fullName: users.fullName, email: users.email, image: users.image, role: users.role, doctorId: doctors.id, specialization: specializations.name, experience: doctors.experienceYears, })
+            .select({ id: users.id, fullName: users.fullName, email: users.email, isApproved: doctors.isApproved, image: users.image, role: users.role, doctorId: doctors.id, specialization: specializations.name, experience: doctors.experienceYears, })
             .from(users)
             .leftJoin(doctors, eq(doctors.userId, users.id))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))

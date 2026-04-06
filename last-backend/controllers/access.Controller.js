@@ -145,6 +145,7 @@ export const SaveDoctor = async (req, res) => {
 
         res.cookie("accessToken", accessToken, { httpOnly: true });
         res.cookie("refreshToken", refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, });
+        await CreateNotification({ doctorId: -1, message: "📢 You have received a new approval request. A new doctor has submitted registration details. Please review the doctor's information.", });
 
         res.json({ success: true, redirect: "/checking", });
 
@@ -174,6 +175,11 @@ export async function LoginUser(req, res, role) {
         if (!isMatch) {
             return res.status(401).json({ success: false, message: "Incorrect password" });
         }
+        const accessToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: "15m" });
+        const refreshToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+        res.cookie("accessToken", accessToken, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
+        res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 7 * 24 * 60 * 60 * 1000 });
 
         if (role === "doctor") {
             const [doctor] = await db.select().from(doctors).where(eq(doctors.userId, user.id)).limit(1);
@@ -182,17 +188,10 @@ export async function LoginUser(req, res, role) {
                 return res.status(403).json({ success: false, message: "Doctor account is not approved" });
             }
 
-
             if (!doctor || !doctor.isApproved) {
                 return res.status(403).json({ success: false, redirect: "/checking", message: "Doctor account is not approved yet" });
             }
         }
-
-        const accessToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: "15m" });
-        const refreshToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-        res.cookie("accessToken", accessToken, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
-        res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 7 * 24 * 60 * 60 * 1000 });
 
         return res.json({ success: true, redirect: role === "patient" ? "/dashboard-patient" : "/dashboard-doctor" });
 
