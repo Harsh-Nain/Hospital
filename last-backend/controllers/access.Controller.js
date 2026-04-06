@@ -203,6 +203,7 @@ export async function LoginUser(req, res, role) {
 }
 
 export const logout = (req, res) => {
+    console.log('Logout');
     res.cookie('accessToken', '');
     res.cookie('refreshToken', '');
     res.json({ success: true });

@@ -256,7 +256,6 @@ export const ReActivate = async (req, res) => {
     }
 };
 
-
 export const getChatList = async (req, res) => {
     try {
 

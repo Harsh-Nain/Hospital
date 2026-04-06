@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ShowDoctorProfile from "./showDoctorProfile";
 
-export default function Navbar({ patientInfo }) {
+export default function Navbar({ patientInfo, showDoctorDetail, setshowDoctorDetail }) {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -15,7 +15,6 @@ export default function Navbar({ patientInfo }) {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [showDoctorDetail, setshowDoctorDetail] = useState(null);
 
   const searchRef = useRef();
   const dropdownRef = useRef();
@@ -131,28 +130,22 @@ export default function Navbar({ patientInfo }) {
             )}
           </div>
 
-          {searching && (
-            <div className="absolute top-18 left-0 right-0 z-999 overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+          {(searching) && (
+            <div className="absolute top-18 left-0 right-0 z-999 min-w-75 max-w-full overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
               <div className="p-3 border-b border-slate-100">
                 <p className="text-sm font-semibold text-slate-700">Searching...</p>
               </div>
 
-              <div className="max-h-105 overflow-y-auto animate-pulse">
-                {[1, 2, 3, 4].map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-4 p-4 border-b border-slate-100"
-                  >
-                    {/* Doctor Image */}
+              <div className="max-h-105 overflow-y-auto animate-pulse w-full">
+                {[1, 2, 3].map((item) => (
+                  <div key={item} className="flex items-center gap-4 p-4 border-b border-slate-100" >
                     <div className="w-12 h-12 rounded-2xl bg-slate-200 shrink-0"></div>
 
-                    {/* Doctor Info */}
                     <div className="flex-1 min-w-0">
                       <div className="h-4 w-32 sm:w-40 bg-slate-200 rounded mb-2"></div>
                       <div className="h-3 w-20 sm:w-28 bg-slate-200 rounded"></div>
                     </div>
 
-                    {/* Fee */}
                     <div className="text-right shrink-0">
                       <div className="h-4 w-12 sm:w-16 bg-slate-200 rounded mb-2 ml-auto"></div>
                       <div className="h-3 w-16 sm:w-20 bg-slate-200 rounded ml-auto"></div>
@@ -163,8 +156,8 @@ export default function Navbar({ patientInfo }) {
             </div>
           )}
 
-          {showResults && (
-            <div className="absolute top-18 left-0 right-0 z-999 overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+          {(showResults && !searching) && (
+            <div className="absolute top-18 -left-3.5 sm:left-0 right-0 z-999 min-w-75 max-w-full overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
               <div className="p-3 border-b border-slate-100">
                 <p className="text-sm font-semibold text-slate-700">Search Results</p>
               </div>
@@ -174,7 +167,7 @@ export default function Navbar({ patientInfo }) {
                   <p className="text-sm text-slate-500">No doctors found...</p>
                 </div>
               ) : (
-                <div className="max-h-105 overflow-y-auto">
+                <div className="max-h-75 overflow-y-auto w-full">
                   {doctors.map((doc) => (
                     <div key={doc.doctorId} onClick={() => { setshowDoctorDetail(doc.doctorId); setShowResults(false); }} className="flex items-center gap-4 p-4 border-b border-slate-100 hover:bg-sky-50/70 cursor-pointer transition-all duration-300">
                       <img src={doc.image} className="w-12 h-12 rounded-2xl object-cover border border-slate-200" />

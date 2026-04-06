@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { User, Phone, Heart, Upload, LogOut } from "lucide-react";
 import axios from "axios";
 import { useNavigate, useOutletContext } from "react-router-dom";
@@ -8,10 +8,10 @@ export default function PatientProfile() {
 
     const API_URL = import.meta.env.VITE_BACKEND_URL;
     const navigate = useNavigate();
-
     const emptyProfile = { fullName: "", age: "", gender: "", bio: "", email: "", phone: "", address: "", bloodGroup: "", allergy: "", image: "" };
 
     const [loading, setLoading] = useState(false);
+    const { setShowLogoutConfirm } = useOutletContext()
     const [profile, setProfile] = useState(emptyProfile);
     const [originalProfile, setOriginalProfile] = useState(emptyProfile);
     const [imageFile, setImageFile] = useState(null);
@@ -84,20 +84,6 @@ export default function PatientProfile() {
     const handleClear = () => {
         setProfile(emptyProfile);
         setImageFile(null);
-    };
-
-    const handleLogout = async () => {
-        try {
-            setLoading(true)
-            const res = await axios.get(`${API_URL}/logout`, { withCredentials: true, });
-
-            if (res.data.success) {
-                setLoading(false)
-                navigate("/patient/login");
-            }
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Server error!");
-        }
     };
 
     if (loading) {
@@ -193,7 +179,7 @@ export default function PatientProfile() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-sky-50 p-4 sm:p-6 xl:p-8">
+        <div className="min-h-screen p-4 sm:p-4">
 
             <div className="fixed top-0 left-0 w-72 h-72 bg-sky-200/30 blur-3xl rounded-full pointer-events-none"></div>
             <div className="fixed bottom-0 right-0 w-72 h-72 bg-cyan-200/30 blur-3xl rounded-full pointer-events-none"></div>
@@ -225,7 +211,7 @@ export default function PatientProfile() {
                         </div>
                     </div>
 
-                    <button onClick={handleLogout} className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 font-medium shadow-sm">
+                    <button onClick={() => setShowLogoutConfirm(true)} className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 font-medium shadow-sm">
                         <LogOut size={18} />
                         Logout
                     </button>

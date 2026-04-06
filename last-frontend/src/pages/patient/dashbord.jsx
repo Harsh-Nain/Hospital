@@ -18,6 +18,17 @@ export default function Dashboard() {
     const modals = [nextAppoitment, showDoctorDetail];
     const isAnyModalOpen = modals.some(Boolean);
 
+    const [tick, setTick] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTick((prev) => prev + 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [])
+
+
     useEffect(() => {
         const root = document.documentElement;
 
@@ -167,7 +178,7 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-sky-50 p-3 sm:p-5 lg:p-8 space-y-6 sm:space-y-8">
+        <div className="min-h-screen sm:p-4 space-y-6 sm:space-y-8">
             {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={patient?.patientId} />)}
             {nextAppoitment && (<NextAppoitment id={nextAppoitment} setNextAppoitment={setNextAppoitment} patientId={patient?.patientId} />)}
 
@@ -210,7 +221,7 @@ export default function Dashboard() {
                         <p className="text-slate-500 text-sm mt-1">Track and manage your upcoming visits</p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 bg-white border border-slate-200 rounded-2xl p-2 shadow-sm w-full lg:w-auto">
+                    <div className="flex gap-2 bg-white border border-slate-200 rounded-2xl p-2 shadow-sm w-full lg:w-auto">
                         {[
                             { label: "All", value: "all" },
                             { label: "Confirmed", value: "confirmed" },
@@ -254,15 +265,10 @@ export default function Dashboard() {
                                         <p className="text-base sm:text-lg font-semibold text-slate-800">{slot.date || "N/A"}</p>
 
                                         <p className="text-sm text-slate-500 mt-1">
-                                            {FormatTime(slot.startTime)} –{" "}
-                                            {FormatTime(slot.endTime)}
+                                            {slot.startTime} –{" "}
+                                            {slot.endTime}
                                         </p>
-
-                                        {a.status === "confirmed" && (
-                                            <p className="text-sm text-emerald-600 font-medium mt-2">
-                                                {getTimeRemaining(slot.startTime, slot.date)}
-                                            </p>
-                                        )}
+                                        {a.status === "confirmed" && (<p className="text-sm text-emerald-600 font-medium mt-2">{getTimeRemaining(slot.startTime.split(" ")[0], slot.date)}</p>)}
 
                                         <p className="text-xs text-slate-400 mt-2 wrap-break-word">
                                             {statusLabelMap[a.status] && `${statusLabelMap[a.status]}: `}
@@ -270,19 +276,16 @@ export default function Dashboard() {
                                         </p>
                                     </div>
 
-                                    <div className="flex flex-col gap-3 xl:items-end">
+                                    <div className="flex flex-col absolute top-2 right-2 gap-3 xl:items-end">
                                         <div className={`px-4 py-2 rounded-full text-xs font-semibold capitalize w-fit ${a.isCancelled || a.status === "Cancelled" ? "bg-red-100 text-red-600" : a.status === "confirmed" ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-700"}`}>
                                             {a.status || "Unknown"}
                                         </div>
 
                                         {(a.isCancelled || a.cancelReason) && (<p className="text-xs text-red-500">Reason: {a.cancelReason}</p>)}
-
                                         {(a.isCancelled || a.status === "Cancelled") && (
                                             <div className="flex flex-wrap gap-2">
                                                 <button onClick={() => handleRefund(a)} className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all">Refund</button>
-                                                <button onClick={() => setNextAppoitment(doctor.doctorId)} className="px-4 py-2 rounded-xl bg-linear-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-white text-sm font-medium transition-all">
-                                                    Book Again
-                                                </button>
+                                                <button onClick={() => setNextAppoitment(doctor.doctorId)} className="px-4 py-2 rounded-xl bg-linear-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-white text-sm font-medium transition-all">Book Again</button>
                                             </div>
                                         )}
                                     </div>

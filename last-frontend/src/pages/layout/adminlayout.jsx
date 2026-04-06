@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom";
 import { useState } from "react";
 import AdminSidebar from "../../components/adminSidebar";
-import Loading from "../../components/loading"
-import AdminBottomNav from "../../components/adminBottomNav"
+import Loading from "../../components/loading";
+import AdminBottomNav from "../../components/adminBottomNav";
 import AdminNav from "../../components/adminnav";
 
 export default function AdminLayout() {
@@ -10,19 +10,37 @@ export default function AdminLayout() {
     const [loading, setLoading] = useState(false);
 
     return (
-        <div className="flex min-h-screen bg-white/70">
-            {loading && <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/50 z-99999999999"><Loading /></div>}
+        <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-sky-50 flex overflow-hidden">
+            {loading && (<div className="fixed inset-0 z-999 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm"><Loading /></div>)}
 
-            <div className={`fixed z-50 lg:z-auto top-0 left-0 h-screen w-72 bg-white transform transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
-                <AdminSidebar />
+            {open && (<div onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden" />)}
+
+            <div className={`fixed top-0 left-0 z-50 h-screen transition-all duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+                <div className="relative h-full">
+                    <AdminSidebar open={open} setOpen={setOpen} />
+                </div>
             </div>
 
-            <div className="flex-1 flex flex-col lg:ml-72">
-                <div className="fixed top-0 left-0 lg:left-72 right-0 z-30 bg-white shadow-sm"><AdminNav /></div>
-                <main className="mt-16 flex-1 overflow-y-auto pb-20 lg:pb-6"><Outlet context={{ setLoading }} /></main>
+            <div className="flex-1 flex flex-col h-screen overflow-hidden lg:ml-72">
+
+                <div className="fixed top-0 left-0 lg:left-72 right-0 z-50 px-3 sm:px-5 pt-3 bg-linear-to-br from-slate-50 via-white to-sky-50">
+                    <div className="rounded-[1.8rem] border border-white/70 bg-white/80 backdrop-blur-xl shadow-[0_10px_40px_rgba(15,23,42,0.06)]">
+                        <AdminNav open={open} setOpen={setOpen} />
+                    </div>
+                </div>
+
+                <main className="flex-1 overflow-y-auto pt-21 sm:pt-23 pb-24 lg:pb-0">
+                    <div className="w-full mx-auto">
+                        <Outlet context={{ setLoading }} />
+                    </div>
+                </main>
             </div>
-            <AdminBottomNav />
+
+            <div className="lg:hidden fixed bottom-3 left-3 right-3 z-50">
+                <div className="rounded-4xl border border-white/70 bg-white/85 backdrop-blur-2xl shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
+                    <AdminBottomNav />
+                </div>
+            </div>
         </div>
     );
-
 }
