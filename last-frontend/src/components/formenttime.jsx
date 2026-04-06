@@ -8,14 +8,17 @@ export function FormatTime(time) {
 
 export function getTimeRemaining(startTime, date) {
     if (!startTime || !date) return "";
-    const now = new Date();
 
+    const now = new Date();
     const [hours, minutes] = startTime.split(":").map(Number);
+
     const start = new Date(date);
     start.setHours(hours, minutes, 0, 0);
 
     const diff = start - now;
+
     if (diff <= 0) return "Started";
+
     const totalSeconds = Math.floor(diff / 1000);
 
     if (totalSeconds >= 86400) {

@@ -71,7 +71,7 @@ export default function Adminshowchat({ selectedUser, currentUser, onBack }) {
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col md:pb-0 pb-11  overflow-y-auto p-3 space-y-3 h-[86%] w-[100%] md:w-auto pt-18 absolute">
+            <div className="flex-1 flex flex-col md:pb-0 pb-11  overflow-y-auto p-3 space-y-3 h-[86%] w-full md:w-auto pt-18 absolute">
                 {messages.length === 0 ? (
                     <p className="text-center text-gray-400 text-sm m-auto">No messages yet</p>
                 ) : (
@@ -79,13 +79,10 @@ export default function Adminshowchat({ selectedUser, currentUser, onBack }) {
                         <div key={i} className={`flex ${msg.isMe ? "justify-end" : "justify-start"}`}>
                             <div className={`flex flex-col ${msg.isMe ? "items-end" : "items-start"} max-w-[80%]`}>
                                 {msg.fileUrl && (
-                                    <img
-                                        src={msg.fileUrl}
-                                        className={`rounded-xl ${msg.isMe ? "rounded-br-none" : "rounded-bl-none"} mb-1 max-h-60 w-full object-cover border border-black/5`}
-                                    />
+                                    <img src={msg.fileUrl} className={`rounded-xl ${msg.isMe ? "rounded-br-none" : "rounded-bl-none"} mb-1 max-h-60 w-full object-cover border border-black/5`} />
                                 )}
                                 {msg.message && (
-                                    <div className={`px-3 py-2 rounded-2xl text-sm shadow-sm break-words ${msg.isMe ? "bg-gradient-to-r from-sky-400 to-blue-500 text-white " : "bg-black/5 text-gray-800"}`}>
+                                    <div className={`px-3 py-2 rounded-2xl text-sm shadow-sm word-break-word ${msg.isMe ? "bg-linear-to-r from-sky-400 to-blue-500 text-white " : "bg-black/5 text-gray-800"}`}>
                                         {msg.message}
                                     </div>
                                 )}

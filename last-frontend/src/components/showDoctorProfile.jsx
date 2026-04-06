@@ -113,7 +113,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
 
   const profileControler = async () => {
     let url = "reactivate_doctor"
-    if (doctor.status !== "suspanded") {
+    if (doctor?.status !== "suspanded") {
       url = "suspand_doctor"
     }
 
@@ -159,7 +159,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
   if (loading) { return (<div className="fixed inset-0 flex h-screen items-center justify-center bg-black/70 z-99999"><Loading /></div>); }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div className="fixed top-0 left-0 z-50 flex items-center w-full h-screen justify-center bg-black/50 backdrop-blur-sm p-4">
       {/* {pay && <PaymentCard payment={pay} API_URL={API_URL} onClose={() => setPay(null)} patientId={patientId} />} */}
 
       <div className="relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-3xl bg-white/90 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
@@ -191,15 +191,15 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
               <span className="text-sm opacity-80">({mainRating?.totalReviews || 0})</span>
             </div>
 
-            {(isAdmin) && (
-              <button onClick={profileControler} className={`px-4 py-2 rounded-xl bottom-2 right-17 absolute bg-linear-to-r ${doctor.status == "approved" ? "from-orange-400 to-red-500" : "from-emerald-300 to-green-500"} text-white text-sm shadow hover:shadow-lg hover:scale-[1.03] transition`}>
+            {isAdmin && (
+              <button onClick={profileControler} className={`px-4 py-2 rounded-xl bottom-2 right-17 absolute bg-linear-to-r ${doctor?.status == "approved" ? "from-orange-400 to-red-500" : "from-emerald-300 to-green-500"} text-white text-sm shadow hover:shadow-lg hover:scale-[1.03] transition`}>
                 {doctor?.status == "approved" ? "Suspand Doctor" : "Re-activate Doctor"}
               </button>
             )}
           </div>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[60vh] sm:max-h-[70vh]">
+        <div className="px-6 py-4 overflow-y-auto max-h-[60vh] sm:h-[80vh]">
           <div className="sticky top-0 z-20 mb-8 rounded-3xl border border-white/60 bg-white/80 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl">
             <div className="flex gap-2 overflow-x-auto">
               {["About", "Slots", "Reviews"].map((tab) => (
@@ -223,7 +223,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                     <div className="relative flex items-start justify-between">
                       <div>
                         <p className="text-sm font-medium text-gray-500">{item.label}</p>
-                        <p className="mt-3 text-3xl font-bold tracking-tight text-gray-900">{item.value}</p>
+                        <p className="mt-3 text-2xl font-bold tracking-tight text-gray-900">{item.value}</p>
                       </div>
 
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-md">
@@ -271,7 +271,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                   <p className="text-sm text-gray-400">No slots available</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:mb-5">
                   {slots.map((slot) => {
                     const booked = slot.patientIds.includes(patientId);
                     const available = slot.capacity - slot.patientIds.length;
@@ -284,7 +284,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                           <div className="mb-4 flex items-start justify-between">
                             <div>
                               <p className={`text-xs uppercase tracking-wider ${selectedSlot === slot.id ? "text-white/70" : "text-gray-400"}`}>  Appointment Time</p>
-                              <h4 className={`mt-2 text-lg font-bold ${selectedSlot === slot.id ? "text-white" : "text-gray-900"}`}>  {formatTime(slot.startTime)} - {formatTime(slot.endTime)}</h4>
+                              <h4 className={`mt-2 text-lg font-bold ${selectedSlot === slot.id ? "text-white" : "text-gray-900"}`}>  {slot.startTime} - {slot.endTime}</h4>
                             </div>
 
                             {booked && (<span className="rounded-full bg-yellow-100 px-3 py-1 text-[11px] font-semibold text-yellow-700">Requested</span>)}

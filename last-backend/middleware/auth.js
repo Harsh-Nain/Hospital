@@ -9,7 +9,6 @@ export const islogin = (req, res, next) => {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
-    // 1️⃣ Try verifying access token
     if (accessToken) {
       try {
         const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);

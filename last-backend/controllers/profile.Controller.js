@@ -43,6 +43,7 @@ export const GetDoctorProfile = async (req, res) => {
             const [h, m] = time.split(":");
             return `${h.padStart(2, "0")}:${m}`;
         };
+        console.log(slotsRaw.length);
 
         const grouped = {};
         const slots = [];
@@ -52,13 +53,12 @@ export const GetDoctorProfile = async (req, res) => {
             const remaining = Math.max(0, slot.capacity - booked);
 
             const patientIds = slot.patientIds ? slot.patientIds.split(",").map((id) => Number(id)) : [];
-            const slotObj = { id: slot.id, date: slot.date, startTime: formatTime(slot.startTime), endTime: formatTime(slot.endTime), capacity: slot.capacity, patientIds, booked, remaining, isFull: remaining <= 0, };
+            const slotObj = { id: slot.id, date: slot.date, startTime: slot.startTime, endTime: slot.endTime, capacity: slot.capacity, patientIds, booked, remaining, isFull: remaining <= 0, };
 
             if (!grouped[slot.date]) grouped[slot.date] = [];
             grouped[slot.date].push(slotObj);
             slots.push(slotObj);
         });
-
 
         const doctorReviews = await db
             .select({ id: reviews.id, patientId: patients.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, patientImage: users.image, })
