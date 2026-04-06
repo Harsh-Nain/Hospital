@@ -122,6 +122,7 @@ export const SaveDoctor = async (req, res) => {
     try {
         const { fullName, password, symptoms, email, specialization, experienceYears, licenseNumber, consultationFee, } = req.body.formdata;
         console.log(fullName, password, symptoms, email, specialization, experienceYears, licenseNumber, consultationFee,);
+
         const securePassword = await bcrypt.hash(password, 10);
         const newUser = await db.insert(users).values({ fullName, role: "doctor", email, password: securePassword, image: "https://res.cloudinary.com/ddiyrbync/image/upload/v1772771650/istockphoto-2077095666-612x612_j1wo4i.jpg", }).$returningId();
 

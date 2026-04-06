@@ -18,11 +18,14 @@ import AdminLayout from "../pages/layout/adminlayout";
 import PatientRecord from "../pages/patient/patientrecord";
 import Dashboard from "../pages/admin/dashboard";
 import Alldoctors from "../pages/admin/allDoctors"
-import Allpatients from "../pages/admin/allpatients"
+import Allpatients from "../pages/admin/allPatients"
 import Allchats from "../pages/admin/allchats";
 import Chats from "../pages/chats"
 import PatientGetDoctors from "../components/patientGetDoctors";
-
+import Webintro from "../pages/interface/Home";
+import WebDoctor from "../pages/interface/Doctors";
+import WebAbout from "../pages/interface/About";
+import WebContact from "../pages/interface/Contact";
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -30,7 +33,12 @@ function AppRoutes() {
 
       <Routes>
 
-        <Route path="/" element={<RoleSelection />} />
+        {/* <Route path="/" element={<RoleSelection />} /> */}
+        <Route path="/" element={<Webintro />} />
+        <Route path="/RoleSelection" element={<RoleSelection/>} />
+        <Route path="/doctor" element={<WebDoctor/>} />
+        <Route path="/about" element={<WebAbout/>} />
+        <Route path="/contact" element={<WebContact/>} />
 
         <Route path="/patient/login" element={<PatientLogin />} />
         <Route path="/patient/register" element={<PatientRegister />} />

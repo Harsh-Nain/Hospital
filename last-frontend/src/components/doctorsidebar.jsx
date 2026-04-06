@@ -22,6 +22,8 @@ export default function DoctorSidebar({ setShowLogoutConfirm, doctorInfo, setDoc
         const res = await axios.get(`${API_URL}/dashboard/doctor-info`, { withCredentials: true, });
 
         if (res.data.success) {
+          console.log(res.data);
+          
           setDoctorInfo(res.data.doctor);
         } else {
           navigate(`/doctor/login`);

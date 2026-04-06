@@ -205,3 +205,17 @@ export const notifications = mysqlTable("notifications",
     userIdx: index("notification_user_idx").on(table.userId),
   })
 );
+
+
+export const contactMessages = mysqlTable(
+  "contact_messages",
+  {
+    id: int("id").primaryKey().autoincrement(),
+
+    name: varchar("name", { length: 100 }).notNull(),
+    email: varchar("email", { length: 150 }).notNull(),
+    message: text("message").notNull(),
+
+    createdAt: timestamp("created_at").defaultNow(),
+  }
+);

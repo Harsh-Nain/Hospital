@@ -1,4 +1,5 @@
 import { FaUserMd, FaUserInjured } from "react-icons/fa";
+import { MdKeyboardBackspace } from "react-icons/md";
 import { useNavigate } from "react-router";
 
 export default function RoleSelection() {
@@ -6,7 +7,10 @@ export default function RoleSelection() {
 
     return (
         <div className="min-h-screen bg-linear-to-br from-sky-50 via-white to-emerald-50 flex items-center justify-center px-6">
-
+            <button onClick={() => navigate("/")} className="absolute cursor-pointer top-4 left-6 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/70 shadow-sm  hover:bg-white/90 transition text-gray-700">
+                <MdKeyboardBackspace size={20} />
+                <span className="text-sm font-medium">Back</span>
+            </button>
             <div className="w-full max-w-5xl">
 
                 <div className="text-center mb-14">
@@ -14,10 +18,11 @@ export default function RoleSelection() {
                     <p className="mt-4 text-lg text-gray-500">Smart Healthcare Platform connecting Patients and Doctors</p>
                 </div>
 
+
                 <div className="grid md:grid-cols-2 gap-10">
 
                     <div onClick={() => navigate("/patient/login")} className="group cursor-pointer bg-white border border-gray-200 rounded-3xl p-7 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-                        
+
                         <div className="flex flex-col items-center text-center space-y-6">
                             <div className="w-20 h-20 flex items-center justify-center rounded-full bg-sky-100 group-hover:bg-sky-200 transition"><FaUserInjured className="text-sky-600 text-4xl" /></div>
                             <h2 className="text-2xl font-semibold text-gray-900">Patient Portal</h2>
