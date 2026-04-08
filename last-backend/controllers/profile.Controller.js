@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 export const GetDoctorProfile = async (req, res) => {
     try {
         const { doctorId } = req.query;
-
+        console.log(doctorId);
         if (!doctorId) {
             return res.json({
                 success: false,
@@ -38,11 +38,6 @@ export const GetDoctorProfile = async (req, res) => {
             .groupBy(doctorSlots.id)
             .orderBy(doctorSlots.date, doctorSlots.startTime);
 
-        const formatTime = (time) => {
-            if (!time) return "";
-            const [h, m] = time.split(":");
-            return `${h.padStart(2, "0")}:${m}`;
-        };
         console.log(slotsRaw.length);
 
         const grouped = {};

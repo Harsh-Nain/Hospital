@@ -73,9 +73,6 @@ export const Webdata = async (req, res) => {
     try {
         const patientsList = (await db.select().from(patients)).length;
 
-
-
-
         const doctorsdata = await db
             .select({
                 doctorId: doctors.id,
@@ -94,14 +91,9 @@ export const Webdata = async (req, res) => {
             if (!doctorsMap[row.doctorId]) {
                 doctorsMap[row.doctorId] = { doctorId: row.doctorId, fullName: row.fullName, email: row.email, image: row.image, specialization: row.specialization, experienceYears: row.experienceYears, consultationFee: row.consultationFee, };
             }
-
-
         });
 
         const doctorsList = Object.values(doctorsMap);
-
-
-
 
         res.json({ success: true, patients: patientsList, doctorsList: doctorsList });
 
@@ -379,7 +371,6 @@ export const getChatUser = async (req, res) => {
 
 export const getChatData = async (req, res) => {
     try {
-
         const { userId, id } = req.query;
 
         if (!userId) {
@@ -416,29 +407,34 @@ export const addcontactMessages = async (req, res) => {
         const { name, email, message } = req.body
 
         if (!name || !email || !message) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required",
-            });
+            return res.status(400).json({ success: false, message: "All fields are required", });
         }
 
-        await db.insert(contactMessages).values({
-            name,
-            email,
-            message,
-        })
-
-        return res.status(200).json({
-            success: true,
-            message: "Message send successfully"
-        })
+        const notif = await CreateNotification({ userId: 1, message: "🎉 A new contact detail has been submitted. Please check the contact details section." });
+        console.log(notif);
+        await db.insert(contactMessages).values({ name, email, message, })
+        return res.status(200).json({ success: true, message: "Message send successfully" })
 
     } catch (err) {
         console.log(err);
-        return res.status(500).json({
-            success: false,
-            message: "Server error",
-        });
-
+        return res.status(500).json({ success: false, message: "Server error", });
     }
 }
+
+export const getContacts = async (req, res) => {
+    try {
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 9;
+        const offset = (page - 1) * limit;
+
+        const contacts = await db.select().from(contactMessages).limit(limit).offset(offset);
+        const totalResult = await db.select({ count: sql`COUNT(*)`, }).from(contactMessages)
+
+        const total = Number(totalResult[0]?.count || 0);
+        return res.status(200).json({ success: true, contacts: contacts, pagination: { page, limit, total, totalPages: Math.ceil(total / limit), }, });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Error getting messages", });
+    }
+};

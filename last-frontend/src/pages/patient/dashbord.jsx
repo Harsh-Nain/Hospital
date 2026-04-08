@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import ShowDoctorProfile from "../../components/showDoctorProfile";
 import Doctorcard from "../../components/doctorcard";
-import { FormatTime, getTimeRemaining } from "../../components/formentTime"
+import { getTimeRemaining } from "../../components/formentTime"
 import NextAppoitment from "../../components/nextappoitment";
-import { useOutletContext } from "react-router-dom";
 
 export default function Dashboard() {
     const [patient, setPatient] = useState(null);
@@ -27,7 +26,6 @@ export default function Dashboard() {
 
         return () => clearInterval(interval);
     }, [])
-
 
     useEffect(() => {
         const root = document.documentElement;
