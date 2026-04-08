@@ -106,31 +106,29 @@ export const GetDoctorSlots = async (req, res) => {
     const { doctorId } = req.query;
 
     if (!doctorId) {
-      return res.status(400).json({ success: false, message: "doctorId required" });
+      return res.status(400).json({ success: false, message: "Doctor ID is required", });
     }
 
-    const slots = await db.select({ slotId: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, isCancelled: doctorSlots.isCancelled, slotstage: doctorSlots.slotstage, booked: sql`COUNT(CASE WHEN ${appointments.status} = 'confirmed' THEN 1 END)`.as("booked"), }).from(doctorSlots).leftJoin(appointments, eq(appointments.slotId, doctorSlots.id)).where(eq(doctorSlots.doctorId, doctorId)).groupBy(doctorSlots.id);
+    const slots = await db
+      .select({ slotId: doctorSlots.id, optionalFor: doctorSlots.optionalFor, doctorId: doctorSlots.doctorId, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, isCancelled: doctorSlots.isCancelled, booked: sql`COUNT(${appointments.id})`, })
+      .from(doctorSlots)
+      .leftJoin(appointments, and(eq(appointments.slotId, doctorSlots.id), ne(appointments.status, "Cancelled")))
+      .where(and(eq(doctorSlots.doctorId, Number(doctorId))))
+      .groupBy(doctorSlots.id, doctorSlots.doctorId, doctorSlots.date, doctorSlots.startTime, doctorSlots.endTime, doctorSlots.capacity, doctorSlots.isCancelled).orderBy(doctorSlots.date, doctorSlots.startTime);
 
-    const formattedSlots = slots.filter(slot => slot.slotstage !== "Removed").map((slot) => {
-      if (slot.slotstage == "Removed") return
-
+    const formattedSlots = slots.map((slot) => {
       const booked = Number(slot.booked || 0);
       const capacity = Number(slot.capacity || 0);
-      return { ...slot, booked, available: capacity - booked, };
+      const available = capacity - booked;
+
+      return { slotId: slot.slotId, doctorId: slot.doctorId, optionalFor: slot.optionalFor, date: slot.date, startTime: slot.startTime, endTime: slot.endTime, capacity, booked, available: available > 0 ? available : 0, isFull: booked >= capacity, isCancelled: slot.isCancelled, };
     });
 
-    const now = new Date();
-
-    const futureSlots = slots.filter(slot => {
-      const slotDateTime = new Date(`${slot.date}T${slot.startTime}`);
-      return slotDateTime > now && !slot.isCancelled;
-    });
-
-    res.json({ success: true, slots: formattedSlots, futureSlots: futureSlots });
-
+    return res.status(200).json({ success: true, totalSlots: formattedSlots.length, slots: formattedSlots, });
   } catch (error) {
     console.error("GetDoctorSlots Error:", error);
-    res.status(500).json({ success: false });
+    console.error("Message:", error.message);
+    return res.status(500).json({ success: false, message: "Internal server error", });
   }
 };
 
@@ -138,6 +136,7 @@ export const UpdateDoctorSlot = async (req, res) => {
   try {
     const userId = req.user.id;
     const { slotId, action, reason, change } = req.body;
+    console.log(slotId, action, reason, change);
 
     if (!slotId || !action) {
       return res.status(400).json({ success: false, message: "slotId and action are required", });
@@ -155,14 +154,16 @@ export const UpdateDoctorSlot = async (req, res) => {
     }
 
     if (action === "changeactive") {
+      console.log("okoko", change == "activate" ? false : true);
       await db.update(doctorSlots).set({ isCancelled: change == "activate" ? false : true }).where(eq(doctorSlots.id, slotId));
 
       if (change != "activate") {
         await db.update(appointments).set({ status: "Cancelled", createdAt: new Date(), cancelReason: reason, }).where(and(eq(appointments.slotId, slotId), ne(appointments.status, "Cancelled")));
+
         const affectedAppointments = await db.select({ appointmentId: appointments.id, patientId: appointments.patientId, }).from(appointments).where(and(eq(appointments.slotId, slotId), ne(appointments.status, "Cancelled")));
         await Promise.all(affectedAppointments.map((appointment) => CreateNotification({ patientId: appointment.patientId, message: `Your appointment has been cancelled. Please book again if needed.`, })));
       }
-      return res.json({ success: true, message: change ? "Slot unactivated successfully" : "Slot activated successfully", });
+      return res.json({ success: true, message: change != "activate" ? "Slot unactivated successfully" : "Slot activated successfully", });
     }
     return res.status(400).json({ success: false, message: "Invalid action type", });
 
@@ -244,5 +245,66 @@ export const CancelAppointment = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false });
+  }
+};
+
+export const ReuseSlot = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { slotId, optionalFor, date, startTime, endTime, capacity } = req.body;
+    if (!slotId) {
+      return res.status(400).json({ success: false, message: "slotId are required", });
+    }
+
+    const slotData = await db.select({ slotId: doctorSlots.id }).from(doctorSlots).innerJoin(doctors, eq(doctorSlots.doctorId, doctors.id)).where(and(eq(doctorSlots.id, slotId), eq(doctors.userId, userId))).limit(1);
+
+    if (slotData.length === 0) {
+      return res.status(404).json({ success: false, message: "Slot not found or unauthorized", });
+    }
+    let updatedDate = date;
+    if (optionalFor) {
+      const d = new Date(date);
+      d.setDate(d.getDate() + 1);
+      updatedDate = d.toISOString().split("T")[0];
+    }
+
+    await db.update(doctorSlots).set({ optionalFor, date: updatedDate, startTime, endTime, capacity, isCancelled: false }).where(eq(doctorSlots.id, slotId));
+    await CreateNotification({ userId, message: `Your slot has been updated Successfully`, });
+
+    return res.json({ success: true, message: "Slot Updated Successfully", });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error", });
+  }
+};
+
+export const UpdateSlotDate = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { slotId, date } = req.body;
+
+    if (!slotId) {
+      return res.status(400).json({ success: false, message: "slotId are required", });
+    }
+
+    const slotData = await db.select({ slotId: doctorSlots.id }).from(doctorSlots).innerJoin(doctors, eq(doctorSlots.doctorId, doctors.id)).where(and(eq(doctorSlots.id, slotId), eq(doctors.userId, userId))).limit(1);
+
+    if (slotData.length === 0) {
+      return res.status(404).json({ success: false, message: "Slot not found or unauthorized", });
+    }
+    const d = new Date(date);
+    d.setDate(d.getDate() + 1);
+    const updatedDate = d.toISOString().split("T")[0];
+
+    await db.update(doctorSlots).set({ date: updatedDate }).where(eq(doctorSlots.id, slotId));
+
+    const slot = await db.select().from(doctorSlots).where(eq(doctorSlots.id, slotId)).limit(1);
+    const slotPayload = { date: slot.date || slot.date, startTime: slot.startTime, endTime: slot.endTime, capacity: Number(slot.capacity), available: Number(slot.capacity), booked: 0, status: "available", };
+    return res.json({ success: true, message: "Slot Updated Successfully", slot: slotPayload });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error", });
   }
 };
