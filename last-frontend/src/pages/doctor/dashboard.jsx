@@ -494,7 +494,7 @@ export default function Dashboard() {
                         <p className="mt-1 text-[11px] text-gray-500">You can reuse this slot again</p>
                       </div>
 
-                      <button onClick={() => setReuseSlot(slot)} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 transition-all duration-300 hover:border-red-200 hover:bg-red-50 hover:text-red-600">
+                      <button onClick={() => setReuseSlot(slot)} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 transition-all duration-300 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-600">
                         <RxUpdate className="text-sm" />
                         Reuse
                       </button>
