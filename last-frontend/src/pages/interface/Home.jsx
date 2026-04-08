@@ -59,24 +59,24 @@ const services = [
 
 const reviews = [
   {
-    name: "John Smith",
-    initials: "JS",
+    patientName: "John Smith",
+    doctorName: "JS",
     date: "2026-02-15",
-    text: `"Excellent care and professional staff. Dr. Chen took the time to explain everything clearly and made me feel comfortable throughout the treatment."`,
+    reviewText: `"Excellent care and professional staff. Dr. Chen took the time to explain everything clearly and made me feel comfortable throughout the treatment."`,
     rating: 5,
   },
   {
-    name: "Maria Garcia",
-    initials: "MG",
+    patientName: "Maria Garcia",
+    doctorName: "MG",
     date: "2026-02-10",
-    text: `"The pediatric department is wonderful! Dr. Williams is amazing with children and very knowledgeable. Highly recommend this hospital."`,
+    reviewText: `"The pediatric department is wonderful! Dr. Williams is amazing with children and very knowledgeable. Highly recommend this hospital."`,
     rating: 5,
   },
   {
-    name: "Robert Johnson",
-    initials: "RJ",
+    patientName: "Robert Johnson",
+    doctorName: "RJ",
     date: "2026-02-05",
-    text: `"Had a great experience with the orthopedic department. Dr. Kim performed my knee surgery and the recovery has been excellent. Thank you!"`,
+    reviewText: `"Had a great experience with the orthopedic department. Dr. Kim performed my knee surgery and the recovery has been excellent. Thank you!"`,
     rating: 5,
   },
 ];
@@ -91,11 +91,10 @@ const StarRating = ({ rating }) => {
   );
 };
 
-
-
 export default function Home() {
 
   const [doctor, setdocter] = useState([])
+  const [review, setreview] = useState([])
   const [patient, setpatient] = useState()
   const [PageLoading, setPageLoading] = useState(false)
   const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -107,10 +106,11 @@ export default function Home() {
 
         const res = await axios.get(`${API_URL}/admin/webdata`, { withCredentials: true });
 
-        if (res.data.success) {          
+        if (res.data.success) {
+          setreview(res.data.reviews)
           setdocter(res.data.doctorsList)
           setpatient(res.data.patients)
-        } 
+        }
 
 
       } catch (err) {
@@ -164,7 +164,7 @@ export default function Home() {
                 <Link to="/contact">
 
                   <button className="flex cursor-pointer items-center gap-2 bg-red-500 text-white px-6 py-3 rounded-xl shadow-md hover:bg-red-600 transition hover:scale-105">
-                    <Phone size={18} />   Emergency </button>
+                    <Phone size={18} />   Contact </button>
                 </Link>
 
 
@@ -172,7 +172,7 @@ export default function Home() {
 
               <div className="grid grid-cols-3 gap-6 pt-6">
                 <div>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">  {!PageLoading ? `${doctor?.length - 1  || 0}+` : "..."}</h3>
+                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">  {!PageLoading ? `${doctor?.length - 1 || 0}+` : "..."}</h3>
                   <p className="text-gray-500 text-sm">Doctors</p>
                 </div>
                 <div>
@@ -277,7 +277,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center  mx-auto px-4 py-8">
+        {/* <div className="flex flex-col items-center  mx-auto px-4 py-8">
           <div className="text-center mb-12">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">
               Join Our Team of <span className="text-emerald-600">Doctors</span>
@@ -308,7 +308,7 @@ export default function Home() {
             </Link>
           </div>
 
-        </div>
+        </div> */}
 
         <section className="relative py-16 px-4 sm:px-6 md:px-20 bg-gradient-to-br from-emerald-50 via-white to-green-100 overflow-hidden">
 
@@ -371,34 +371,87 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {reviews.map((review, index) => (
-              <div
-                key={index}
-                className="bg-white shadow-md rounded-2xl p-6 hover:shadow-lg transition"
-              >
-                <StarRating rating={review.rating} />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {!PageLoading ? (
+              (review?.length ? review : reviews)
+                .slice(0, 3)
+                .map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-white border border-gray-100 shadow-sm rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 transition duration-300"
+                  >
+                    {/* Rating */}
+                    <StarRating rating={item.rating} />
 
-                <p className="text-gray-600 mt-4 text-sm leading-relaxed">
-                  {review.text}
-                </p>
+                    {/* Review Text */}
+                    <p className="text-gray-600 mt-4 text-sm leading-relaxed line-clamp-4">
+                      {item.reviewText}
+                    </p>
 
-                <div className="flex items-center mt-6">
-                  <div className="w-10 h-10 flex items-center justify-center bg-blue-500 text-white rounded-full font-semibold">
-                    {review.initials}
+                    {/* Doctor Name */}
+                    <p className="text-xs text-blue-600 font-medium mt-3">
+                      Reviewed for Dr. {item.doctorName}
+                    </p>
+
+                    {/* User Info */}
+                    <div className="flex items-center mt-6">
+                      {/* Avatar */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold">
+                        {item.patientImage ? (
+                          <img
+                            src={item.patientImage}
+                            alt={item.patientName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          item.patientName?.charAt(0)
+                        )}
+                      </div>
+
+                      <div className="ml-3">
+                        <h4 className="text-gray-800 font-semibold text-sm">
+                          {item.patientName}
+                        </h4>
+
+                        <p className="text-xs text-gray-400">
+                          {new Date(item.date).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric"
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+            ) : (
+              [...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="animate-pulse bg-white border border-gray-100 rounded-2xl shadow-sm p-6"
+                >
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, j) => (
+                      <div key={j} className="w-4 h-4 bg-gray-300 rounded"></div>
+                    ))}
                   </div>
 
-                  <div className="ml-3">
-                    <h4 className="text-gray-800 font-medium">
-                      {review.name}
-                    </h4>
-                    <p className="text-xs text-gray-400">
-                      {review.date}
-                    </p>
+                  <div className="h-3 bg-gray-300 rounded w-full mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-5/6 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3 mb-4"></div>
+
+                  <div className="h-3 bg-blue-100 rounded w-1/2 mb-6"></div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-300"></div>
+                    <div className="flex-1">
+                      <div className="h-3 bg-gray-300 rounded w-1/2 mb-1"></div>
+                      <div className="h-2 bg-gray-200 rounded w-1/3"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
         </div>

@@ -1,7 +1,7 @@
 import db from "../db/index.js";
 import { eq, and, or, sql, desc, inArray } from "drizzle-orm";
 import { sendApprovalMail, sendReactivationMail, sendRejectionMail, sendSuspensionMail } from "../utils/mailer.js";
-import { users, patients, appointments, doctors, specializations, doctorSlots, payments, chatMessages, contactMessages } from "../db/schema.js";
+import { users, patients, appointments, doctors, specializations, doctorSlots, payments, chatMessages, contactMessages, reviews } from "../db/schema.js";
 import { CreateNotification } from "./response.Controller.js";
 import { alias } from "drizzle-orm/gel-core";
 
@@ -73,6 +73,28 @@ export const Webdata = async (req, res) => {
     try {
         const patientsList = (await db.select().from(patients)).length;
 
+
+        const patientUser = alias(users, "patientUser");
+
+        const review = await db
+            .select({
+                reviewText: reviews.reviewText,
+                rating: reviews.rating,
+                date: reviews.createdAt,
+                doctorName: users.fullName,
+                patientName: patientUser.fullName,
+                patientImage: patientUser.image || null,
+            })
+            .from(reviews)
+            .leftJoin(doctors, eq(doctors.id, reviews.doctorId))
+            .leftJoin(users, eq(users.id, doctors.userId))
+            .leftJoin(patients, eq(patients.id, reviews.patientId))
+            .leftJoin(patientUser, eq(patientUser.id, patients.userId))
+            
+  .orderBy(desc(reviews.rating), desc(reviews.createdAt))
+    .limit(3);  
+
+    
         const doctorsdata = await db
             .select({
                 doctorId: doctors.id,
@@ -95,7 +117,10 @@ export const Webdata = async (req, res) => {
 
         const doctorsList = Object.values(doctorsMap);
 
-        res.json({ success: true, patients: patientsList, doctorsList: doctorsList });
+
+
+
+        res.json({ success: true, patients: patientsList, doctorsList: doctorsList, reviews: review });
 
     } catch (error) {
         console.error("webdata Error:", error);

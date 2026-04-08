@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { Menu, X, } from "lucide-react";
-import axios from 'axios';
 export default function Nav() {
     const [isOpen, setIsOpen] = useState(false);
 
 
     return (
-
-
         <nav className="bg-white/80 backdrop-blur-md shadow-md sticky top-0 z-50">
             <div className="flex items-center justify-between px-4 sm:px-6 md:px-16 py-4">
 
@@ -18,11 +15,11 @@ export default function Nav() {
                 </h2>
 
                 <ul className="hidden md:flex items-center gap-8 font-medium text-gray-700">
-                    <li><Link to="/" className="hover:text-emerald-600 transition">Home</Link></li>
-                    <li><Link to="/doctor" className="hover:text-emerald-600 transition">Doctor</Link></li>
-                    <li><Link to="/about" className="hover:text-emerald-600 transition">About</Link></li>
-                    <li><Link to="/contact" className="hover:text-emerald-600 transition">Contact</Link></li>
-                    <li><Link to="/RoleSelection" onClick={() => setIsOpen(false)} className="block bg-emerald-600 text-white px-3 py-1 rounded-lg text-center  hover:bg-emerald-700" > Sign Up</Link> </li>
+                    <li> <NavLink to="/" className={({ isActive }) => isActive ? "text-emerald-600 font-semibold border-b-2 border-emerald-600" : "hover:text-emerald-600 transition"}    >    Home </NavLink></li>
+                    <li> <NavLink to="/doctors" className={({ isActive }) => isActive ? "text-emerald-600 font-semibold border-b-2 border-emerald-600" : "hover:text-emerald-600 transition"} >     Doctors </NavLink></li>
+                    <li> <NavLink to="/about" className={({ isActive }) => isActive ? "text-emerald-600 font-semibold border-b-2 border-emerald-600" : "hover:text-emerald-600 transition"} > About    </NavLink></li>
+                    <li> <NavLink to="/contact" className={({ isActive }) => isActive ? "text-emerald-600 font-semibold border-b-2 border-emerald-600" : "hover:text-emerald-600 transition"} > Contact</NavLink></li>
+                    <li>  <NavLink to="/patient/login" onClick={() => setIsOpen(false)} className="block bg-emerald-600 text-white px-3 py-1 rounded-lg text-center  hover:bg-emerald-700" > Log in </NavLink> </li>
 
                 </ul>
 
@@ -31,11 +28,11 @@ export default function Nav() {
 
             <div className={`md:hidden px-6 transition-all duration-300 ease-in-out ${isOpen ? "max-h-96 py-4" : "max-h-0 overflow-hidden"}`}>
                 <ul className="flex flex-col gap-4 text-gray-700 font-medium">
-                    <li><Link to="/" onClick={() => setIsOpen(false)} className="block hover:text-emerald-600">Home</Link></li>
-                    <li><Link to="/doctor" onClick={() => setIsOpen(false)} className="block hover:text-emerald-600">Doctor</Link></li>
-                    <li><Link to="/about" onClick={() => setIsOpen(false)} className="block hover:text-emerald-600">About</Link></li>
-                    <li><Link to="/contact" onClick={() => setIsOpen(false)} className="block hover:text-emerald-600">Contact</Link></li>
-                    <li><Link to="/RoleSelection" onClick={() => setIsOpen(false)} className="block bg-emerald-600 text-white px-4 py-2 rounded-lg text-center  hover:bg-emerald-700" > Sign Up</Link> </li>
+                    <li><NavLink to="/" onClick={() => setIsOpen(false)} className="block hover:text-emerald-600">Home</NavLink></li>
+                    <li><NavLink to="/doctors" onClick={() => setIsOpen(false)} className="block hover:text-emerald-600">Doctors</NavLink></li>
+                    <li><NavLink to="/about" onClick={() => setIsOpen(false)} className="block hover:text-emerald-600">About</NavLink></li>
+                    <li><NavLink to="/contact" onClick={() => setIsOpen(false)} className="block hover:text-emerald-600">Contact</NavLink></li>
+                    <li><NavLink to="/RoleSelection" onClick={() => setIsOpen(false)} className="block bg-emerald-600 text-white px-4 py-2 rounded-lg text-center  hover:bg-emerald-700" > Log in</NavLink> </li>
                 </ul>
             </div>
         </nav>
