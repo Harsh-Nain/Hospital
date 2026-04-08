@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import ShowPatientProfile from "../../components/showPatientProfile";
 import toast from "react-hot-toast";
-import DoctorSlots from "../../components/doctorSlots";
+import DoctorSlots from "../../components/DoctorSlots";
 import { FaTrash, FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, } from "react-icons/fi";
 const statusLabelMap = { "wait for approval": "Requested", confirmed: "Confirmed At", Cancelled: "Cancelled At", };
