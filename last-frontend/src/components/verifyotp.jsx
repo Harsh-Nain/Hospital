@@ -54,7 +54,7 @@ export default function VerifyOtp({ formdata, role, close }) {
                             ✕
                         </button>
                         <h2 className="text-2xl font-bold text-center">Verify OTP</h2>
-                        <p className="text-center text-gray-500">Enter OTP sent to your email</p>
+                        <p className="text-center text-gray-500">Enter OTP sent to your email.</p>
                         <input type="text" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full border p-3 rounded-lg" />
 
                         <button onClick={handleVerify} disabled={loading} className={`w-full ${role == "patient" ? " bg-sky-500" : " bg-emerald-500"} text-white py-3 rounded-lg cursor-pointer`}>
