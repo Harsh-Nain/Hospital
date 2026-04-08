@@ -36,7 +36,7 @@ function AppRoutes() {
         {/* <Route path="/" element={<RoleSelection />} /> */}
         <Route path="/" element={<Webintro />} />
         <Route path="/RoleSelection" element={<RoleSelection/>} />
-        <Route path="/doctor" element={<WebDoctor/>} />
+        <Route path="/doctors" element={<WebDoctor/>} />
         <Route path="/about" element={<WebAbout/>} />
         <Route path="/contact" element={<WebContact/>} />
 
