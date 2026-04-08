@@ -71,14 +71,31 @@ export const DeleteReview = async (req, res) => {
 
 export const GetDoctorReviews = async (req, res) => {
     try {
-        const { doctorId } = req.query;
+        const { doctorId, page = 1, limit = 7 } = req.query;
 
-        const data = await db.select().from(reviews).where(eq(reviews.doctorId, doctorId));
-        res.json({ success: true, reviews: data });
+        if (!doctorId) {
+            return res.json({ success: false, message: "Doctor ID is required", });
+        }
+
+        const pageNumber = parseInt(page, 10);
+        const pageLimit = parseInt(limit, 10);
+        const offset = (pageNumber - 1) * pageLimit;
+
+        const doctorReviews = await db
+            .select({ id: reviews.id, patientId: patients.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, patientImage: users.image, })
+            .from(reviews)
+            .leftJoin(patients, eq(patients.id, reviews.patientId))
+            .leftJoin(users, eq(users.id, patients.userId))
+            .where(eq(reviews.doctorId, Number(doctorId)))
+            .orderBy(desc(reviews.createdAt))
+            .limit(pageLimit)
+            .offset(offset);
+
+        res.json({ success: true, page: pageNumber, limit: pageLimit, reviews: doctorReviews, });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false });
+        console.error("GetDoctorReviews Error:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch doctor reviews", });
     }
 };
 
@@ -133,30 +150,35 @@ export const getUserIds = async ({ doctorId, patientId, messageFor }) => {
     return userIds;
 };
 
-export const CreateNotification = async ({ doctorId, patientId, message, messageFor }) => {
+export const CreateNotification = async ({ userId, doctorId, patientId, message, messageFor }) => {
     try {
-        console.log({ doctorId, patientId, message });
-
         if (!message) {
-            return { success: false, message: "Message is required", };
+            return { success: false, message: "Message is required" };
         }
 
-        if (!doctorId && !patientId && !messageFor) {
-            return { success: false, message: "Provide us doctorId, patientId, messageFor", };
+        if (!userId && !doctorId && !patientId && !messageFor) {
+            return { success: false, message: "Provide userId or doctorId/patientId with messageFor" };
         }
 
-        const userIds = await getUserIds({ doctorId, patientId, messageFor });
+        let userIds = [];
 
-        if (!userIds.length) {
-            return { success: false, message: "No users found", };
+        if (userId) {
+            userIds = [userId];
+        } else {
+            userIds = await getUserIds({ doctorId, patientId, messageFor });
+
+            if (!userIds || userIds.length === 0) {
+                return { success: false, message: "No users found" };
+            }
         }
 
-        const values = userIds.map((userId) => ({ userId, message, }));
+        const values = userIds.map((id) => ({ userId: id, message, }));
         await db.insert(notifications).values(values);
+
         return { success: true, sentTo: userIds.length, message: "Notification sent successfully", };
 
     } catch (error) {
         console.error(error);
-        return { success: false, message: "Server error", };
+        return { success: false, message: "Server error" };
     }
 };

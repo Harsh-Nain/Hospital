@@ -1,6 +1,10 @@
 import db from "../db/index.js";
 import { users, patients, appointments, doctors, specializations, doctorSlots, payments, } from "../db/schema.js";
 import { eq, and, sql, desc, or, gt } from "drizzle-orm";
+import { alias } from "drizzle-orm/mysql-core";
+
+const doctorUser = alias(users, "doctor_user");
+const patientUser = alias(users, "patient_user");
 
 const formatTime = (time) => {
     if (!time) return "";
@@ -115,18 +119,14 @@ export const PatientDashboard = async (req, res) => {
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
             .leftJoin(payments, eq(payments.appointmentId, appointments.id))
-            .where(and(eq(appointments.patientId, patient.patientId), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, currentTime)))))
+            .where(and(eq(appointments.patientId, patient.patientId), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, new Date(Date.now() + 15 * 60 * 1000).toTimeString().slice(0, 8))))))
             .orderBy(desc(doctorSlots.date), desc(doctorSlots.startTime));
-
 
         const formattedAppointments = appointmentList.map((a) => {
             const slotDateTime = new Date(`${a.date}T${a.startTime}`);
             const formatDateTime = (date) => { return new Date(date).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true, }); }
             return { appointmentId: a.appointmentId, status: a.appointmentStatus, cancelReason: a.cancelReason, appoitmentCreatedAt: formatDateTime(a.appoitmentCreatedAt), paymentStatus: a.paymentStatus, amount: a.amount, meetingLink: a.meetingLink, type: slotDateTime > now ? "upcoming" : "past", doctor: { doctorId: a.doctorId, name: a.doctorName, image: a.doctorImage, specialization: a.specialization }, slot: { date: a.date, startTime: formatTime(a.startTime), endTime: formatTime(a.endTime), isCancelled: a.isCancelled, }, };
         });
-
-
-
         res.json({ success: true, patient, doctorsList: formattedDoctors, appointments: formattedAppointments, });
 
     } catch (error) {
@@ -140,133 +140,94 @@ export const DoctorDashboard = async (req, res) => {
         const { id } = req.user;
 
         const [doctor] = await db
-            .select({ doctorId: doctors.id, fullName: users.fullName, email: users.email, image: users.image, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, specialization: specializations.name, })
+            .select({ doctorId: doctors.id, fullName: doctorUser.fullName, email: doctorUser.email, image: doctorUser.image, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, specialization: specializations.name, status: doctors.status, isApproved: doctors.isApproved, })
             .from(doctors)
-            .leftJoin(users, eq(users.id, doctors.userId))
+            .leftJoin(doctorUser, eq(doctorUser.id, doctors.userId))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .where(eq(doctors.userId, id))
             .limit(1);
 
         if (!doctor) {
-            return res.json({ success: false, message: "Doctor not found", });
+            return res.status(404).json({ success: false, message: "Doctor not found", });
         }
 
         const now = new Date();
         const today = now.toISOString().split("T")[0];
 
         const appointmentsData = await db
-            .select({ appointmentId: appointments.id, cancelReason: appointments.cancelReason, createdat: appointments.createdAt, status: appointments.status, meetingLink: appointments.meetingLink, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, slotstage: doctorSlots.slotstage, patientId: patients.id, disease: patients.disease, patientName: users.fullName, patientImage: users.image, paymentId: payments.id, amount: payments.amount, paymentStatus: payments.paymentStatus, paymentMethod: payments.paymentMethod, transactionId: payments.transactionId, paidAt: payments.paidAt, })
+            .select({ appointmentId: appointments.id, slotId: appointments.slotId, status: appointments.status, meetingLink: appointments.meetingLink, cancelReason: appointments.cancelReason, createdAt: appointments.createdAt, slotDate: doctorSlots.date, slotStartTime: doctorSlots.startTime, slotEndTime: doctorSlots.endTime, slotCapacity: doctorSlots.capacity, slotCancelled: doctorSlots.isCancelled, patientId: patients.id, patientDisease: patients.disease, patientAge: patients.age, patientGender: patients.gender, patientPhone: patients.phone, patientBloodGroup: patients.bloodGroup, patientAddress: patients.address, patientName: patientUser.fullName, patientImage: patientUser.image, patientEmail: patientUser.email, paymentId: payments.id, paymentAmount: payments.amount, paymentStatus: payments.paymentStatus, paymentMethod: payments.paymentMethod, transactionId: payments.transactionId, paidAt: payments.paidAt, })
             .from(appointments)
             .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
             .leftJoin(patients, eq(patients.id, appointments.patientId))
-            .leftJoin(users, eq(users.id, patients.userId))
+            .leftJoin(patientUser, eq(patientUser.id, patients.userId))
             .leftJoin(payments, eq(payments.appointmentId, appointments.id))
             .where(eq(appointments.doctorId, doctor.doctorId))
             .orderBy(desc(doctorSlots.date), desc(doctorSlots.startTime));
 
         const slotCounts = await db
-            .select({ slotId: appointments.slotId, count: sql`COUNT(*)`, })
+            .select({ slotId: appointments.slotId, booked: sql`COUNT(${appointments.id})`, })
             .from(appointments)
             .where(eq(appointments.doctorId, doctor.doctorId))
             .groupBy(appointments.slotId);
 
         const slotCountMap = {};
-        slotCounts.forEach((s) => {
-            slotCountMap[s.slotId] = Number(s.count);
+
+        slotCounts.forEach((slot) => {
+            slotCountMap[slot.slotId] = Number(slot.booked);
         });
 
+        const formattedAppointments = appointmentsData.map((appointment) => {
+            const booked = slotCountMap[appointment.slotId] || 0;
+            const capacity = Number(appointment.slotCapacity || 0);
+            const remaining = capacity - booked;
+            const slotDateTime = appointment.slotDate && appointment.slotStartTime ? new Date(`${appointment.slotDate}T${appointment.slotStartTime}`) : null;
 
+            return {
+                appointmentId: appointment.appointmentId,
+                slotId: appointment.slotId,
+                status: appointment.status,
+                meetingLink: appointment.meetingLink,
+                cancelReason: appointment.cancelReason,
+                createdAt: appointment.createdAt,
+                type: slotDateTime && slotDateTime > now ? "upcoming" : "past",
+                patient: { id: appointment.patientId, name: appointment.patientName, image: appointment.patientImage, email: appointment.patientEmail, disease: appointment.patientDisease, age: appointment.patientAge, gender: appointment.patientGender, phone: appointment.patientPhone, bloodGroup: appointment.patientBloodGroup, address: appointment.patientAddress, },
+                slot: { id: appointment.slotId, date: appointment.slotDate, startTime: appointment.slotStartTime ? formatTime(appointment.slotStartTime) : null, endTime: appointment.slotEndTime ? formatTime(appointment.slotEndTime) : null, capacity, booked, available: remaining > 0 ? remaining : 0, remaining, isFull: remaining <= 0, isCancelled: appointment.slotCancelled, },
+                payment: { id: appointment.paymentId, amount: appointment.paymentAmount || 0, status: appointment.paymentStatus || "pending", method: appointment.paymentMethod, transactionId: appointment.transactionId, paidAt: appointment.paidAt, },
+            };
+        });
 
-        const formattedAppointments = appointmentsData
-            .filter(a => a.slotstage !== "Removed")
-            .map((a) => {
-                if (a.slotstage == "Removed") return
+        const totalAppointments = formattedAppointments.length;
+        const confirmed = formattedAppointments.filter((appointment) => appointment.status?.toLowerCase() === "confirmed").length;
+        const pending = formattedAppointments.filter((appointment) => appointment.status?.toLowerCase() === "wait for approval").length;
+        const cancelled = formattedAppointments.filter((appointment) => appointment.status?.toLowerCase() === "cancelled").length;
+        const todayAppointments = formattedAppointments.filter((appointment) => appointment.slot.date === today).length;
+        const upcomingAppointments = formattedAppointments.filter((appointment) => appointment.type === "upcoming").length;
+        const pastAppointments = formattedAppointments.filter((appointment) => appointment.type === "past").length;
+        const totalRevenue = formattedAppointments.reduce((sum, appointment) => { if (appointment.payment.status?.toLowerCase() === "paid") { return sum + Number(appointment.payment.amount || 0); } return sum; }, 0);
+        const fullSlots = formattedAppointments.filter((appointment) => appointment.slot.isFull).length;
 
-                const slotDateTime = new Date(`${a.date}T${a.startTime}`);
-                const booked = slotCountMap[a.slotId] || 0;
-                const remaining = a.capacity - booked;
-
-                return {
-                    appointmentId: a.appointmentId,
-                    status: a.status,
-                    meetingLink: a.meetingLink,
-                    cancelReason: a.cancelReason,
-                    createdat: a.createdat,
-                    type: slotDateTime > now ? "upcoming" : "past",
-
-                    patient: {
-                        id: a.patientId,
-                        name: a.patientName,
-                        image: a.patientImage,
-                        disease: a.disease,
-                    },
-
-                    slot: {
-                        date: a.date,
-                        startTime: formatTime(a.startTime),
-                        endTime: formatTime(a.endTime),
-                        capacity: a.capacity,
-                        booked,
-                        remaining,
-                        isFull: remaining <= 0,
-                    },
-
-                    payment: {
-                        id: a.paymentId,
-                        amount: a.amount,
-                        status: a.paymentStatus,
-                        method: a.paymentMethod,
-                        transactionId: a.transactionId,
-                        paidAt: a.paidAt,
-                    },
-                };
-            });
-
-
-
-
-
-        let totalAppointments = 0,
-            confirmed = 0,
-            pending = 0,
-            Cancelled = 0,
-            todayAppointments = 0,
-            totalRevenue = 0,
-            fullSlots = 0;
-
-        if (formattedAppointments && Array.isArray(formattedAppointments) && formattedAppointments.length > 0) {
-            totalAppointments = formattedAppointments.length;
-            confirmed = formattedAppointments.filter((a) => a.status === "confirmed").length;
-            pending = formattedAppointments.filter((a) => a.status === "wait for approval").length;
-            Cancelled = formattedAppointments.filter((a) => a.status === "Cancelled").length;
-            todayAppointments = formattedAppointments.filter((a) => a.slot.date === today).length;
-            totalRevenue = formattedAppointments.reduce((sum, a) => sum + (a.payment?.amount || 0), 0); // Safely accessing payment.amount
-            fullSlots = formattedAppointments.filter((a) => a.slot.isFull).length;
-        }
-
-
-
-        res.json({
-            success: true, doctor, stats: { totalAppointments, confirmed, pending, Cancelled, todayAppointments, totalRevenue, fullSlots, },
-            formattedAppointments
+        return res.status(200).json({
+            success: true,
+            doctor,
+            stats: { totalAppointments, confirmed, pending, cancelled, todayAppointments, upcomingAppointments, pastAppointments, totalRevenue, fullSlots, },
+            formattedAppointments,
         });
     } catch (error) {
         console.error("DoctorDashboard Error:", error);
-        res.status(500).json({ success: false, message: "Server error", });
+        console.error("Message:", error.message);
+        console.error("Stack:", error.stack);
+
+        return res.status(500).json({ success: false, message: error.message || "Internal server error", });
     }
 };
 
 export const PatientGetDoctor = async (req, res) => {
     try {
         const categories = [
-            { label: "Heart", match: ["Cardiologist"] },
-            { label: "Brain", match: ["Neurologist"] },
-            { label: "Bones & Joints", match: ["Orthopedic"] },
-            { label: "Lungs", match: ["Pulmonologist"] },
-            { label: "Stomach & Liver", match: ["Gastroenterologist"] },
-            { label: "Skin", match: ["Dermatologist"] },
-            { label: "General Health", match: ["General Physician"] },
-            { label: "Child Care", match: ["Pediatrician"] },
+            { label: "Heart", match: ["Cardiologist"] }, { label: "Brain", match: ["Neurologist"] },
+            { label: "Bones & Joints", match: ["Orthopedic"] }, { label: "Lungs", match: ["Pulmonologist"] },
+            { label: "Stomach & Liver", match: ["Gastroenterologist"] }, { label: "Skin", match: ["Dermatologist"] },
+            { label: "General Health", match: ["General Physician"] }, { label: "Child Care", match: ["Pediatrician"] },
         ];
 
         const result = [];

@@ -410,6 +410,8 @@ export const addcontactMessages = async (req, res) => {
             return res.status(400).json({ success: false, message: "All fields are required", });
         }
 
+        const notif = await CreateNotification({ userId: 1, message: "🎉 A new contact detail has been submitted. Please check the contact details section." });
+        console.log(notif);
         await db.insert(contactMessages).values({ name, email, message, })
         return res.status(200).json({ success: true, message: "Message send successfully" })
 

@@ -123,7 +123,7 @@ const FloatingMessage = () => {
                         </div>
 
                         <div className="flex items-center gap-3 pt-2 w-full">
-                            <button onClick={() => { setMessage(""); setReceiverType("all"); }} className="flex-1 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-slate-100">
+                            <button onClick={() => { setMessage(""); setReceiverType("allUsers"); }} className="flex-1 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-slate-100">
                                 Reset
                             </button>
 

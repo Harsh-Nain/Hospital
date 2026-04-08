@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import ShowPatientProfile from "../../components/showPatientProfile";
 import toast from "react-hot-toast";
 import DoctorSlots from "../../components/DoctorSlots";
-import { FaTrash, FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
+import { FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, } from "react-icons/fi";
+import { FaCheckToSlot } from "react-icons/fa6";
+import { RxUpdate } from "react-icons/rx";
 const statusLabelMap = { "wait for approval": "Requested", confirmed: "Confirmed At", Cancelled: "Cancelled At", };
 
 function parseTimeTo24Hour(timeStr) {
@@ -58,6 +60,13 @@ function getTimeRemaining(startTime, date, endTime, now) {
   return `Starts in ${hrs}h ${mins}m ${secs}s`;
 }
 
+const isSlotLive = (slot) => {
+  const now = new Date();
+  const start = new Date(`${slot.date} ${slot.startTime}`);
+  const end = new Date(`${slot.date} ${slot.endTime}`);
+  return now >= start && now <= end;
+};
+
 export default function Dashboard() {
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -72,6 +81,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [slots, setSlots] = useState([]);
   const [now, setNow] = useState(new Date());
+  const [reuseSlot, setReuseSlot] = useState(null);
 
   const [slotFilter, setSlotFilter] = useState("active");
   const [appointmentFilter, setAppointmentFilter] = useState("upcoming");
@@ -92,17 +102,20 @@ export default function Dashboard() {
     };
   }, [isAnyModalOpen]);
 
+  const updateDate = async (slotId, date) => {
+    const res = await axios.put(`${API_URL}/medical/slot-date`, { slotId, date }, { withCredentials: true });
+
+    if (res.data.success) {
+      setSlots((prevSlots) => prevSlots.map((slot) => slot.slotId === slotId ? res.data.slot[0] : slot));
+    }
+  };
+
   useEffect(() => {
     const dashboard = async () => {
       try {
         setLoading(true);
         const doctorResponse = await axios.get(`${API_URL}/dashboard/doctor`, { withCredentials: true, });
         const doctorData = doctorResponse.data;
-
-        if (!doctorData?.success) {
-          toast.error("Failed to load doctor data");
-          return;
-        }
 
         const doctorInfo = doctorData.doctor || {};
         setDoctor(doctorInfo);
@@ -116,6 +129,15 @@ export default function Dashboard() {
 
         const slotResponse = await axios.get(`${API_URL}/medical/slots`, { params: { doctorId: doctorInfo.doctorId }, withCredentials: true, });
         const slotData = slotResponse.data;
+        const now = new Date();
+
+        slotData.slots.forEach((slot) => {
+          const slotDateTime = new Date(`${slot.date} ${slot.endTime}`);
+
+          if (slot.optionalFor !== "once" && !slot.isCancelled && slot.endTime && !isNaN(slotDateTime.getTime()) && slotDateTime < now) {
+            updateDate(slot.slotId, slot.date);
+          }
+        });
 
         if (slotData?.success) {
           const filteredSlots = (slotData.slots || []).filter((slot) => {
@@ -129,7 +151,7 @@ export default function Dashboard() {
         }
       } catch (error) {
         console.error(error);
-        toast.error(error?.data?.message || "Failed to load dashboard");
+        toast.error(error?.data?.message || "Login Again");
       } finally {
         setLoading(false);
       }
@@ -186,19 +208,6 @@ export default function Dashboard() {
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || "Slot update failed");
-    }
-  };
-
-  const removeSlot = async (slot) => {
-    try {
-      const res = await axios.put(`${API_URL}/medical/slot`, { slotId: slot.slotId, action: "remove", }, { withCredentials: true });
-
-      if (res.data?.success) {
-        toast.success(res.data.message || "Slot deleted");
-        setSlots((prevSlots) => prevSlots.filter((s) => s.slotId !== slot.slotId));
-      }
-    } catch (error) {
-      toast.error(error?.data?.message || "Delete failed");
     }
   };
 
@@ -271,7 +280,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen space-y-6 p-4 sm:p-5 lg:p-7">
       {showPatientDetail && (<ShowPatientProfile id={showPatientDetail} doctorId={showPatientDetail} setshowPatientDetail={setShowPatientDetail} />)}
-      {addSlot && (<DoctorSlots slots={slots} setAddsote={setAddSlot} setSlots={setSlots} />)}
+      {(addSlot || reuseSlot) && (<DoctorSlots slots={slots} setAddsote={setAddSlot} setSlots={setSlots} reuseSlot={reuseSlot} setReuseSlot={setReuseSlot} />)}
 
       <section className="relative overflow-hidden rounded-3xl border border-black/5 bg-white/75 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl sm:p-8">
         <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-emerald-200/30 blur-3xl" />
@@ -371,7 +380,7 @@ export default function Dashboard() {
       <section className="group relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900"><FiClock className="text-blue-500" />Your Slots</h2>
+            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900">< FaCheckToSlot className="text-blue-500" />Your Slots</h2>
             <p className="mt-1 text-sm text-gray-500">View, activate, deactivate, or remove availability</p>
           </div>
 
@@ -385,53 +394,110 @@ export default function Dashboard() {
 
         {filteredSlots.length === 0 ? (<EmptyState icon={<FiClock className="h-7 w-7 text-purple-500" />} title="No slots available" description="You haven’t added your availability yet, or none match the selected filter." />) : (
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {filteredSlots.map((slot, i) => {
               const slotEnd = getSlotDateTime(slot.date, slot.endTime);
               const isFuture = slotEnd ? slotEnd > new Date() : false;
               const isCompleted = slotEnd ? slotEnd <= new Date() : false;
+              const live = isSlotLive(slot);
 
               return (
-                <div key={i} className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <p className="text-base font-semibold text-gray-800">{slot.date || "N/A"}</p>
-                      <p className="text-sm text-gray-500">  {slot.startTime} -{" "}  {slot.endTime}</p>
+                <div key={i} className="group flex flex-col justify-between rounded-3xl border border-gray-100 bg-white/90 py-5 px-3.5 shadow-md backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-cyan-200 hover:shadow-xl">
+                  <div className="flex items-start justify-between gap-4 w-full relative">
+                    <div>
+                      <p className="text-lg font-bold text-gray-900">{slot.date || "N/A"}</p>
+                      <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                        <FiClock className="text-cyan-500" />
+                        <span>{slot.startTime} - {slot.endTime}</span>
+                      </div>
                     </div>
 
-                    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${isCompleted ? "bg-blue-100 text-blue-600" : !slot.isCancelled ? slot.booked > 0 ? "bg-cyan-100 text-cyan-600" : "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"}`}>
-                      {isCompleted ? (<><FiCalendar />Completed</>) : !slot.isCancelled ? (slot.booked > 0 ? (<><FaUserCheck />Booked</>) : (<><FiCheckCircle />Active</>)) : (<><FiXCircle />Inactive</>)}
+                    <span className={`inline-flex items-center gap-1.5 absolute right-0 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${isCompleted ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200" : !slot.isCancelled ? slot.booked > 0 ? "bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" : "bg-rose-50 text-rose-700 ring-1 ring-rose-200"}`}>
+                      {isCompleted ? (
+                        <><FiCalendar className="text-sm" />Completed</>
+                      ) : !slot.isCancelled ? (
+                        live ? (
+                          <><FiClock className="text-sm text-red-500 animate-pulse" />Live</>
+                        ) : slot.booked > 0 ? (
+                          <><FaUserCheck className="text-sm" />Booked</>
+                        ) : (
+                          <><FiCheckCircle className="text-sm" />Active</>
+                        )
+                      ) : (
+                        <><FiXCircle className="text-sm" />Inactive</>
+                      )}
                     </span>
                   </div>
 
-                  <div className="mt-4 space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center justify-between">
-                      <span>Max Patients</span>
-                      <span className="font-medium text-gray-900">{slot.capacity}</span>
+                  <div className="mt-5 grid grid-cols-3 gap-2">
+                    <div className="rounded-2xl bg-gray-50 p-3 text-center">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Capacity</p>
+                      <p className="mt-1 text-lg font-bold text-gray-900">{slot.capacity}</p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span>Booked</span>
-                      <span className="font-medium text-green-600">{slot.booked} </span>
+
+                    <div className="rounded-2xl bg-emerald-50 p-3 text-center">
+                      <p className="text-xs font-medium uppercase tracking-wide text-emerald-500">Booked</p>
+                      <p className="mt-1 text-lg font-bold text-emerald-700">{slot.booked}</p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span>Available</span>
-                      <span className="font-medium text-blue-600">{slot.available}</span>
+
+                    <div className="rounded-2xl bg-cyan-50 p-3 text-center">
+                      <p className="text-xs font-medium uppercase tracking-wide text-cyan-500">Available</p>
+                      <p className="mt-1 text-lg font-bold text-cyan-700">{slot.available}</p>
                     </div>
                   </div>
 
-                  <div className="my-4 border-t border-gray-100" />
+                  {slot.optionalFor !== "once" && (
+                    <div className="mt-4">
+                      <span className="inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold capitalize text-violet-700 ring-1 ring-violet-200">
+                        {slot.optionalFor}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="my-5 border-t border-dashed border-gray-200" />
+
                   {isFuture ? (
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400">{slot.isCancelled ? "Activate slot" : "Deactivate slot"}</p>
-                      <label className="relative inline-flex cursor-pointer items-center">
-                        <input type="checkbox" className="peer sr-only" checked={!slot.isCancelled} onChange={() => slot.isCancelled || slot.booked == 0 ? toggleStatus(slot.slotId, slot.isCancelled) : setSelectedSlot(slot)} />
-                        <div className={`relative h-6 w-12 rounded-full ${slot.isCancelled && "bg-linear-to-tr from-rose-200 via-rose-400 to-rose-500"} transition-all duration-300 after:absolute after:left-0.5 after:top-0.5 after:flex after:h-5 after:w-5 after:items-center after:justify-center after:rounded-full after:bg-gray-50 after:text-[10px] after:content-['✖'] after:transition-all after:duration-300 peer-checked:bg-emerald-500 peer-checked:after:translate-x-6 peer-checked:after:content-['✔']`} />
-                      </label>
+                      {!live ?
+                        <>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{slot.isCancelled ? "Activate Slot" : "Deactivate Slot"}</p>
+                            <p className="mt-1 text-[11px] text-gray-500">{slot.isCancelled ? "This slot is currently inactive" : "This slot is currently live"}</p>
+                          </div>
+
+                          <label className="relative inline-flex cursor-pointer items-center">
+                            <input type="checkbox" className="peer sr-only" checked={!slot.isCancelled} onChange={() => { if (slot.isCancelled || slot.booked === 0) { toggleStatus(slot.slotId, slot.isCancelled); } else { setSelectedSlot(slot); } }} />
+
+                            <div className="flex flex-col items-end justify-end gap-2">
+                              <div className={`relative h-7 w-14 rounded-full ${slot.isCancelled ? "bg-rose-400" : "bg-green-400"} shadow-inner transition-all duration-300 peer-checked:bg-emerald-500`}>
+                                <div className={`absolute ${!slot.isCancelled ? "left-1" : "right-1"} top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-gray-600 shadow-md transition-all duration-300 peer-checked:translate-x-7`}>
+                                  {slot.isCancelled ? "✕" : "✓"}
+                                </div>
+                              </div>
+
+                              {slot.isCancelled && (
+                                <button type="button" onClick={() => setReuseSlot(slot)} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 transition-all duration-300 hover:border-green-200 hover:bg-green-50 hover:text-green-600">
+                                  <RxUpdate className="text-sm" />
+                                  Update
+                                </button>
+                              )}
+                            </div>
+                          </label>
+                        </>
+                        : <p className="mt-1 text-[11px] text-center w-full text-green-500">Slot Live now</p>
+                      }
                     </div>
                   ) : (
                     <div className="flex items-center justify-between gap-3">
-                      <button onClick={() => removeSlot(slot)} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400 transition hover:text-red-500"><FaTrash /> Delete</button>
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">{slot.isCancelled ? "Slot Cancelled" : "Slot Completed"}</span>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{slot.isCancelled ? "Slot Cancelled" : "Slot Completed"}</p>
+                        <p className="mt-1 text-[11px] text-gray-500">You can reuse this slot again</p>
+                      </div>
+
+                      <button onClick={() => setReuseSlot(slot)} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 transition-all duration-300 hover:border-red-200 hover:bg-red-50 hover:text-red-600">
+                        <RxUpdate className="text-sm" />
+                        Reuse
+                      </button>
                     </div>
                   )}
                 </div>

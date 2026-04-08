@@ -13,7 +13,7 @@ export default function AdminNav({ open, setOpen }) {
     useEffect(() => {
         const getNotifications = async () => {
             try {
-                const res = await axios.get(`${API_URL}/feed/notifications?notifId=${-1}`, { withCredentials: true, });
+                const res = await axios.get(`${API_URL}/feed/notifications?notifId=${1}`, { withCredentials: true, });
 
                 if (res.data.success) {
                     setNotifications(res.data.notifications);
