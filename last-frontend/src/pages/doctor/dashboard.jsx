@@ -7,7 +7,7 @@ import { FaTrash, FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, } from "react-icons/fi";
 import { FaCheckToSlot } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
-import { X } from "lucide-react";
+// import { X } from "lucide-react";
 const statusLabelMap = { "wait for approval": "Requested", confirmed: "Confirmed At", Cancelled: "Cancelled At", };
 
 function parseTimeTo24Hour(timeStr) {
