@@ -136,7 +136,8 @@ export default function Dashboard() {
         slotData.slots.forEach((slot) => {
           const slotDateTime = new Date(`${slot.date} ${slot.endTime}`);
 
-          if (slot.optionalFor !== "once" && !slot.isCancelled && slot.endTime && !isNaN(slotDateTime.getTime()) && slotDateTime < now) {
+          if (slot.optionalFor == "daily" && !slot.isCancelled && slot.endTime && !isNaN(slotDateTime.getTime()) && slotDateTime < now) {
+            console.log("Daily");
             updateDate(slot.slotId, slot.date);
           }
         });
@@ -417,19 +418,12 @@ export default function Dashboard() {
                     <div className="absolute right-0 top-0 flex flex-col justify-center items-end">
                       <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${isCompleted ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200" : !slot.isCancelled ? slot.booked > 0 ? "bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" : "bg-rose-50 text-rose-700 ring-1 ring-rose-200"}`}>
                         {isCompleted ? (<><FiCalendar className="text-sm" />Completed</>) : !slot.isCancelled ?
-                          (live ? (<><FiClock className="text-sm text-red-500 animate-pulse" />Live</>
-                          ) : slot.booked > 0 ? (<><FaUserCheck className="text-sm" />Booked</>
-                          ) : (<><FiCheckCircle className="text-sm" />Active</>)
-                          ) : (<><FiXCircle className="text-sm" />Inactive</>)}
+                          (live ? <><FiClock className="text-sm text-red-500 animate-pulse" />Live</>
+                            : slot.booked > 0 ? <><FaUserCheck className="text-sm" />Booked</> : <><FiCheckCircle className="text-sm" />Active</>)
+                          : <><FiXCircle className="text-sm" />Inactive</>}
                       </span>
 
-                      {slot.optionalFor !== "once" && (
-                        <div className="mt-1">
-                          <span className="inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold capitalize text-violet-700 ring-1 ring-violet-200">
-                            {slot.optionalFor}
-                          </span>
-                        </div>
-                      )}
+                      {slot.optionalFor !== "once" && (<div className="mt-1"><span className="inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold capitalize text-violet-700 ring-1 ring-violet-200">{slot.optionalFor}</span></div>)}
                     </div>
                   </div>
 
@@ -515,7 +509,6 @@ export default function Dashboard() {
                   <h2 className="text-2xl font-bold tracking-tight text-gray-900">Provide a Reason</h2>
                   <p className="mt-2 text-sm leading-6 text-gray-500">Please add a short explanation for rejecting this request. This will help keep communication clear and transparent.</p>
                 </div>
-                <button onClick={() => { setSelectedSlot(null); setReason(null); }} className="flex p-2 items-center justify-center rounded-full bg-white text-gray-500 transition hover:bg-gray-100 hover:text-red-500"><X /></button>
               </div>
 
               <div className="mt-6">
