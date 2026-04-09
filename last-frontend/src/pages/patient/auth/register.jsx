@@ -7,6 +7,8 @@ import axios from "axios";
 import { IoIosEye, IoIosEyeOff } from "react-icons/io";
 import VerifyOtp from "../../../components/verifyotp";
 import { MdKeyboardBackspace } from "react-icons/md";
+import Nav from "../../interface/Nav";
+import Footer from "../../interface/Footer";
 
 export default function PatientRegister() {
     const API_URL = import.meta.env.VITE_BACKEND_URL
@@ -55,6 +57,8 @@ export default function PatientRegister() {
     };
 
     return (
+        <>
+        <Nav/>
         <div className="h-screen flex flex-col md:flex-row bg-gray-100 overflow-hidden">
             {OtpVerification && (<VerifyOtp formdata={formData} role="patient" close={setOtpVerification} />)}
 
@@ -131,5 +135,8 @@ export default function PatientRegister() {
             </div>
 
         </div>
+                            <Footer/>
+
+</>
     );
 }

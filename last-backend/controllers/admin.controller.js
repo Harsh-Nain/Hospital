@@ -1,7 +1,7 @@
 import db from "../db/index.js";
 import { eq, and, or, sql, desc, inArray } from "drizzle-orm";
 import { sendApprovalMail, sendReactivationMail, sendRejectionMail, sendSuspensionMail } from "../utils/mailer.js";
-import { users, patients, appointments, doctors, specializations, doctorSlots, payments, chatMessages, contactMessages } from "../db/schema.js";
+import { users, patients, appointments, doctors, specializations, doctorSlots, payments, chatMessages, contactMessages, reviews } from "../db/schema.js";
 import { CreateNotification } from "./response.Controller.js";
 import { alias } from "drizzle-orm/gel-core";
 
@@ -74,8 +74,27 @@ export const Webdata = async (req, res) => {
         const patientsList = (await db.select().from(patients)).length;
 
 
+        const patientUser = alias(users, "patientUser");
 
+        const review = await db
+            .select({
+                reviewText: reviews.reviewText,
+                rating: reviews.rating,
+                date: reviews.createdAt,
+                doctorName: users.fullName,
+                patientName: patientUser.fullName,
+                patientImage: patientUser.image || null,
+            })
+            .from(reviews)
+            .leftJoin(doctors, eq(doctors.id, reviews.doctorId))
+            .leftJoin(users, eq(users.id, doctors.userId))
+            .leftJoin(patients, eq(patients.id, reviews.patientId))
+            .leftJoin(patientUser, eq(patientUser.id, patients.userId))
+            
+  .orderBy(desc(reviews.rating), desc(reviews.createdAt))
+    .limit(3);  
 
+    
         const doctorsdata = await db
             .select({
                 doctorId: doctors.id,
@@ -94,8 +113,6 @@ export const Webdata = async (req, res) => {
             if (!doctorsMap[row.doctorId]) {
                 doctorsMap[row.doctorId] = { doctorId: row.doctorId, fullName: row.fullName, email: row.email, image: row.image, specialization: row.specialization, experienceYears: row.experienceYears, consultationFee: row.consultationFee, };
             }
-
-
         });
 
         const doctorsList = Object.values(doctorsMap);
@@ -103,7 +120,7 @@ export const Webdata = async (req, res) => {
 
 
 
-        res.json({ success: true, patients: patientsList, doctorsList: doctorsList });
+        res.json({ success: true, patients: patientsList, doctorsList: doctorsList, reviews: review });
 
     } catch (error) {
         console.error("webdata Error:", error);
@@ -379,7 +396,6 @@ export const getChatUser = async (req, res) => {
 
 export const getChatData = async (req, res) => {
     try {
-
         const { userId, id } = req.query;
 
         if (!userId) {
@@ -416,29 +432,34 @@ export const addcontactMessages = async (req, res) => {
         const { name, email, message } = req.body
 
         if (!name || !email || !message) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required",
-            });
+            return res.status(400).json({ success: false, message: "All fields are required", });
         }
 
-        await db.insert(contactMessages).values({
-            name,
-            email,
-            message,
-        })
-
-        return res.status(200).json({
-            success: true,
-            message: "Message send successfully"
-        })
+        const notif = await CreateNotification({ userId: 1, message: "🎉 A new contact detail has been submitted. Please check the contact details section." });
+        console.log(notif);
+        await db.insert(contactMessages).values({ name, email, message, })
+        return res.status(200).json({ success: true, message: "Message send successfully" })
 
     } catch (err) {
         console.log(err);
-        return res.status(500).json({
-            success: false,
-            message: "Server error",
-        });
-
+        return res.status(500).json({ success: false, message: "Server error", });
     }
 }
+
+export const getContacts = async (req, res) => {
+    try {
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 9;
+        const offset = (page - 1) * limit;
+
+        const contacts = await db.select().from(contactMessages).limit(limit).offset(offset);
+        const totalResult = await db.select({ count: sql`COUNT(*)`, }).from(contactMessages)
+
+        const total = Number(totalResult[0]?.count || 0);
+        return res.status(200).json({ success: true, contacts: contacts, pagination: { page, limit, total, totalPages: Math.ceil(total / limit), }, });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Error getting messages", });
+    }
+};

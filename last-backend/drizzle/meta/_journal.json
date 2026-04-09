@@ -1,27 +1,5 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1774931546100,
-      "tag": "0000_light_adam_warlock",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1774949521126,
-      "tag": "0001_square_the_phantom",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1775193264387,
-      "tag": "0002_worried_blink",
-      "breakpoints": true
-    }
-  ]
+  "entries": []
 }

@@ -95,6 +95,7 @@ export const sendRejectionMail = async (email, name, reason) => {
 };
 
 export const sendApprovalMail = async (email, name) => {
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {

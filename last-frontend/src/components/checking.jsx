@@ -1,8 +1,32 @@
-import React from "react";
+import axios from "axios";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { FaUserMd } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 export default function Checking() {
+    const API_URL = import.meta.env.VITE_BACKEND_URL;
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const getdoctor = async () => {
+            try {
+                const res = await axios.get(`${API_URL}/dashboard/doctor-info`, { withCredentials: true, });
+
+                if (res.data.doctor.isApproved) {
+                    console.log(res.data.doctor.isApproved);
+                    navigate("/dashboard-doctor")
+                }
+
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        getdoctor();
+    }, [API_URL, navigate]);
+
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
 

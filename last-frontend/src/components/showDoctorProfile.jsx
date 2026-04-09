@@ -5,6 +5,7 @@ import Loading from "../components/loading";
 import toast from "react-hot-toast";
 import PaymentCard from "../components/paymentcard"
 import { FaClock, FaCalendarAlt, FaUsers, FaPlus, FaTimes, FaStar, FaMoneyBillWave, FaBriefcaseMedical } from "react-icons/fa";
+import { doctors } from "../../../last-backend/db/schema";
 
 export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, isAdmin, }) {
   const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -24,6 +25,9 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
   const [reviewText, setReviewText] = useState("");
   const [loading, setLoading] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [hasMoreReviews, setHasMoreReviews] = useState(true);
+  const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
@@ -77,12 +81,28 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
     }
   }
 
-  const formatTime = (time) => {
-    const [hour, minute] = time.split(":");
-    let h = parseInt(hour, 10);
-    const ampm = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12;
-    return `${h}:${minute} ${ampm}`;
+  const loadMoreReviews = async () => {
+    try {
+      setLoadingMoreReviews(true);
+      const nextPage = reviewPage + 1;
+      const res = await axios.get(`${API_URL}/feed/reviews?doctorId=${doctor.doctorId}&page=${nextPage}&limit=7`, { withCredentials: true });
+
+      if (res.data.success) {
+        const newReviews = res.data.reviews || [];
+
+        setReviews((prev) => [...prev, ...newReviews]);
+        setReviewPage(nextPage);
+
+        if (newReviews.length < 7) {
+          setHasMoreReviews(false);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to load more reviews");
+    } finally {
+      setLoadingMoreReviews(false);
+    }
   };
 
   useEffect(() => {
@@ -90,12 +110,20 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
       try {
         setLoading(true)
         const res = await axios.get(`${API_URL}/profile/doctor?doctorId=${id}`, { withCredentials: true });
+        console.log(res.data);
 
         if (res.data.success) {
           setDoctor(res.data.doctor);
-          setReviews(res.data.reviews || []);
+          setReviews(res.data.reviews || [])
+          setReviewPage(2)
           setMainRating(res.data.rating);
           setSlots(res.data.slots);
+
+          if ((res.data.reviews || []).length < 7) {
+            setHasMoreReviews(false);
+          } else {
+            setHasMoreReviews(true);
+          }
         } else {
           toast.error(res.data.message)
         }
@@ -162,14 +190,13 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
     <div className="fixed top-0 left-0 z-50 flex items-center w-full h-screen justify-center bg-black/50 backdrop-blur-sm p-4">
       {/* {pay && <PaymentCard payment={pay} API_URL={API_URL} onClose={() => setPay(null)} patientId={patientId} />} */}
 
-      <div className="relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-3xl bg-white/90 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
+      <div className="relative w-full max-w-4xl mb-20 lg:mb-0 max-h-[92vh] overflow-hidden rounded-3xl bg-white/90 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
 
         <button onClick={() => setshowDoctorDetail(null)} className="absolute cursor-pointer top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm hover:bg-red-50 hover:scale-105 transition">
           <RxCross1 size={18} />
         </button>
 
         <div className="bg-linear-to-r from-sky-300 relative via-sky-400 to-blue-400 text-white p-6 flex items-center gap-5">
-
           <img src={doctor?.image} className="w-24 h-24 rounded-2xl object-cover border-4 border-white/80 shadow-lg" />
 
           <div className="flex-1">
@@ -177,9 +204,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
             <p className="text-sm opacity-90 capitalize">{doctor?.specialization}</p>
 
             <div className="flex items-center gap-3 mt-2 flex-wrap">
-
               <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs">{doctor?.experience} yrs exp</span>
-
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${doctor?.status === "suspanded" ? "bg-yellow-300 text-black" : "bg-emerald-300 text-black"}`}>
                 {doctor?.status === "suspanded" ? "Suspended" : "Active"}
               </span>
@@ -203,7 +228,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
           <div className="sticky top-0 z-20 mb-8 rounded-3xl border border-white/60 bg-white/80 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl">
             <div className="flex gap-2 overflow-x-auto">
               {["About", "Slots", "Reviews"].map((tab) => (
-                <button key={tab} onClick={() => setActiveTab(tab)} className={`relative flex-1 rounded-2xl px-5 py-3 text-sm font-semibold transition duration-300 ${activeTab === tab ? "bg-linear-to-r from-sky-500 via-sky-500 to-sky-500 text-white shadow-lg shadow-sky-200" : "text-gray-500 hover:bg-gray-100/80 hover:text-gray-800"}`}>
+                <button key={tab} onClick={() => { setActiveTab(tab); }} className={`relative flex-1 rounded-2xl px-5 py-3 text-sm font-semibold transition duration-300 ${activeTab === tab ? "bg-linear-to-r from-sky-500 via-sky-500 to-sky-500 text-white shadow-lg shadow-sky-200" : "text-gray-500 hover:bg-gray-100/80 hover:text-gray-800"}`}>
                   {activeTab === tab && (<span className="absolute inset-x-6 -bottom-1 h-1 rounded-full bg-white/70"></span>)}
                   {tab}
                 </button>
@@ -332,7 +357,6 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                     </div>
 
                     <form onSubmit={handleSubmitReview} className="space-y-5 px-6">
-
                       <div>
                         <label className="mb-2 block text-sm font-semibold text-gray-700">Rating</label>
 
@@ -345,11 +369,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                         </div>
 
                         <div className="mt-2 text-sm text-gray-500">
-                          {rating === 1 && "Poor"}
-                          {rating === 2 && "Fair"}
-                          {rating === 3 && "Good"}
-                          {rating === 4 && "Very Good"}
-                          {rating === 5 && "Excellent"}
+                          {rating === 1 && "Poor"}{rating === 2 && "Fair"}{rating === 3 && "Good"}{rating === 4 && "Very Good"}{rating === 5 && "Excellent"}
                         </div>
                       </div>
 
@@ -411,8 +431,8 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                 </div>
               ) : (
                 <div className="space-y-5 sm:mb-5">
-                  {reviews.map((review) => (
-                    <div key={review.id} className="group relative overflow-hidden rounded-[30px] border border-white/70 bg-white/80 p-5 shadow-[0_10px_35px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+                  {reviews.map((review, i) => (
+                    <div key={i} className="group relative overflow-hidden rounded-[30px] border border-white/70 bg-white/80 p-5 shadow-[0_10px_35px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
                       <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-sky-100 blur-3xl opacity-50" />
 
                       <div className="relative flex gap-4">
@@ -451,6 +471,13 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                       </div>
                     </div>
                   ))}
+                  {hasMoreReviews && (
+                    <div className="flex justify-center">
+                      <button onClick={loadMoreReviews} disabled={loadingMoreReviews} className="rounded-2xl bg-sky-500 w-full py-3 text-sm font-semibold text-white shadow-md transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-70">
+                        {loadingMoreReviews ? "Loading..." : "Load More"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

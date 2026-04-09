@@ -26,6 +26,7 @@ import Webintro from "../pages/interface/Home";
 import WebDoctor from "../pages/interface/Doctors";
 import WebAbout from "../pages/interface/About";
 import WebContact from "../pages/interface/Contact";
+import ContactDetails from "../pages/admin/contactDetails";
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -36,7 +37,7 @@ function AppRoutes() {
         {/* <Route path="/" element={<RoleSelection />} /> */}
         <Route path="/" element={<Webintro />} />
         <Route path="/RoleSelection" element={<RoleSelection/>} />
-        <Route path="/doctor" element={<WebDoctor/>} />
+        <Route path="/doctors" element={<WebDoctor/>} />
         <Route path="/about" element={<WebAbout/>} />
         <Route path="/contact" element={<WebContact/>} />
 
@@ -53,6 +54,7 @@ function AppRoutes() {
           <Route path="/admin_doctors" element={<Alldoctors />} />
           <Route path="/admin_Patients" element={<Allpatients />} />
           <Route path="/admin_chat" element={<Allchats />} />
+          <Route path="/admin_contact-details" element={<ContactDetails />} />
         </Route>
 
         <Route element={<PatientLayout />}>

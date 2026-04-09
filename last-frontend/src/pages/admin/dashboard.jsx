@@ -4,6 +4,7 @@ import axios from "axios";
 import { Users, Stethoscope, CalendarCheck, UserCheck } from "lucide-react";
 import DoctorApprovalCard from "../../components/doctorapprovedcard";
 import { useOutletContext } from "react-router-dom";
+import FloatingMessage from "../../components/sendNotification";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -197,6 +198,8 @@ export default function Dashboard() {
             </button>
           ))}
         </div>
+
+        <FloatingMessage />
 
         <div className="space-y-3 w-full">
           {filteredAppointments.map((appt, i) => (

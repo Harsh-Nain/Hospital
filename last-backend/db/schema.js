@@ -83,8 +83,7 @@ export const medicalReports = mysqlTable("medical_reports",
   })
 );
 
-export const doctorSlots = mysqlTable(
-  "doctor_slots",
+export const doctorSlots = mysqlTable("doctor_slots",
   {
     id: int("id").primaryKey().autoincrement(),
     doctorId: int("doctor_id").notNull().references(() => doctors.id),
@@ -93,17 +92,15 @@ export const doctorSlots = mysqlTable(
     endTime: varchar("end_time", { length: 10 }).notNull(),
     isCancelled: boolean("isCancelled").default(false),
     capacity: int("capacity").default(1),
+    optionalFor: varchar("optionalFor",{length:20}).default('once'),
     createdAt: timestamp("created_at").defaultNow(),
-    slotstage: text("slotstage"),
-
   },
   (table) => ({
     doctorIdx: index("slot_doctor_idx").on(table.doctorId),
   })
 );
 
-export const appointments = mysqlTable(
-  "appointments",
+export const appointments = mysqlTable("appointments",
   {
     id: int("id").primaryKey().autoincrement(),
     doctorId: int("doctor_id").notNull().references(() => doctors.id),
@@ -154,16 +151,17 @@ export const reviews = mysqlTable("reviews",
   })
 );
 
-export const chatMessages = mysqlTable("chat_messages", {
-  id: int("id").primaryKey().autoincrement(),
-  appointmentId: int("appointment_id").notNull().references(() => appointments.id, { onDelete: "cascade" }),
-  senderId: int("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  receiverId: int("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  message: text("message").notNull(),
-  fileUrl: json("file_url").default([]),
-  isSeen: boolean("is_seen").default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-},
+export const chatMessages = mysqlTable("chat_messages",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    appointmentId: int("appointment_id").notNull().references(() => appointments.id, { onDelete: "cascade" }),
+    senderId: int("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    receiverId: int("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    message: text("message").notNull(),
+    fileUrl: json("file_url").default([]),
+    isSeen: boolean("is_seen").default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
   (table) => ({
     appointmentIdx: index("chat_appointment_idx").on(table.appointmentId),
     senderIdx: index("chat_sender_idx").on(table.senderId),
@@ -202,13 +200,12 @@ export const notifications = mysqlTable("notifications",
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
-    userIdx: index("notification_user_idx").on(table.userId),
+    id: index("notification_idx").on(table.id),
   })
 );
 
 
-export const contactMessages = mysqlTable(
-  "contact_messages",
+export const contactMessages = mysqlTable("contact_messages",
   {
     id: int("id").primaryKey().autoincrement(),
 
