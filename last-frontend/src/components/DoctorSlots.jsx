@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 
 const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) => {
   const API_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [loading, setLoading] = useState(false);
   const [repeatType, setRepeatType] = useState("once");
   const today = new Date().toISOString().split("T")[0];
@@ -145,13 +145,13 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
   };
 
   const hasOverlap = (newSlotData, existingSlots, ignoreSlotId = null) => {
+
     const toMinutes = (time) => {
       const [timePart, modifier] = time.split(" ");
       let [hour, minute] = timePart.split(":").map(Number);
 
       if (modifier === "PM" && hour !== 12) hour += 12;
       if (modifier === "AM" && hour === 12) hour = 0;
-
       return hour * 60 + minute;
     };
 
@@ -164,12 +164,11 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
 
       const existingStart = toMinutes(slot.startTime);
       const existingEnd = toMinutes(slot.endTime);
-
       return newStart < existingEnd && newEnd > existingStart;
     });
   };
 
-  const addSlot = async (slotId) => {
+  const addSlot = async (slotId = null) => {
     try {
       setLoading(true);
 
@@ -188,23 +187,23 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
         return;
       }
 
-      if (hasOverlap(slotPayload, slots, reuseSlot.slotId)) {
+      if (hasOverlap(slotPayload, slots, slotId)) {
         toast.error("This slot overlaps with an existing slot");
         return;
       }
 
-      if (slotId) {
-        const res = await axios.put(`${API_URL}/medical/re-use`, { slotId, optionalFor: repeatType, ...slotPayload, }, { withCredentials: true });
-
-        if (res.data.success) {
-          setSlots((prev) => prev.map((slot) => slot._id === slotId ? { ...slot, optionalFor: repeatType } : slot));
-          toast.success("Slot reused");
-        }
-      } else {
+      if (!slotId) {
         const res = await axios.post(`${API_URL}/medical/slot`, slotPayload, { withCredentials: true });
 
         if (res.data.success) {
           setSlots((prev) => [...prev, slotPayload]);
+          toast.success("Slot Created Successfully");
+        }
+      } else {
+        const res = await axios.put(`${API_URL}/medical/re-use`, { slotId, optionalFor: repeatType, ...slotPayload, }, { withCredentials: true });
+
+        if (res.data.success) {
+          setSlots((prev) => prev.map((slot) => slot._id === slotId ? { ...slot, optionalFor: repeatType } : slot));
           toast.success("Slot Updated Successfully");
         }
       }
@@ -235,7 +234,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
               <p className="mt-1 text-sm text-slate-500">Add appointment availability for patients</p>
             </div>
 
-            <button onClick={() => addSlot(reuseSlot?.slotId)} disabled={loading} className={`rounded-2xl px-5 py-3 mr-3 text-sm font-semibold text-white shadow-lg transition-all ${loading ? "cursor-not-allowed bg-slate-400" : "bg-linear-to-r from-emerald-500 to-sky-500 hover:scale-[1.02]"}`}>
+            <button onClick={() => reuseSlot?.slotId ? addSlot(reuseSlot.slotId) : addSlot()} disabled={loading} className={`rounded-2xl px-5 py-3 mr-3 text-sm font-semibold text-white shadow-lg transition-all ${loading ? "cursor-not-allowed bg-slate-400" : "bg-linear-to-r from-emerald-500 to-sky-500 hover:scale-[1.02]"}`}>
               {loading ? "Creating..." : `${reuseSlot ? "Update Slot" : "+ Create Slot"}`}
             </button>
           </div>

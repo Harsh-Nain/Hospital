@@ -3,10 +3,11 @@ import axios from "axios";
 import ShowPatientProfile from "../../components/showPatientProfile";
 import toast from "react-hot-toast";
 import DoctorSlots from "../../components/DoctorSlots";
-import { FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
+import { FaTrash, FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, } from "react-icons/fi";
 import { FaCheckToSlot } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
+// import { X } from "lucide-react";
 const statusLabelMap = { "wait for approval": "Requested", confirmed: "Confirmed At", Cancelled: "Cancelled At", };
 
 function parseTimeTo24Hour(timeStr) {
@@ -116,6 +117,7 @@ export default function Dashboard() {
         setLoading(true);
         const doctorResponse = await axios.get(`${API_URL}/dashboard/doctor`, { withCredentials: true, });
         const doctorData = doctorResponse.data;
+        console.log(doctorData);
 
         const doctorInfo = doctorData.doctor || {};
         setDoctor(doctorInfo);
@@ -134,7 +136,8 @@ export default function Dashboard() {
         slotData.slots.forEach((slot) => {
           const slotDateTime = new Date(`${slot.date} ${slot.endTime}`);
 
-          if (slot.optionalFor !== "once" && !slot.isCancelled && slot.endTime && !isNaN(slotDateTime.getTime()) && slotDateTime < now) {
+          if (slot.optionalFor == "daily" && !slot.isCancelled && slot.endTime && !isNaN(slotDateTime.getTime()) && slotDateTime < now) {
+            console.log("Daily");
             updateDate(slot.slotId, slot.date);
           }
         });
@@ -232,7 +235,7 @@ export default function Dashboard() {
       { label: "Total Appointments", value: stats?.totalAppointments, accent: "from-sky-500 to-cyan-500", tone: "bg-sky-50", icon: <FiCalendar />, },
       { label: "Confirmed", value: stats?.confirmed, accent: "from-emerald-500 to-green-500", tone: "bg-green-50", icon: <FiCheckCircle />, },
       { label: "Pending", value: stats?.pending, accent: "from-amber-500 to-orange-500", tone: "bg-amber-50", icon: <FiClock />, },
-      { label: "Cancelled", value: stats?.Cancelled, accent: "from-rose-500 to-red-500", tone: "bg-red-50", icon: <FiXCircle />, },
+      { label: "Cancelled", value: stats?.cancelled, accent: "from-rose-500 to-red-500", tone: "bg-red-50", icon: <FiXCircle />, },
     ],
     [stats]
   );
@@ -381,7 +384,7 @@ export default function Dashboard() {
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900">< FaCheckToSlot className="text-blue-500" />Your Slots</h2>
-            <p className="mt-1 text-sm text-gray-500">View, activate, deactivate, or remove availability</p>
+            <p className="mt-1 text-sm text-gray-500">View, activate, deactivate, or update availability</p>
           </div>
 
           <div className="flex items-center sm:gap-2 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-2">
@@ -412,21 +415,16 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <span className={`inline-flex items-center gap-1.5 absolute right-0 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${isCompleted ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200" : !slot.isCancelled ? slot.booked > 0 ? "bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" : "bg-rose-50 text-rose-700 ring-1 ring-rose-200"}`}>
-                      {isCompleted ? (
-                        <><FiCalendar className="text-sm" />Completed</>
-                      ) : !slot.isCancelled ? (
-                        live ? (
-                          <><FiClock className="text-sm text-red-500 animate-pulse" />Live</>
-                        ) : slot.booked > 0 ? (
-                          <><FaUserCheck className="text-sm" />Booked</>
-                        ) : (
-                          <><FiCheckCircle className="text-sm" />Active</>
-                        )
-                      ) : (
-                        <><FiXCircle className="text-sm" />Inactive</>
-                      )}
-                    </span>
+                    <div className="absolute right-0 top-0 flex flex-col justify-center items-end">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${isCompleted ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200" : !slot.isCancelled ? slot.booked > 0 ? "bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" : "bg-rose-50 text-rose-700 ring-1 ring-rose-200"}`}>
+                        {isCompleted ? (<><FiCalendar className="text-sm" />Completed</>) : !slot.isCancelled ?
+                          (live ? <><FiClock className="text-sm text-red-500 animate-pulse" />Live</>
+                            : slot.booked > 0 ? <><FaUserCheck className="text-sm" />Booked</> : <><FiCheckCircle className="text-sm" />Active</>)
+                          : <><FiXCircle className="text-sm" />Inactive</>}
+                      </span>
+
+                      {slot.optionalFor !== "once" && (<div className="mt-1"><span className="inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold capitalize text-violet-700 ring-1 ring-violet-200">{slot.optionalFor}</span></div>)}
+                    </div>
                   </div>
 
                   <div className="mt-5 grid grid-cols-3 gap-2">
@@ -442,17 +440,9 @@ export default function Dashboard() {
 
                     <div className="rounded-2xl bg-cyan-50 p-3 text-center">
                       <p className="text-xs font-medium uppercase tracking-wide text-cyan-500">Available</p>
-                      <p className="mt-1 text-lg font-bold text-cyan-700">{slot.available}</p>
+                      <p className="mt-1 text-center text-lg font-bold text-cyan-700">{slot.available}</p>
                     </div>
                   </div>
-
-                  {slot.optionalFor !== "once" && (
-                    <div className="mt-4">
-                      <span className="inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold capitalize text-violet-700 ring-1 ring-violet-200">
-                        {slot.optionalFor}
-                      </span>
-                    </div>
-                  )}
 
                   <div className="my-5 border-t border-dashed border-gray-200" />
 
@@ -461,7 +451,7 @@ export default function Dashboard() {
                       {!live ?
                         <>
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{slot.isCancelled ? "Activate Slot" : "Deactivate Slot"}</p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{!slot.isCancelled ? "Activate Slot" : "Deactivate Slot"}</p>
                             <p className="mt-1 text-[11px] text-gray-500">{slot.isCancelled ? "This slot is currently inactive" : "This slot is currently live"}</p>
                           </div>
 
@@ -494,7 +484,7 @@ export default function Dashboard() {
                         <p className="mt-1 text-[11px] text-gray-500">You can reuse this slot again</p>
                       </div>
 
-                      <button onClick={() => setReuseSlot(slot)} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 transition-all duration-300 hover:border-red-200 hover:bg-red-50 hover:text-red-600">
+                      <button onClick={() => setReuseSlot(slot)} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 transition-all duration-300 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-600">
                         <RxUpdate className="text-sm" />
                         Reuse
                       </button>
@@ -508,14 +498,28 @@ export default function Dashboard() {
       </section>
 
       {selectedSlot && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
-            <h2 className="text-lg font-semibold text-gray-900">Reason</h2>
-            <p className="mt-1 text-sm text-gray-500">Please provide a short reason for rejection.</p>
-            <textarea placeholder="Write your reason here..." value={reason} onChange={(e) => setReason(e.target.value)} className="mt-4 w-full resize-none rounded-2xl border border-gray-300 p-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" rows={4} />
-            <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => { setSelectedSlot(null); setReason(null); }} className="rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-200"  >Close</button>
-              <button onClick={handleConfirm} className="rounded-xl bg-linear-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-white shadow-md transition hover:scale-[1.02]">Confirm</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-4xl border border-white/10 bg-white shadow-[0_25px_80px_rgba(0,0,0,0.25)]">
+
+            <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-amber-100 via-orange-50 to-transparent" />
+            <div className="relative p-7">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="mb-3 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold tracking-wide text-amber-700 uppercase">Rejection Note</div>
+                  <h2 className="text-2xl font-bold tracking-tight text-gray-900">Provide a Reason</h2>
+                  <p className="mt-2 text-sm leading-6 text-gray-500">Please add a short explanation for rejecting this request. This will help keep communication clear and transparent.</p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label className="mb-2 block text-sm font-medium text-gray-700">Reason</label>
+                <textarea placeholder="Write your reason here..." value={reason} onChange={(e) => setReason(e.target.value)} rows={5} className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm text-gray-800 shadow-inner outline-none transition placeholder:text-gray-400 focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100" />
+              </div>
+
+              <div className="mt-7 flex items-center justify-end gap-3">
+                <button onClick={() => { setSelectedSlot(null); setReason(null); }} className="rounded-2xl border cursor-pointer border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">Cancel</button>
+                <button onClick={handleConfirm} className="rounded-2xl bg-linear-to-r from-amber-500 via-orange-500 to-rose-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]">Confirm Rejection</button>
+              </div>
             </div>
           </div>
         </div>
