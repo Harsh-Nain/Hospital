@@ -289,8 +289,8 @@ export default function DoctorProfile() {
 
                     <main className="min-w-0">
                         <div className="mx-auto w-full max-w-5xl space-y-6">
-                            <section className="overflow-hidden rounded-[30px] border border-white/70 bg-white/90 p-5 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-6">
-                                <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                            <section className="overflow-hidden rounded-[30px] border border-white/70 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl p-5 sm-2">
+                                <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between sm:p-3">
                                     <div className="min-w-0">
                                         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">Doctor Profile</p>
                                         <h2 className="mt-1 text-2xl font-bold leading-tight text-slate-800 sm:text-3xl">Update your professional information</h2>
@@ -307,7 +307,7 @@ export default function DoctorProfile() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                                <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
                                     <Card title="Personal Information" description="Update your personal details" icon={<User size={22} />} iconClassName="bg-sky-100 text-sky-600" className="xl:col-span-2">
                                         <div className="space-y-5">
                                             <Field label="Full Name" name="fullName" value={profile.fullName} onChange={handleChange} placeholder="Enter your full name" />

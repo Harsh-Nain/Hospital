@@ -1,6 +1,6 @@
 import db from "../db/index.js";
 import { users, patients, doctors, doctorSlots, reviews, specializations, medicalReports, appointments } from "../db/schema.js";
-import { eq, sql, or, and, gt, desc, } from "drizzle-orm";
+import { eq, sql, or, and, gt, desc, ne } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const GetDoctorProfile = async (req, res) => {
@@ -8,10 +8,7 @@ export const GetDoctorProfile = async (req, res) => {
         const { doctorId } = req.query;
         console.log(doctorId);
         if (!doctorId) {
-            return res.json({
-                success: false,
-                message: "Doctor ID required",
-            });
+            return res.json({ success: false, message: "Doctor ID required", });
         }
 
         const [doctor] = await db
@@ -226,6 +223,7 @@ export const updatePassword = async (req, res) => {
 export const getDoctorsBySymptom = async (req, res) => {
     try {
         const { symptom } = req.query;
+        const { email } = req.user
 
         if (!symptom) {
             return res.status(400).json({ success: false, message: "Symptom is required", });
@@ -236,7 +234,7 @@ export const getDoctorsBySymptom = async (req, res) => {
             .from(users)
             .leftJoin(doctors, eq(doctors.userId, users.id))
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
-            .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', CONCAT('%', ${symptom}, '%')) IS NOT NULL`, eq(doctors.isApproved, true)));
+            .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', CONCAT('%', ${symptom}, '%')) IS NOT NULL`, eq(doctors.isApproved, true), ne(users.email, email)));
 
         res.json({ success: true, doctors: result, });
     } catch (error) {
