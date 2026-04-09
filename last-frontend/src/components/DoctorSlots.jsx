@@ -173,6 +173,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
     try {
       setLoading(true);
 
+
       const slotPayload = {
         date: newSlot.date || reuseSlot.date,
         startTime: newSlot.startTime,
@@ -188,7 +189,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
         return;
       }
 
-      if (hasOverlap(slotPayload, slots, reuseSlot.slotId)) {
+      if (hasOverlap(slotPayload, slots, slotId)) {
         toast.error("This slot overlaps with an existing slot");
         return;
       }
