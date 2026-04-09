@@ -7,6 +7,8 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import Forgetpassword from "../../../components/forgetPassword";
 import { MdKeyboardBackspace } from "react-icons/md";
+import Footer from "../../interface/Footer";
+import Nav from "../../interface/Nav";
 
 export default function PatientLogin() {
     const [Passwordforget, setPasswordforget] = useState(false);
@@ -53,6 +55,10 @@ export default function PatientLogin() {
     };
 
     return (
+
+        <>
+       
+        <Nav/>
         <div className="min-h-screen flex flex-col relative md:flex-row bg-gray-50">
             {Passwordforget && (<Forgetpassword role="patient" setPasswordforget={setPasswordforget} />)}
 
@@ -67,10 +73,10 @@ export default function PatientLogin() {
 
             <div className="flex w-full md:w-1/2 items-center h-screen justify-center p-6">
 
-                <button onClick={() => navigate(-1)} className="absolute cursor-pointer top-4 left-6 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/30 hover:shadow-sm hover:bg-white/70 transition text-gray-700">
+                {/* <button onClick={() => navigate(-1)} className="absolute cursor-pointer top-4 left-6 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/30 hover:shadow-sm hover:bg-white/70 transition text-gray-700">
                     <MdKeyboardBackspace size={20} />
                     <span className="text-sm font-medium">Back</span>
-                </button>
+                </button> */}
 
                 <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-3">
 
@@ -115,5 +121,9 @@ export default function PatientLogin() {
             </div>
 
         </div>
+                  <Footer/>
+
+
+         </>
     );
 }

@@ -3,7 +3,7 @@ import axios from "axios";
 import ShowPatientProfile from "../../components/showPatientProfile";
 import toast from "react-hot-toast";
 import DoctorSlots from "../../components/DoctorSlots";
-import { FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
+import { FaTrash, FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, } from "react-icons/fi";
 import { FaCheckToSlot } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";

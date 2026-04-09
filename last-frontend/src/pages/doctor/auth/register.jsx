@@ -7,10 +7,12 @@ import VerifyOtp from "../../../components/verifyotp"
 import toast from "react-hot-toast";
 import { IoIosEye, IoIosEyeOff } from "react-icons/io";
 import { MdKeyboardBackspace } from "react-icons/md";
+import Nav from "../../interface/Nav";
+import Footer from "../../interface/Footer";
 
 export default function DoctorRegister() {
     const API_URL = import.meta.env.VITE_BACKEND_URL
- const Navigate = useNavigate();
+    const Navigate = useNavigate();
     const [Loading, setLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false);
     const [OtpVerification, setOtpVerification] = useState(false);
@@ -107,11 +109,14 @@ export default function DoctorRegister() {
 
             toast.error(err.response?.data?.message || "Failed to send OTP");
         } finally {
-            setLoading(false); 
+            setLoading(false);
         }
     };
 
     return (
+        <>
+        <Nav/>
+      
         <div className="h-screen flex flex-col md:flex-row bg-gray-50 overflow-hidden">
             {OtpVerification && (<VerifyOtp formdata={formData} role="doctor" close={setOtpVerification} />)}
 
@@ -122,10 +127,10 @@ export default function DoctorRegister() {
                     <h1 className="text-4xl font-bold">Join Doctor Portal</h1>
                     <p className="text-lg opacity-90 leading-relaxed">Register as a doctor to manage appointments, consult with patients online.</p>
                 </motion.div>
-                <button onClick={() => Navigate(-1)} className="absolute cursor-pointer top-4 left-6 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/30 hover:shadow-sm hover:bg-white/70 transition text-gray-700">
-                                    <MdKeyboardBackspace size={20} />
-                                    <span className="text-sm font-medium">Back</span>
-                                </button>
+                {/* <button onClick={() => Navigate(-1)} className="absolute cursor-pointer top-4 left-6 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/30 hover:shadow-sm hover:bg-white/70 transition text-gray-700">
+                    <MdKeyboardBackspace size={20} />
+                    <span className="text-sm font-medium">Back</span>
+                </button> */}
 
             </div>
 
@@ -226,5 +231,7 @@ export default function DoctorRegister() {
                 </motion.div>
             </div>
         </div>
+          <Footer/>
+          </>
     );
 }
