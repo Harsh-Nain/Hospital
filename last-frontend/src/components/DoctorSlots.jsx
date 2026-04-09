@@ -172,6 +172,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
     try {
       setLoading(true);
 
+
       const slotPayload = {
         date: newSlot.date || reuseSlot.date,
         startTime: newSlot.startTime,
