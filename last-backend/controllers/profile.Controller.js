@@ -29,7 +29,7 @@ export const GetDoctorProfile = async (req, res) => {
         const after15Min = new Date(now.getTime() + 15 * 60 * 1000);
         const slotsRaw = await db.select({ id: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, bookedCount: sql`COUNT(${appointments.id})`, patientIds: sql`GROUP_CONCAT(${appointments.patientId})`, })
             .from(doctorSlots).leftJoin(appointments, eq(appointments.slotId, doctorSlots.id))
-            .where(and(eq(doctorSlots.doctorId, Number(doctorId)), eq(doctorSlots.isCancelled, false), gte(doctorSlots.date, today))).groupBy(doctorSlots.id).orderBy(doctorSlots.date, doctorSlots.startTime);
+            .where(and(eq(doctorSlots.doctorId, Number(doctorId)), eq(doctorSlots.isCancelled, false), ne(doctorSlots.optionalFor, "ended"), gte(doctorSlots.date, today))).groupBy(doctorSlots.id).orderBy(doctorSlots.date, doctorSlots.startTime);
 
         const filteredSlots = slotsRaw.filter((slot) => {
             if (slot.date > today) return true;
