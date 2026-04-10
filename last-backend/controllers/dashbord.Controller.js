@@ -1,6 +1,6 @@
 import db from "../db/index.js";
 import { users, patients, appointments, doctors, specializations, doctorSlots, payments, } from "../db/schema.js";
-import { eq, and, sql, desc, or, gt, ne } from "drizzle-orm";
+import { eq, and, sql, desc, or, gt } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 const doctorUser = alias(users, "doctor_user");
@@ -157,7 +157,7 @@ export const DoctorDashboard = async (req, res) => {
         const appointmentsData = await db
             .select({ appointmentId: appointments.id, slotId: appointments.slotId, status: appointments.status, meetingLink: appointments.meetingLink, cancelReason: appointments.cancelReason, createdAt: appointments.createdAt, slotDate: doctorSlots.date, slotStartTime: doctorSlots.startTime, slotEndTime: doctorSlots.endTime, slotCapacity: doctorSlots.capacity, slotCancelled: doctorSlots.isCancelled, patientId: patients.id, patientDisease: patients.disease, patientAge: patients.age, patientGender: patients.gender, patientPhone: patients.phone, patientBloodGroup: patients.bloodGroup, patientAddress: patients.address, patientName: patientUser.fullName, patientImage: patientUser.image, patientEmail: patientUser.email, paymentId: payments.id, paymentAmount: payments.amount, paymentStatus: payments.paymentStatus, paymentMethod: payments.paymentMethod, transactionId: payments.transactionId, paidAt: payments.paidAt, })
             .from(appointments)
-            .leftJoin(doctorSlots, and(eq(doctorSlots.id, appointments.slotId), ne(doctorSlots.optionalFor, "ended"),))
+            .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId),)
             .leftJoin(patients, eq(patients.id, appointments.patientId))
             .leftJoin(patientUser, eq(patientUser.id, patients.userId))
             .leftJoin(payments, eq(payments.appointmentId, appointments.id))
@@ -235,10 +235,7 @@ export const PatientGetDoctor = async (req, res) => {
         for (const cat of categories) {
 
             const doctorsData = await db
-                .select({
-                    doctorId: doctors.id, fullName: users.fullName, image: users.image, experienceYears: doctors.experienceYears, specialization: specializations.name,
-                    slots: sql`COALESCE(JSON_ARRAYAGG( JSON_OBJECT( 'slotId', ${doctorSlots.id}, 'date', ${doctorSlots.date}, 'startTime', ${doctorSlots.startTime}, 'endTime', ${doctorSlots.endTime}, 'capacity', ${doctorSlots.capacity}, 'bookedCount', ( SELECT COUNT(*) FROM ${appointments} WHERE ${appointments.slotId} = ${doctorSlots.id}))),JSON_ARRAY()) `
-                })
+                .select({ doctorId: doctors.id, fullName: users.fullName, image: users.image, experienceYears: doctors.experienceYears, specialization: specializations.name, slots: sql`COALESCE(JSON_ARRAYAGG( JSON_OBJECT( 'slotId', ${doctorSlots.id}, 'date', ${doctorSlots.date}, 'startTime', ${doctorSlots.startTime}, 'endTime', ${doctorSlots.endTime}, 'capacity', ${doctorSlots.capacity}, 'bookedCount', ( SELECT COUNT(*) FROM ${appointments} WHERE ${appointments.slotId} = ${doctorSlots.id}))),JSON_ARRAY()) ` })
                 .from(doctors)
                 .leftJoin(users, eq(users.id, doctors.userId))
                 .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
@@ -247,8 +244,8 @@ export const PatientGetDoctor = async (req, res) => {
                     and(
                         eq(doctors.isApproved, true),
                         eq(doctors.status, "approved"),
-                        // eq(doctorSlots.isCancelled, false),
-                        or(gt(doctorSlots.date, sql`CURDATE()`), and(eq(doctorSlots.date, sql`CURDATE()`), gt(doctorSlots.startTime, sql`CURTIME()`))),
+                        eq(doctorSlots.isCancelled, false),
+                        sql`STR_TO_DATE(CONCAT(${doctorSlots.date}, ' ', ${doctorSlots.startTime}), '%Y-%m-%d %h:%i %p' ) > NOW()`,
                         or(...cat.match.map((m) => sql`LOWER(${specializations.name}) LIKE LOWER(${`%${m}%`})`))
                     )
                 )

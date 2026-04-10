@@ -1,12 +1,12 @@
 import db from "../db/index.js";
 import { users, patients, doctors, doctorSlots, reviews, specializations, medicalReports, appointments } from "../db/schema.js";
-import { eq, sql, or, and, gt, desc, ne } from "drizzle-orm";
+import { eq, sql, or, and, gt, desc, ne, gte } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const GetDoctorProfile = async (req, res) => {
     try {
         const { doctorId } = req.query;
-        console.log(doctorId);
+
         if (!doctorId) {
             return res.json({ success: false, message: "Doctor ID required", });
         }
@@ -24,27 +24,31 @@ export const GetDoctorProfile = async (req, res) => {
         }
 
         const now = new Date();
+
         const today = now.toISOString().split("T")[0];
-        const currentTime = now.toTimeString().slice(0, 5);
+        const after15Min = new Date(now.getTime() + 15 * 60 * 1000);
+        const slotsRaw = await db.select({ id: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, bookedCount: sql`COUNT(${appointments.id})`, patientIds: sql`GROUP_CONCAT(${appointments.patientId})`, })
+            .from(doctorSlots).leftJoin(appointments, eq(appointments.slotId, doctorSlots.id))
+            .where(and(eq(doctorSlots.doctorId, Number(doctorId)), eq(doctorSlots.isCancelled, false), gte(doctorSlots.date, today))).groupBy(doctorSlots.id).orderBy(doctorSlots.date, doctorSlots.startTime);
 
-        const slotsRaw = await db
-            .select({ id: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, bookedCount: sql`COUNT(${appointments.id})`, patientIds: sql`GROUP_CONCAT(${appointments.patientId})`, })
-            .from(doctorSlots)
-            .leftJoin(appointments, eq(appointments.slotId, doctorSlots.id))
-            .where(and(eq(doctorSlots.doctorId, Number(doctorId)), eq(doctorSlots.isCancelled, false), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, currentTime)))))
-            .groupBy(doctorSlots.id)
-            .orderBy(doctorSlots.date, doctorSlots.startTime);
+        const filteredSlots = slotsRaw.filter((slot) => {
+            if (slot.date > today) return true;
 
-        console.log(slotsRaw.length);
+            if (slot.date === today) {
+                const slotDateTime = new Date(`${slot.date} ${slot.startTime}`);
+                return slotDateTime > after15Min;
+            }
+            return false;
+        });
 
         const grouped = {};
         const slots = [];
 
-        slotsRaw.forEach((slot) => {
+        filteredSlots.forEach((slot) => {
             const booked = Number(slot.bookedCount || 0);
             const remaining = Math.max(0, slot.capacity - booked);
-
             const patientIds = slot.patientIds ? slot.patientIds.split(",").map((id) => Number(id)) : [];
+
             const slotObj = { id: slot.id, date: slot.date, startTime: slot.startTime, endTime: slot.endTime, capacity: slot.capacity, patientIds, booked, remaining, isFull: remaining <= 0, };
 
             if (!grouped[slot.date]) grouped[slot.date] = [];
@@ -52,24 +56,14 @@ export const GetDoctorProfile = async (req, res) => {
             slots.push(slotObj);
         });
 
-        const doctorReviews = await db
-            .select({ id: reviews.id, patientId: patients.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, patientImage: users.image, })
-            .from(reviews)
-            .leftJoin(patients, eq(patients.id, reviews.patientId))
-            .leftJoin(users, eq(users.id, patients.userId))
-            .where(eq(reviews.doctorId, Number(doctorId)))
-            .orderBy(desc(reviews.createdAt))
-            .limit(10)
+        const doctorReviews = await db.select({ id: reviews.id, patientId: patients.id, rating: reviews.rating, reviewText: reviews.reviewText, createdAt: reviews.createdAt, patientName: users.fullName, patientImage: users.image, }).from(reviews).leftJoin(patients, eq(patients.id, reviews.patientId)).leftJoin(users, eq(users.id, patients.userId)).where(eq(reviews.doctorId, Number(doctorId))).orderBy(desc(reviews.createdAt)).limit(10);
+        const [ratingSummary] = await db.select({ avgRating: sql`AVG(${reviews.rating})`, totalReviews: sql`COUNT(${reviews.id})`, }).from(reviews).where(eq(reviews.doctorId, Number(doctorId)));
 
-        const [ratingSummary] = await db
-            .select({ avgRating: sql`AVG(${reviews.rating})`, totalReviews: sql`COUNT(${reviews.id})`, })
-            .from(reviews)
-            .where(eq(reviews.doctorId, Number(doctorId)));
+        return res.json({ success: true, doctor, slots, reviews: doctorReviews, rating: { avgRating: Number(ratingSummary?.avgRating || 0).toFixed(1), totalReviews: Number(ratingSummary?.totalReviews || 0), }, });
 
-        res.json({ success: true, doctor, slots, reviews: doctorReviews, rating: { avgRating: Number(ratingSummary?.avgRating || 0).toFixed(1), totalReviews: Number(ratingSummary?.totalReviews || 0), }, });
     } catch (error) {
         console.error("GetDoctorProfile Error:", error);
-        res.status(500).json({ success: false, message: "Server error", });
+        return res.status(500).json({ success: false, message: "Server error", });
     }
 };
 
