@@ -97,7 +97,7 @@ export const forgetpassword = async (req, res) => {
 
 export const SavePatient = async (req, res) => {
     try {
-        const { fullName, password, email, disease } = req.body.formdata;
+        const { fullName, password, email, disease } = req.body.formData;
 
         const securePassword = await bcrypt.hash(password, 10);
         const newUser = await db.insert(users).values({ fullName, role: "patient", email, password: securePassword, image: "https://res.cloudinary.com/ddiyrbync/image/upload/v1773301256/zk7ksr5vfxsjzir7k4cu.jpg", }).$returningId();
@@ -121,7 +121,7 @@ export const SavePatient = async (req, res) => {
 
 export const SaveDoctor = async (req, res) => {
     try {
-        const { fullName, password, symptoms, email, specialization, experienceYears, licenseNumber, consultationFee, } = req.body.formdata;
+        const { fullName, password, symptoms, email, specialization, experienceYears, licenseNumber, consultationFee, } = req.body.formData;
         console.log(fullName, password, symptoms, email, specialization, experienceYears, licenseNumber, consultationFee,);
 
         const securePassword = await bcrypt.hash(password, 10);
