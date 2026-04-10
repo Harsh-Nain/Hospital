@@ -4,7 +4,7 @@ import { Phone, Mail, } from "lucide-react";
 
 export default function Footer() {
   return (
-<footer className="bg-gradient-to-br from-emerald-400 via-emerald-500 to-green-400 text-white">
+<footer className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-500 text-white">
 
       {/* Top Section */}
       <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-16 py-12 grid gap-10 sm:grid-cols-2 md:grid-cols-4">
