@@ -24,7 +24,6 @@ export const GetDoctorProfile = async (req, res) => {
         }
 
         const now = new Date();
-
         const today = now.toISOString().split("T")[0];
         const after15Min = new Date(now.getTime() + 15 * 60 * 1000);
         const slotsRaw = await db.select({ id: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, bookedCount: sql`COUNT(${appointments.id})`, patientIds: sql`GROUP_CONCAT(${appointments.patientId})`, })
