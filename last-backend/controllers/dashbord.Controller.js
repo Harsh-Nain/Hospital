@@ -119,7 +119,7 @@ export const PatientDashboard = async (req, res) => {
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
             .leftJoin(payments, eq(payments.appointmentId, appointments.id))
-            .where(and(eq(appointments.patientId, patient.patientId), and(ne(appointments.status, "Cancelled"), ne(appointments.cancelReason, ""),), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, new Date(Date.now() + 15 * 60 * 1000).toTimeString().slice(0, 8))))))
+            .where(and(eq(appointments.patientId, patient.patientId), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, new Date(Date.now() + 15 * 60 * 1000).toTimeString().slice(0, 8))))))
             .orderBy(desc(doctorSlots.date), desc(doctorSlots.startTime));
 
         const formattedAppointments = appointmentList.map((a) => {
