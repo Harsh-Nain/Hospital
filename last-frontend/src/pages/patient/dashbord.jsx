@@ -245,45 +245,73 @@ export default function Dashboard() {
                         const slot = a.slot || {};
 
                         return (
-                            <div key={i} className="group relative overflow-hidden rounded-4xl bg-white border border-slate-200 shadow-sm hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 p-4 sm:p-5 lg:p-6">
+                            <div
+                                key={i}
+                                className="group relative rounded-4xl bg-white border border-slate-200 shadow-sm hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 p-4 sm:p-5 lg:p-6"
+                            >
                                 <div className="absolute inset-0 bg-linear-to-r from-sky-50/0 via-sky-50/40 to-cyan-50/0 opacity-0 group-hover:opacity-100 transition duration-500"></div>
 
-                                <div className="relative flex flex-col xl:flex-row gap-5 xl:items-center xl:justify-between">
+                                <div className="relative flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
 
-                                    <div className="flex items-center gap-4 min-w-0">
-                                        <img src={doctor.image || "/default-doctor.png"} alt="doctor" className="w-16 h-16 rounded-2xl object-cover border border-slate-200 shadow-sm" />
+                                    {/* Doctor Info */}
+                                    <div className="flex items-center gap-4 w-full xl:w-1/3">
+                                        <img
+                                            src={doctor.image || "/default-doctor.png"}
+                                            alt="doctor"
+                                            className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border border-slate-200 shadow-sm"
+                                        />
 
                                         <div className="min-w-0">
-                                            <h3 className="text-lg font-semibold text-slate-800 truncate">Dr. {doctor.name || "Unknown"}</h3>
-                                            <p className="text-sm text-sky-600 truncate">{doctor.specialization || "General"}</p>
+                                            <h3 className="text-base sm:text-lg font-semibold text-slate-800 truncate">
+                                                Dr. {doctor.name || "Unknown"}
+                                            </h3>
+                                            <p className="text-sm text-sky-600 truncate">
+                                                {doctor.specialization || "General"}
+                                            </p>
                                         </div>
                                     </div>
 
-                                    <div className="flex-1 xl:text-center">
-                                        <p className="text-base sm:text-lg font-semibold text-slate-800">{slot.date || "N/A"}</p>
+                                    {/* Slot Info */}
+                                    <div className="w-full xl:w-1/3 xl:text-center">
+                                        <p className="text-base sm:text-lg font-semibold text-slate-800">
+                                            {slot.date || "N/A"}
+                                        </p>
 
                                         <p className="text-sm text-slate-500 mt-1">
-                                            {slot.startTime} –{" "}
-                                            {slot.endTime}
+                                            {slot.startTime} – {slot.endTime}
                                         </p>
-                                        {a.status === "confirmed" && (<p className="text-sm text-emerald-600 font-medium mt-2">{getTimeRemaining(slot.startTime.split(" ")[0], slot.date)}</p>)}
 
-                                        <p className="text-xs text-slate-400 mt-2 wrap-break-word">
-                                            {statusLabelMap[a.status] && `${statusLabelMap[a.status]}: `}
+                                        {a.status === "confirmed" && (
+                                            <p className="text-sm text-emerald-600 font-medium mt-2">
+                                                {getTimeRemaining(slot.startTime.split(" ")[0], slot.date)}
+                                            </p>
+                                        )}
+
+                                        <p className="text-xs text-slate-400 mt-2 break-words">
+                                            {statusLabelMap[a.status] &&
+                                                `${statusLabelMap[a.status]}: `}
                                             {a.appoitmentCreatedAt}
                                         </p>
                                     </div>
 
-                                    <div className="flex flex-col absolute top-2 right-2 gap-3 xl:items-end">
-                                        <div className={`px-4 py-2 rounded-full text-xs font-semibold capitalize w-fit ${a.isCancelled || a.status === "Cancelled" ? "bg-red-100 text-red-600" : a.status === "confirmed" ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-700"}`}>
-                                            {a.status || "Unknown"}
+                                    {/* Actions */}
+                                    <div className=" xl:w-1/3 flex flex-col gap-3 xl:items-end sm:absolute xl:static top-0 right-0 w-fit">
+                                        <div className="flex flex-col sm:flex-row-reverse flex-wrap gap-2 items-center xl:justify-end  absolute sm:static top-10 right-0">
+                                            <div className={`px-4 py-2 rounded-full text-xs font-semibold capitalize w-fit ${a.isCancelled || a.status === "Cancelled" ? "bg-red-100 text-red-600" : a.status === "confirmed" ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-700"}`}>
+                                                {a.status || "Unknown"}
+                                            </div>
+                                            {(a.isCancelled || a.cancelReason) && (<p className="text-xs text-red-500 break-words">Reason: {a.cancelReason}</p>)}
                                         </div>
 
-                                        {(a.isCancelled || a.cancelReason) && (<p className="text-xs text-red-500">Reason: {a.cancelReason}</p>)}
                                         {(a.isCancelled || a.status === "Cancelled") && (
                                             <div className="flex flex-wrap gap-2">
-                                                <button onClick={() => handleRefund(a)} className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all">Refund</button>
-                                                <button onClick={() => setNextAppoitment(doctor.doctorId)} className="px-4 py-2 rounded-xl bg-linear-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-white text-sm font-medium transition-all">Book Again</button>
+                                                <button onClick={() => handleRefund(a)} className=" px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all">
+                                                    Refund
+                                                </button>
+
+                                                <button onClick={() => setNextAppoitment(doctor.doctorId)} className=" cursor-pointer px-4 py-2 rounded-xl bg-linear-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-white text-sm font-medium transition-all">
+                                                    Book Again
+                                                </button>
                                             </div>
                                         )}
                                     </div>
