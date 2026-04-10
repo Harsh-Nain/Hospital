@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken"
 import { users, patients, doctors, specializations } from "../db/schema.js";
 import { eq, and } from "drizzle-orm";
 import { sendOtpMail } from "../utils/mailer.js";
+import { CreateNotification } from "./response.Controller.js";
 const otpStore = {};
 const verifiedOtpStore = {};
 

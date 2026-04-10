@@ -152,6 +152,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
 
       if (modifier === "PM" && hour !== 12) hour += 12;
       if (modifier === "AM" && hour === 12) hour = 0;
+
       return hour * 60 + minute;
     };
 
@@ -171,7 +172,6 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
   const addSlot = async (slotId = null) => {
     try {
       setLoading(true);
-
 
       const slotPayload = {
         date: newSlot.date || reuseSlot.date,
@@ -204,7 +204,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
         const res = await axios.put(`${API_URL}/medical/re-use`, { slotId, optionalFor: repeatType, ...slotPayload, }, { withCredentials: true });
 
         if (res.data.success) {
-          setSlots((prev) => prev.map((slot) => slot._id === slotId ? { ...slot, optionalFor: repeatType } : slot));
+          setSlots((prev) => prev.map((slot) => slot.slotId === slotId ? res.data.slot : slot));
           toast.success("Slot Updated Successfully");
         }
       }
@@ -410,7 +410,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
                         const isSelected = repeatType === option.value;
 
                         return (
-                          <button key={option.value} type="button" onClick={() => { setRepeatType(option.value); setOpen(false); }} className={`mb-1 flex w-full items-center rounded-2xl px-4 py-3 text-left transition-all ${isSelected ? "bg-emerald-50 text-sky-600" : "text-slate-700 hover:bg-slate-50"}`}>
+                          <button key={option.value} type="button" onClick={() => { setRepeatType(option.value); setOpen(false); }} className={`mb-1 flex w-full items-center rounded-2xl px-4 py-3 text-left transition-all ${isSelected ? "bg-sky-50 text-sky-600" : "text-slate-700 hover:bg-slate-50"}`}>
                             <div className="flex items-center gap-3">
                               <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${isSelected ? "bg-sky-100 text-sky-600" : "bg-slate-100 text-slate-500"}`}>
                                 <CalendarDays size={16} />

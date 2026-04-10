@@ -3,11 +3,11 @@ import axios from "axios";
 import ShowPatientProfile from "../../components/showPatientProfile";
 import toast from "react-hot-toast";
 import DoctorSlots from "../../components/DoctorSlots";
-import { FaTrash, FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
+import { FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, } from "react-icons/fi";
 import { FaCheckToSlot } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
-// import { X } from "lucide-react";
+
 const statusLabelMap = { "wait for approval": "Requested", confirmed: "Confirmed At", Cancelled: "Cancelled At", };
 
 function parseTimeTo24Hour(timeStr) {
@@ -117,11 +117,12 @@ export default function Dashboard() {
         setLoading(true);
         const doctorResponse = await axios.get(`${API_URL}/dashboard/doctor`, { withCredentials: true, });
         const doctorData = doctorResponse.data;
-        console.log(doctorData);
 
         const doctorInfo = doctorData.doctor || {};
         setDoctor(doctorInfo);
         setStats(doctorData.stats || {});
+        console.log(doctorData.formattedAppointments);
+
         setAppointments(doctorData.formattedAppointments || []);
 
         if (!doctorInfo?.doctorId) {
@@ -189,8 +190,8 @@ export default function Dashboard() {
       const res = await axios.put(`${API_URL}/medical/appointment-cancel`, { appointmentId: appointment.appointmentId, reason: rejectReason, }, { withCredentials: true });
       if (res.data?.success) {
         toast.success(res.data.message || "Appointment cancelled");
-        setAppointments((prev) => prev.map((ap) => ap.appointmentId === appointment.appointmentId ? { ...ap, status: "rejected" } : ap));
-
+        setAppointments((prev) => prev.map((ap) => ap.appointmentId === appointment.appointmentId ? { ...ap, status: "Cancelled" } : ap));
+        setSelectedSlot(false)
       } else {
         toast.error(res.data?.message || "Cancel failed");
       }
@@ -206,6 +207,7 @@ export default function Dashboard() {
       if (res.data?.success) {
         toast.success(res.data.message || "Slot updated");
         setSlots((prevSlots) => prevSlots.map((s) => s.slotId === slotId ? { ...s, isCancelled: !currentIsCancelled, } : s));
+        selectedSlot(false)
       } else {
         toast.error(res.data?.message || "Slot update failed");
       }
@@ -242,6 +244,7 @@ export default function Dashboard() {
 
   const filteredAppointments = appointments.filter((appointment) => {
     const slot = appointment.slot || {};
+
     const slotEnd = getSlotDateTime(slot.date, slot.endTime);
     if (!slotEnd) return true;
 
@@ -384,7 +387,7 @@ export default function Dashboard() {
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900">< FaCheckToSlot className="text-blue-500" />Your Slots</h2>
-            <p className="mt-1 text-sm text-gray-500">View, activate, deactivate, or update availability</p>
+            <p className="mt-1 text-sm text-gray-500">View, activate, deactivate, or Repeat availability</p>
           </div>
 
           <div className="flex items-center sm:gap-2 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-2">
@@ -458,19 +461,10 @@ export default function Dashboard() {
                           <label className="relative inline-flex cursor-pointer items-center">
                             <input type="checkbox" className="peer sr-only" checked={!slot.isCancelled} onChange={() => { if (slot.isCancelled || slot.booked === 0) { toggleStatus(slot.slotId, slot.isCancelled); } else { setSelectedSlot(slot); } }} />
 
-                            <div className="flex flex-col items-end justify-end gap-2">
-                              <div className={`relative h-7 w-14 rounded-full ${slot.isCancelled ? "bg-rose-400" : "bg-green-400"} shadow-inner transition-all duration-300 peer-checked:bg-emerald-500`}>
-                                <div className={`absolute ${!slot.isCancelled ? "left-1" : "right-1"} top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-gray-600 shadow-md transition-all duration-300 peer-checked:translate-x-7`}>
-                                  {slot.isCancelled ? "✕" : "✓"}
-                                </div>
+                            <div className={`relative h-7 w-14 rounded-full ${slot.isCancelled ? "bg-rose-400" : "bg-green-400"} shadow-inner transition-all duration-300 peer-checked:bg-emerald-500`}>
+                              <div className={`absolute ${!slot.isCancelled ? "left-1" : "right-1"} top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-gray-600 shadow-md transition-all duration-300 peer-checked:translate-x-7`}>
+                                {slot.isCancelled ? "✕" : "✓"}
                               </div>
-
-                              {slot.isCancelled && (
-                                <button type="button" onClick={() => setReuseSlot(slot)} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600 transition-all duration-300 hover:border-green-200 hover:bg-green-50 hover:text-green-600">
-                                  <RxUpdate className="text-sm" />
-                                  Update
-                                </button>
-                              )}
                             </div>
                           </label>
                         </>
