@@ -1,6 +1,6 @@
 import db from "../db/index.js";
 import { users, patients, appointments, doctors, specializations, doctorSlots, payments, } from "../db/schema.js";
-import { eq, and, sql, desc, or, gt, ne } from "drizzle-orm";
+import { eq, and, sql, desc, or, gt } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 const doctorUser = alias(users, "doctor_user");
@@ -18,10 +18,7 @@ export const PatientInfo = async (req, res) => {
 
         const [patient] = await db
             .select({ id: users.id, fullName: users.fullName, email: users.email, image: users.image, role: users.role, disease: patients.disease, patientId: patients.id })
-            .from(users)
-            .leftJoin(patients, eq(patients.userId, users.id))
-            .where(and(eq(users.id, id), eq(users.role, "patient")))
-            .limit(1);
+            .from(users).leftJoin(patients, eq(patients.userId, users.id)).where(and(eq(users.id, id), eq(users.role, "patient"))).limit(1);
 
         if (!patient) {
             return res.status(404).json({ success: false, redirect: "/auth/loginpatient", });
@@ -41,11 +38,7 @@ export const DoctorInfo = async (req, res) => {
 
         const [doctor] = await db
             .select({ id: users.id, fullName: users.fullName, email: users.email, isApproved: doctors.isApproved, image: users.image, role: users.role, doctorId: doctors.id, specialization: specializations.name, experience: doctors.experienceYears, })
-            .from(users)
-            .leftJoin(doctors, eq(doctors.userId, users.id))
-            .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
-            .where(and(eq(users.id, id), eq(users.role, "doctor")))
-            .limit(1);
+            .from(users).leftJoin(doctors, eq(doctors.userId, users.id)).leftJoin(specializations, eq(specializations.id, doctors.specializationId)).where(and(eq(users.id, id), eq(users.role, "doctor"))).limit(1);
 
         if (!doctor) {
             return res.status(404).json({ success: false, redirect: "/auth/logindoctor" });
@@ -64,10 +57,7 @@ export const PatientDashboard = async (req, res) => {
 
         const [patient] = await db
             .select({ id: users.id, fullName: users.fullName, email: users.email, image: users.image, role: users.role, disease: patients.disease, patientId: patients.id, })
-            .from(users)
-            .leftJoin(patients, eq(patients.userId, users.id))
-            .where(and(eq(users.id, id), eq(users.role, "patient")))
-            .limit(1);
+            .from(users).leftJoin(patients, eq(patients.userId, users.id)).where(and(eq(users.id, id), eq(users.role, "patient"))).limit(1);
 
         if (!patient) {
             return res.json({ success: false, message: "Patient not found" });
@@ -84,25 +74,20 @@ export const PatientDashboard = async (req, res) => {
             .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .leftJoin(doctorSlots, eq(doctorSlots.doctorId, doctors.id))
             .leftJoin(appointments, eq(appointments.slotId, doctorSlots.id))
-            .where(
-                and(
-                    or(sql`JSON_CONTAINS(${specializations.symptoms}, JSON_ARRAY(${patient.disease}))`, sql`LOWER(${specializations.name}) LIKE LOWER(${`%${patient.disease}%`})`),
-                    eq(doctors.isApproved, true), eq(doctors.status, "approved"), eq(doctorSlots.isCancelled, false),
-                    or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, currentTime)))
-                )
-            ).groupBy(doctors.id, doctorSlots.id).orderBy(doctorSlots.date, doctorSlots.startTime).limit(6);
+            .where(and(
+                or(sql`JSON_CONTAINS(${specializations.symptoms}, JSON_ARRAY(${patient.disease}))`, sql`LOWER(${specializations.name}) LIKE LOWER(${`%${patient.disease}%`})`),
+                eq(doctors.isApproved, true), eq(doctors.status, "approved"), eq(doctorSlots.isCancelled, false),
+                or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, currentTime)))
+            )).groupBy(doctors.id, doctorSlots.id).orderBy(doctorSlots.date, doctorSlots.startTime).limit(6);
 
         if (doctorsList.length === 0) {
             doctorsList = await db
                 .select({ doctorId: doctors.id, fullName: users.fullName, image: users.image, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, specialization: specializations.name, slotId: doctorSlots.id, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, bookedCount: sql`COUNT(${appointments.id})`, })
                 .from(doctors)
-                .leftJoin(users, eq(users.id, doctors.userId))
-                .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
-                .leftJoin(doctorSlots, eq(doctorSlots.doctorId, doctors.id))
-                .leftJoin(appointments, eq(appointments.slotId, doctorSlots.id))
+                .leftJoin(users, eq(users.id, doctors.userId)).leftJoin(specializations, eq(specializations.id, doctors.specializationId))
+                .leftJoin(doctorSlots, eq(doctorSlots.doctorId, doctors.id)).leftJoin(appointments, eq(appointments.slotId, doctorSlots.id))
                 .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', 'fever')`, eq(doctors.isApproved, true), eq(doctors.status, "success"), eq(doctorSlots.isCancelled, false)))
-                .groupBy(doctorSlots.id)
-                .limit(6);
+                .groupBy(doctorSlots.id).limit(6);
         }
 
         const formattedDoctors = doctorsList.map((d) => {
@@ -114,12 +99,10 @@ export const PatientDashboard = async (req, res) => {
         const appointmentList = await db
             .select({ amount: payments.amount, transactionId: payments.transactionId, cancelReason: appointments.cancelReason, paymentStatus: payments.paymentStatus, isCancelled: doctorSlots.isCancelled, appoitmentCreatedAt: appointments.createdAt, appointmentId: appointments.id, appointmentStatus: appointments.status, meetingLink: appointments.meetingLink, doctorName: users.fullName, doctorImage: users.image, doctorId: doctors.id, consultationFee: doctors.consultationFee, specialization: specializations.name, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, })
             .from(appointments)
-            .leftJoin(doctors, eq(doctors.id, appointments.doctorId))
-            .leftJoin(users, eq(users.id, doctors.userId))
-            .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
-            .leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
+            .leftJoin(doctors, eq(doctors.id, appointments.doctorId)).leftJoin(users, eq(users.id, doctors.userId))
+            .leftJoin(specializations, eq(specializations.id, doctors.specializationId)).leftJoin(doctorSlots, eq(doctorSlots.id, appointments.slotId))
             .leftJoin(payments, eq(payments.appointmentId, appointments.id))
-            .where(and(eq(appointments.patientId, patient.patientId), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today), gt(doctorSlots.startTime, new Date(Date.now() + 15 * 60 * 1000).toTimeString().slice(0, 8))))))
+            .where(and(eq(appointments.patientId, patient.patientId), or(gt(doctorSlots.date, today), and(eq(doctorSlots.date, today),))))
             .orderBy(desc(doctorSlots.date), desc(doctorSlots.startTime));
 
         const formattedAppointments = appointmentList.map((a) => {

@@ -1,5 +1,5 @@
 import db from "../db/index.js";
-import { users, patients, doctors, doctorSlots, reviews, specializations, medicalReports, appointments } from "../db/schema.js";
+import { users, patients, doctors, doctorSlots, reviews, specializations, medicalReports, appointments, contactMessages } from "../db/schema.js";
 import { eq, sql, or, and, gt, desc, ne, gte } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -78,10 +78,7 @@ export const GetPatientProfile = async (req, res) => {
 
         const [patient] = await db
             .select({ patientId: patients.id, fullName: users.fullName, userid: users.id, email: users.email, image: users.image, age: patients.age, gender: patients.gender, disease: patients.disease, phone: patients.phone, address: patients.address, bloodGroup: patients.bloodGroup, })
-            .from(patients)
-            .leftJoin(users, eq(users.id, patients.userId))
-            .where(eq(patients.id, patientId))
-            .limit(1);
+            .from(patients).leftJoin(users, eq(users.id, patients.userId)).where(eq(patients.id, patientId)).limit(1);
 
         if (!patient) {
             return res.json({ success: false, message: "Patient not found", });
@@ -89,9 +86,7 @@ export const GetPatientProfile = async (req, res) => {
 
         const reports = await db
             .select({ reportId: medicalReports.id, diseaseName: medicalReports.diseaseName, fileUrl: medicalReports.fileUrl, uploadedAt: medicalReports.uploadedAt, })
-            .from(medicalReports)
-            .where(eq(medicalReports.patientId, patientId))
-            .orderBy(desc(medicalReports.uploadedAt));
+            .from(medicalReports).where(eq(medicalReports.patientId, patientId)).orderBy(desc(medicalReports.uploadedAt));
 
         const appointmentsData = await db
             .select({ appointmentId: appointments.id, status: appointments.status, meetingLink: appointments.meetingLink, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, doctorId: doctors.id, doctorName: users.fullName, doctorImage: users.image, specialization: specializations.name, })
@@ -132,28 +127,14 @@ export const GetOwnProfile = async (req, res) => {
         const { id, role } = req.user;
 
         if (role === "patient") {
-            const [patient] = await db
-                .select({ ...patients, id: users.id, fullName: users.fullName, email: users.email, image: users.image })
-                .from(users)
-                .leftJoin(patients, eq(patients.userId, users.id))
-                .where(and(eq(users.id, id), eq(users.role, "patient")))
-                .limit(1);
-
+            const [patient] = await db.select({ ...patients, id: users.id, fullName: users.fullName, email: users.email, image: users.image }).from(users).leftJoin(patients, eq(patients.userId, users.id)).where(and(eq(users.id, id), eq(users.role, "patient"))).limit(1);
             return res.json({ success: true, profile: patient });
         }
 
         if (role === "doctor") {
-            const [doctor] = await db
-                .select({ id: users.id, fullName: users.fullName, email: users.email, image: users.image, specialization: specializations.name, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, licenseNumber: doctors.licenseNumber, phone: doctors.phone, age: doctors.age, gender: doctors.gender, address: doctors.address, })
-                .from(users)
-                .leftJoin(doctors, eq(doctors.userId, users.id))
-                .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
-                .where(and(eq(users.id, id), eq(users.role, "doctor")))
-                .limit(1);
-
+            const [doctor] = await db.select({ id: users.id, fullName: users.fullName, email: users.email, image: users.image, specialization: specializations.name, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, licenseNumber: doctors.licenseNumber, phone: doctors.phone, age: doctors.age, gender: doctors.gender, address: doctors.address, }).from(users).leftJoin(doctors, eq(doctors.userId, users.id)).leftJoin(specializations, eq(specializations.id, doctors.specializationId)).where(and(eq(users.id, id), eq(users.role, "doctor"))).limit(1);
             return res.json({ success: true, profile: doctor });
         }
-
         res.json({ success: false, message: "Invalid role" });
 
     } catch (error) {
@@ -178,16 +159,11 @@ export const EditOwnProfile = async (req, res) => {
         await db.update(users).set({ ...(data.fullName && { fullName: data.fullName }), ...(imageUrl && { image: imageUrl }), }).where(eq(users.id, id));
 
         if (role === "patient") {
-            await db
-                .update(patients)
-                .set({ ...(data.age !== undefined && { age: clean(data.age) }), ...(data.gender !== undefined && { gender: clean(data.gender) }), ...(data.disease !== undefined && { disease: clean(data.disease) }), ...(data.phone !== undefined && { phone: clean(data.phone) }), ...(data.bio !== undefined && { bio: clean(data.bio) }), ...(data.address !== undefined && { address: clean(data.address) }), ...(data.bloodGroup !== undefined && { bloodGroup: clean(data.bloodGroup), }), ...(data.allergy !== undefined && { allergy: clean(data.allergy) }), })
-                .where(eq(patients.userId, id));
+            await db.update(patients).set({ ...(data.age !== undefined && { age: clean(data.age) }), ...(data.gender !== undefined && { gender: clean(data.gender) }), ...(data.disease !== undefined && { disease: clean(data.disease) }), ...(data.phone !== undefined && { phone: clean(data.phone) }), ...(data.bio !== undefined && { bio: clean(data.bio) }), ...(data.address !== undefined && { address: clean(data.address) }), ...(data.bloodGroup !== undefined && { bloodGroup: clean(data.bloodGroup), }), ...(data.allergy !== undefined && { allergy: clean(data.allergy) }), }).where(eq(patients.userId, id));
         }
 
         if (role === "doctor") {
-            await db.update(doctors)
-                .set({ ...(data.age !== undefined && { age: clean(data.age) }), ...(data.gender !== undefined && { gender: clean(data.gender) }), ...(data.experienceYears !== undefined && { experienceYears: clean(data.experienceYears), }), ...(data.consultationFee !== undefined && { consultationFee: clean(data.consultationFee), ...(data.phone !== undefined && { phone: clean(data.phone) }), ...(data.bio !== undefined && { bio: clean(data.bio) }), ...(data.address !== undefined && { address: clean(data.address) }), }), ...(data.bio !== undefined && { bio: clean(data.bio) }), })
-                .where(eq(doctors.userId, id));
+            await db.update(doctors).set({ ...(data.age !== undefined && { age: clean(data.age) }), ...(data.gender !== undefined && { gender: clean(data.gender) }), ...(data.experienceYears !== undefined && { experienceYears: clean(data.experienceYears), }), ...(data.consultationFee !== undefined && { consultationFee: clean(data.consultationFee), ...(data.phone !== undefined && { phone: clean(data.phone) }), ...(data.bio !== undefined && { bio: clean(data.bio) }), ...(data.address !== undefined && { address: clean(data.address) }), }), ...(data.bio !== undefined && { bio: clean(data.bio) }), }).where(eq(doctors.userId, id));
         }
 
         res.json({ success: true, message: "Profile updated successfully", });
@@ -224,9 +200,7 @@ export const getDoctorsBySymptom = async (req, res) => {
 
         const result = await db
             .select({ fullName: users.fullName, image: users.image, specialization: specializations.name, doctorId: doctors.id, experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee })
-            .from(users)
-            .leftJoin(doctors, eq(doctors.userId, users.id))
-            .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
+            .from(users).leftJoin(doctors, eq(doctors.userId, users.id)).leftJoin(specializations, eq(specializations.id, doctors.specializationId))
             .where(and(sql`JSON_SEARCH(${specializations.symptoms}, 'one', CONCAT('%', ${symptom}, '%')) IS NOT NULL`, eq(doctors.isApproved, true), ne(users.email, email)));
 
         res.json({ success: true, doctors: result, });

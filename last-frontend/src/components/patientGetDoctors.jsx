@@ -12,6 +12,21 @@ export default function PatientGetDoctors() {
     const [showDoctorDetail, setshowDoctorDetail] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [loading, setLoading] = useState(true);
+    const isAnyModalOpen = showDoctorDetail;
+
+    useEffect(() => {
+        if (isAnyModalOpen) {
+            document.body.classList.add("overflow-hidden");
+            document.documentElement.classList.add("overflow-hidden");
+        } else {
+            document.body.classList.remove("overflow-hidden");
+            document.documentElement.classList.remove("overflow-hidden");
+        }
+        return () => {
+            document.body.classList.remove("overflow-hidden");
+            document.documentElement.classList.remove("overflow-hidden");
+        };
+    }, [isAnyModalOpen]);
 
     useEffect(() => {
         const getPatient = async () => {
@@ -35,7 +50,6 @@ export default function PatientGetDoctors() {
 
     return (
         <div className="w-full mx-auto px-2 sm:px-4 py-4 sm:py-6">
-
             {showDoctorDetail && (<ShowDoctorProfile id={showDoctorDetail} setshowDoctorDetail={setshowDoctorDetail} patientId={patientInfo.patientId} />)}
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 sm:mb-6">

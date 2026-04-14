@@ -244,7 +244,6 @@ export default function Dashboard() {
 
   const filteredAppointments = appointments.filter((appointment) => {
     const slot = appointment.slot || {};
-
     const slotEnd = getSlotDateTime(slot.date, slot.endTime);
     if (!slotEnd) return true;
 

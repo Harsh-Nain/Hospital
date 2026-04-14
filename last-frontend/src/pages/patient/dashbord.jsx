@@ -16,7 +16,6 @@ export default function Dashboard() {
     const [statusFilter, setStatusFilter] = useState("all");
     const modals = [nextAppoitment, showDoctorDetail];
     const isAnyModalOpen = modals.some(Boolean);
-
     const [tick, setTick] = useState(0);
 
     useEffect(() => {
@@ -190,7 +189,6 @@ export default function Dashboard() {
                             <img src={patient?.image || "/default-user.png"} alt="patient" className="w-20 h-20 sm:w-30 sm:h-30 rounded-3xl object-cover border-4 border-white shadow-lg" />
                             <div className="absolute -bottom-1 -right-1 w-5 h-5 hidden sm:flex bg-emerald-500 rounded-full border-2 border-white"></div>
                         </div>
-
                         <div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 leading-tight">Welcome back, {patient?.fullName || "User"}</h1>
                             <p className="text-slate-500 mt-2 text-sm sm:text-base">Disease: {patient?.disease || "Not specified"}</p>

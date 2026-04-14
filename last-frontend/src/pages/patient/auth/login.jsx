@@ -57,14 +57,12 @@ export default function PatientLogin() {
     return (
 
         <>
-
             <Nav />
 
             <div className="min-h-screen flex flex-col relative md:flex-row bg-gray-50">
                 {Passwordforget && (<Forgetpassword role="patient" setPasswordforget={setPasswordforget} />)}
 
-                <div className="hidden md:flex w-1/2 bg-linear-to-br
-from-blue-500 → from-teal-500 via-blue-400 → via-teal-400 to-blue-600 → to-teal-600 focus:ring-blue-400 → focus:ring-teal-400 text-blue-600 → text-teal-300 border-sky-100 → border-teal-100              items-center justify-center p-12 text-white">
+                <div className="hidden md:flex w-1/2 bg-linear-to-b from-blue-500  via-blue-400  to-blue-600  focus:ring-blue-400  text-blue-600 border-sky-100 items-center justify-center p-12">
 
                     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }} className="max-w-md text-center space-y-6">
                         <FaUser className="text-6xl mx-auto opacity-90" />
@@ -105,7 +103,7 @@ from-blue-500 → from-teal-500 via-blue-400 → via-teal-400 to-blue-600 → to
                             </div>
 
                             <button type="submit" disabled={Loading} className={`w-full py-3 rounded-lg text-white font-semibold shadow-md transition ${Loading ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-gradient-to-r from-blue-400 → from-teal-400 via-blue-400 → via-teal-400 to-blue-500 → to-teal-500 hover:opacity-90"
+                                : "bg-linear-to-r from-blue-400 via-blue-400 to-blue-500 hover:opacity-90"
                                 }`}   >
                                 {Loading ? "Logging in..." : "Login"}
                             </button>
