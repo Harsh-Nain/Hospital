@@ -30,7 +30,7 @@ export default function AdminLayout() {
                 </div>
 
                 <main className="flex-1 overflow-y-auto pt-21 sm:pt-23 pb-24 lg:pb-0">
-                    <div className="w-full mx-auto">
+                    <div className="w-full mx-auto h-full">
                         <Outlet context={{ setLoading }} />
                     </div>
                 </main>

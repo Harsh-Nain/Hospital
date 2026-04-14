@@ -64,7 +64,7 @@ export default function Adminshowchat({ selectedUser, currentUser, onBack }) {
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col md:pb-0 pb-11  overflow-y-auto p-3 space-y-3 h-[86%] w-full md:w-auto pt-18 absolute">
+            <div className="flex-1 flex flex-col md:pb-0 pb-11  overflow-y-auto p-3 space-y-3 h-[86%] w-full md:w-auto pt-18 ">
                 {messages.length === 0 ? (
                     <p className="text-center text-gray-400 text-sm m-auto">No messages yet</p>
                 ) : (
