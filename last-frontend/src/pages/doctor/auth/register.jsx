@@ -119,7 +119,7 @@ export default function DoctorRegister() {
 
             <div className="h-screen flex flex-col md:flex-row bg-gray-50 overflow-hidden">
                 {OtpVerification && (<VerifyOtp formData={formData} role="doctor" close={setOtpVerification} loading={loading} setLoading={setLoading   } />)}
-                {loading && <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/50 z-99999999999"><Loading /></div>}
+                {loading && <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/50 backdrop-blur-sm z-99999999999"><Loading /></div>}
 
                 <div className="hidden md:flex w-1/2 bg-linear-to-br from-emerald-300 via-emerald-400 to-emerald-600 items-center justify-center p-12 text-white">
 
@@ -210,7 +210,7 @@ export default function DoctorRegister() {
                                 className={`w-full py-3 rounded-lg text-white font-semibold shadow-md transition
                                 ${loading
                                         ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-gradient-to-r from-emerald-400 to-emerald-600 hover:opacity-90"
+                                        : "bg-linear-to-r from-emerald-400 to-emerald-600 hover:opacity-90"
                                     }`}
                             >
                                 {loading ? "Sending Otp..." : "Create Account"}

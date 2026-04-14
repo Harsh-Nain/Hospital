@@ -16,7 +16,6 @@ export default function Dashboard() {
     const [statusFilter, setStatusFilter] = useState("all");
     const modals = [nextAppoitment, showDoctorDetail];
     const isAnyModalOpen = modals.some(Boolean);
-
     const [tick, setTick] = useState(0);
 
     useEffect(() => {
@@ -190,7 +189,6 @@ export default function Dashboard() {
                             <img src={patient?.image || "/default-user.png"} alt="patient" className="w-20 h-20 sm:w-30 sm:h-30 rounded-3xl object-cover border-4 border-white shadow-lg" />
                             <div className="absolute -bottom-1 -right-1 w-5 h-5 hidden sm:flex bg-emerald-500 rounded-full border-2 border-white"></div>
                         </div>
-
                         <div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 leading-tight">Welcome back, {patient?.fullName || "User"}</h1>
                             <p className="text-slate-500 mt-2 text-sm sm:text-base">Disease: {patient?.disease || "Not specified"}</p>
@@ -220,15 +218,8 @@ export default function Dashboard() {
                     </div>
 
                     <div className="flex gap-2 bg-white border border-slate-200 rounded-2xl p-2 shadow-sm w-full lg:w-auto">
-                        {[
-                            { label: "All", value: "all" },
-                            { label: "Confirmed", value: "confirmed" },
-                            { label: "Cancelled", value: "Cancelled" },
-                            { label: "Upcoming", value: "wait for approval" },
-                        ].map((item) => (
-                            <button key={item.value} onClick={() => setStatusFilter(item.value)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap ${statusFilter === item.value ? "bg-linear-to-r from-sky-500 to-cyan-500 text-white shadow-lg" : "text-slate-600 hover:bg-slate-100"}`}>
-                                {item.label}
-                            </button>
+                        {[{ label: "All", value: "all" }, { label: "Confirmed", value: "confirmed" }, { label: "Cancelled", value: "Cancelled" }, { label: "Upcoming", value: "wait for approval" },].map((item) => (
+                            <button key={item.value} onClick={() => setStatusFilter(item.value)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap ${statusFilter === item.value ? "bg-linear-to-r from-sky-500 to-cyan-500 text-white shadow-lg" : "text-slate-600 hover:bg-slate-100"}`}>{item.label}</button>
                         ))}
                     </div>
                 </div>
@@ -245,73 +236,36 @@ export default function Dashboard() {
                         const slot = a.slot || {};
 
                         return (
-                            <div
-                                key={i}
-                                className="group relative rounded-4xl bg-white border border-slate-200 shadow-sm hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 p-4 sm:p-5 lg:p-6"
-                            >
+                            <div key={i} className="group relative rounded-4xl bg-white border border-slate-200 shadow-sm hover:shadow-[0_12px_35px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 p-4 sm:p-5 lg:p-6">
                                 <div className="absolute inset-0 bg-linear-to-r from-sky-50/0 via-sky-50/40 to-cyan-50/0 opacity-0 group-hover:opacity-100 transition duration-500"></div>
-
                                 <div className="relative flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
 
-                                    {/* Doctor Info */}
                                     <div className="flex items-center gap-4 w-full xl:w-1/3">
-                                        <img
-                                            src={doctor.image || "/default-doctor.png"}
-                                            alt="doctor"
-                                            className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border border-slate-200 shadow-sm"
-                                        />
+                                        <img src={doctor.image || "/default-doctor.png"} alt="doctor" className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border border-slate-200 shadow-sm" />
 
                                         <div className="min-w-0">
-                                            <h3 className="text-base sm:text-lg font-semibold text-slate-800 truncate">
-                                                Dr. {doctor.name || "Unknown"}
-                                            </h3>
-                                            <p className="text-sm text-sky-600 truncate">
-                                                {doctor.specialization || "General"}
-                                            </p>
+                                            <h3 className="text-base sm:text-lg font-semibold text-slate-800 truncate">Dr. {doctor.name || "Unknown"}</h3>
+                                            <p className="text-sm text-sky-600 truncate">{doctor.specialization || "General"}</p>
                                         </div>
                                     </div>
 
-                                    {/* Slot Info */}
                                     <div className="w-full xl:w-1/3 xl:text-center">
-                                        <p className="text-base sm:text-lg font-semibold text-slate-800">
-                                            {slot.date || "N/A"}
-                                        </p>
-
-                                        <p className="text-sm text-slate-500 mt-1">
-                                            {slot.startTime} – {slot.endTime}
-                                        </p>
-
-                                        {a.status === "confirmed" && (
-                                            <p className="text-sm text-emerald-600 font-medium mt-2">
-                                                {getTimeRemaining(slot.startTime.split(" ")[0], slot.date)}
-                                            </p>
-                                        )}
-
-                                        <p className="text-xs text-slate-400 mt-2 break-words">
-                                            {statusLabelMap[a.status] &&
-                                                `${statusLabelMap[a.status]}: `}
-                                            {a.appoitmentCreatedAt}
-                                        </p>
+                                        <p className="text-base sm:text-lg font-semibold text-slate-800">{slot.date || "N/A"}</p>
+                                        <p className="text-sm text-slate-500 mt-1">{slot.startTime} – {slot.endTime}</p>
+                                        {a.status === "confirmed" && (<p className="text-sm text-emerald-600 font-medium mt-2">{getTimeRemaining(slot.startTime.split(" ")[0], slot.date)} </p>)}
+                                        <p className="text-xs text-slate-400 mt-2 wrap-break-word">{statusLabelMap[a.status] && `${statusLabelMap[a.status]}: `}{a.appoitmentCreatedAt}</p>
                                     </div>
 
-                                    {/* Actions */}
-                                    <div className=" xl:w-1/3 flex flex-col gap-3 xl:items-end sm:absolute xl:static top-0 right-0 w-fit">
+                                    <div className="xl:w-1/3 flex flex-col gap-3 xl:items-end sm:absolute xl:static top-0 right-0 w-fit">
                                         <div className="flex flex-col sm:flex-row-reverse flex-wrap gap-2 items-center xl:justify-end  absolute sm:static top-10 right-0">
-                                            <div className={`px-4 py-2 rounded-full text-xs font-semibold capitalize w-fit ${a.isCancelled || a.status === "Cancelled" ? "bg-red-100 text-red-600" : a.status === "confirmed" ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-700"}`}>
-                                                {a.status || "Unknown"}
-                                            </div>
-                                            {(a.isCancelled || a.cancelReason) && (<p className="text-xs text-red-500 break-words">Reason: {a.cancelReason}</p>)}
+                                            <div className={`px-4 py-2 rounded-full text-xs font-semibold capitalize w-fit ${a.isCancelled || a.status === "Cancelled" ? "bg-red-100 text-red-600" : a.status === "confirmed" ? "bg-emerald-100 text-emerald-600" : "bg-yellow-100 text-yellow-700"}`}>{a.status || "Unknown"}</div>
+                                            {(a.isCancelled || a.cancelReason) && (<p className="text-xs text-red-500 wrap-break-word">Reason: {a.cancelReason}</p>)}
                                         </div>
 
                                         {(a.isCancelled || a.status === "Cancelled") && (
-                                            <div className="flex flex-wrap gap-2">
-                                                <button onClick={() => handleRefund(a)} className=" px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all">
-                                                    Refund
-                                                </button>
-
-                                                <button onClick={() => setNextAppoitment(doctor.doctorId)} className=" cursor-pointer px-4 py-2 rounded-xl bg-linear-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-white text-sm font-medium transition-all">
-                                                    Book Again
-                                                </button>
+                                            <div className="flex flex-wrap w-full justify-end gap-2">
+                                                <button onClick={() => handleRefund(a)} className=" px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all">Refund</button>
+                                                <button onClick={() => setNextAppoitment(doctor.doctorId)} className=" cursor-pointer px-4 py-2 rounded-xl bg-linear-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-white text-sm font-medium transition-all">Book Again</button>
                                             </div>
                                         )}
                                     </div>

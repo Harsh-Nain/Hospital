@@ -22,11 +22,14 @@ import Allpatients from "../pages/admin/allPatients"
 import Allchats from "../pages/admin/allchats";
 import Chats from "../pages/chats"
 import PatientGetDoctors from "../components/patientGetDoctors";
-import Webintro from "../pages/interface/Home";
-import WebDoctor from "../pages/interface/Doctors";
-import WebAbout from "../pages/interface/About";
-import WebContact from "../pages/interface/Contact";
 import ContactDetails from "../pages/admin/contactDetails";
+import MainLayout from "../pages/layout/mainLayout";
+import Home from "../pages/interface/Home";
+import About from "../pages/interface/About";
+import Contact from "../pages/interface/Contact";
+import Doctors from "../pages/interface/Doctors";
+import ProfessionalsPage from "../pages/interface/profationals";
+
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -34,12 +37,7 @@ function AppRoutes() {
 
       <Routes>
 
-        {/* <Route path="/" element={<RoleSelection />} /> */}
-        <Route path="/" element={<Webintro />} />
-        <Route path="/RoleSelection" element={<RoleSelection/>} />
-        <Route path="/doctors" element={<WebDoctor/>} />
-        <Route path="/about" element={<WebAbout/>} />
-        <Route path="/contact" element={<WebContact/>} />
+        <Route path="/logins" element={<RoleSelection />} />
 
         <Route path="/patient/login" element={<PatientLogin />} />
         <Route path="/patient/register" element={<PatientRegister />} />
@@ -69,6 +67,14 @@ function AppRoutes() {
           <Route path="/dashboard-doctor" element={<DoctorDashboard />} />
           <Route path="/doctor-chats" element={<Chats />} />
           <Route path="/doctor-profile" element={<DoctorProfile />} />
+        </Route>
+
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/professionals" element={<ProfessionalsPage />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/doctors" element={<Doctors />} />
         </Route>
 
       </Routes>

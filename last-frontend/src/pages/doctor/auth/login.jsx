@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { FaUserMd, FaEnvelope, FaLock, FaGoogle, FaLockOpen } from "react-icons/fa";
 import { IoIosEye, IoIosEyeOff } from "react-icons/io";
 import { NavLink, useNavigate } from "react-router-dom";
-import { MdKeyboardBackspace } from "react-icons/md";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Forgetpassword from "../../../components/forgetPassword";
@@ -60,7 +59,7 @@ export default function DoctorLogin() {
 
     return (
         <>
-        <Nav/>
+            <Nav />
             <div className="min-h-screen relative flex flex-col md:flex-row bg-gray-50">
                 {Passwordforget && (<Forgetpassword role="doctor" setPasswordforget={setPasswordforget} />)}
 
@@ -109,7 +108,7 @@ export default function DoctorLogin() {
                                 className={`w-full py-3 rounded-lg text-white font-semibold shadow-md transition
         ${Loading
                                         ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-gradient-to-r from-green-400 to-emerald-600 hover:opacity-90"
+                                        : "bg-linear-to-r from-green-400 to-emerald-600 hover:opacity-90"
                                     }`}
                             >
                                 {Loading ? "Logging in..." : "Login"}
@@ -126,7 +125,7 @@ export default function DoctorLogin() {
                 </div>
 
             </div>
-            <Footer/>
+            <Footer />
         </>
     );
 }

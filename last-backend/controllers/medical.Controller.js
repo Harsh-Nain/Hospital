@@ -109,26 +109,23 @@ export const GetDoctorSlots = async (req, res) => {
       return res.status(400).json({ success: false, message: "Doctor ID is required", });
     }
 
-    const slots = await db
-      .select({ slotId: doctorSlots.id, optionalFor: doctorSlots.optionalFor, doctorId: doctorSlots.doctorId, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, isCancelled: doctorSlots.isCancelled, booked: sql`COUNT(${appointments.id})`, })
-      .from(doctorSlots)
-      .leftJoin(appointments, and(eq(appointments.slotId, doctorSlots.id), ne(appointments.status, "Cancelled")))
-      .where(and(eq(doctorSlots.doctorId, Number(doctorId)), ne(doctorSlots.optionalFor, "ended")))
-      .groupBy(doctorSlots.id, doctorSlots.doctorId, doctorSlots.date, doctorSlots.startTime, doctorSlots.endTime, doctorSlots.capacity, doctorSlots.isCancelled).orderBy(doctorSlots.date, doctorSlots.startTime);
+    const slots = await db.select({ id: doctorSlots.id, doctorId: doctorSlots.doctorId, optionalFor: doctorSlots.optionalFor, date: doctorSlots.date, startTime: doctorSlots.startTime, endTime: doctorSlots.endTime, capacity: doctorSlots.capacity, isCancelled: doctorSlots.isCancelled, createdAt: doctorSlots.createdAt, }).from(doctorSlots).where(and(eq(doctorSlots.doctorId, Number(doctorId)), ne(doctorSlots.optionalFor, "ended"))).orderBy(doctorSlots.date, doctorSlots.startTime);
+    const formattedSlots = [];
 
-    const formattedSlots = slots.map((slot) => {
-      const booked = Number(slot.booked || 0);
-      const capacity = Number(slot.capacity || 0);
-      const available = capacity - booked;
+    for (const slot of slots) {
+      const bookedResult = await db.select({ totalBooked: sql`count(*)`, }).from(appointments).where(and(eq(appointments.slotId, slot.id), ne(appointments.status, "Cancelled")));
 
-      return { slotId: slot.slotId, doctorId: slot.doctorId, optionalFor: slot.optionalFor, date: slot.date, startTime: slot.startTime, endTime: slot.endTime, capacity, booked, available: available > 0 ? available : 0, isFull: booked >= capacity, isCancelled: slot.isCancelled, };
-    });
+      const booked = Number(bookedResult?.[0]?.totalBooked ?? 0);
+      const capacity = Number(slot.capacity ?? 0);
+      const available = Math.max(capacity - booked, 0);
+      formattedSlots.push({ slotId: slot.id, doctorId: slot.doctorId, optionalFor: slot.optionalFor, date: slot.date, startTime: slot.startTime, endTime: slot.endTime, capacity, booked, available, isFull: booked >= capacity, isCancelled: slot.isCancelled, createdAt: slot.createdAt, });
+    }
 
     return res.status(200).json({ success: true, totalSlots: formattedSlots.length, slots: formattedSlots, });
+
   } catch (error) {
     console.error("GetDoctorSlots Error:", error);
-    console.error("Message:", error.message);
-    return res.status(500).json({ success: false, message: "Internal server error", });
+    return res.status(500).json({ success: false, message: "Internal server error", error: error.message, });
   }
 };
 
