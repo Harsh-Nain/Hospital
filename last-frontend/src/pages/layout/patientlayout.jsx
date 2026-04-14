@@ -45,7 +45,7 @@ export default function PatientLayout() {
 
     return (
         <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-sky-50 flex overflow-hidden">
-            {loading && <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/50 z-99999999999"><Loading /></div>}
+            {loading && <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/50 backdrop-blur-sm z-99999999999"><Loading /></div>}
             {open && (<div onClick={() => setOpen(false)} className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden" />)}
 
             <div className={`fixed lg:static top-0 left-0 z-50 h-screen transition-all duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}     >

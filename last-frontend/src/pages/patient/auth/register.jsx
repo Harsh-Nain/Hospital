@@ -62,8 +62,7 @@ export default function PatientRegister() {
             <Nav />
             <div className="h-screen flex flex-col md:flex-row bg-gray-100 overflow-hidden">
                 {OtpVerification && (<VerifyOtp formData={formData} role="patient" close={setOtpVerification} loading={loading} setLoading={setLoading} />)}
-                {loading && <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/50 z-99999999999"><Loading /></div>}
-
+                {loading && <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black/50 backdrop-blur-sm z-99999999999"><Loading /></div>}
 
                 <div className="hidden md:flex w-1/2 bg-linear-to-br from-blue-300 via-blue-400 to-blue-600 items-center justify-center p-12 text-white">
 
@@ -79,11 +78,9 @@ export default function PatientRegister() {
                         <MdKeyboardBackspace size={20} />
                         <span className="text-sm font-medium">Back</span>
                     </button>
-
                 </div>
 
                 <div className="flex w-full md:w-1/2 h-screen items-center justify-center overflow-y-auto p-6">
-
                     <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 space-y-6">
 
                         <div className="text-center space-y-2">
@@ -92,7 +89,6 @@ export default function PatientRegister() {
                         </div>
 
                         <form className="space-y-5" onSubmit={handleSubmit}>
-
                             <div className="relative">
                                 <FaUser className="absolute top-4 left-3 text-gray-400" />
                                 <input type="text" name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="w-full pl-10 pr-4 py-3 border focus:outline-none border-sky-100 focus:ring-2 focus:ring-sky-400 transition rounded-xl" />

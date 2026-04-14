@@ -5,9 +5,7 @@ import db from "./db/index.js";
 const onlineUsers = new Map();
 
 export const ChatSocket = (server) => {
-    const io = new Server(server, {
-        cors: { origin: ["http://localhost:5173"], methods: ["GET", "POST"], credentials: true, },
-    });
+    const io = new Server(server, { cors: { origin: ["http://localhost:5173"], methods: ["GET", "POST"], credentials: true, }, });
 
     io.on("connection", (socket) => {
         console.log("User connected:", socket.id);
@@ -27,7 +25,7 @@ export const ChatSocket = (server) => {
                 console.log('Calling.....');
                 const [call] = await db.insert(callLogs).values({ appointmentId, callerId, receiverId, callType, status: "ringing", });
                 io.to(String(receiverId)).emit("incoming-call", { callerId, offer, callType, callLogId: call.insertId, });
-                
+
             } catch (err) {
                 console.log("Call save error:", err);
             }
@@ -56,13 +54,10 @@ export const ChatSocket = (server) => {
         socket.on("end-call", async ({ receiverId, callLogId }) => {
             try {
                 const [call] = await db.select().from(callLogs).where(eq(callLogs.id, callLogId));
-
                 let duration = 0;
 
                 if (call?.startedAt) {
-                    duration = Math.floor(
-                        (new Date() - new Date(call.startedAt)) / 1000
-                    );
+                    duration = Math.floor((new Date() - new Date(call.startedAt)) / 1000);
                 }
 
                 await db.update(callLogs).set({ status: "ended", endedAt: new Date(), duration, }).where(eq(callLogs.id, callLogId));
@@ -107,7 +102,7 @@ export const ChatSocket = (server) => {
         });
 
         socket.on("disconnect", () => {
-            console.log("❌ Disconnected:", socket.id);
+            console.log("Disconnected:", socket.id);
 
             onlineUsers.delete(String(userId));
             io.emit("onlineUsers", Array.from(onlineUsers.keys()));

@@ -4,8 +4,7 @@ import { RxCross1 } from "react-icons/rx";
 import Loading from "../components/loading";
 import toast from "react-hot-toast";
 import PaymentCard from "../components/paymentcard"
-import { FaClock, FaCalendarAlt, FaUsers, FaPlus, FaTimes, FaStar, FaMoneyBillWave, FaBriefcaseMedical } from "react-icons/fa";
-import { doctors } from "../../../last-backend/db/schema";
+import { FaUsers, FaTimes, FaStar, FaMoneyBillWave, FaBriefcaseMedical } from "react-icons/fa";
 
 export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, isAdmin, }) {
   const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -184,7 +183,7 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
     }
   };
 
-  if (loading) { return (<div className="fixed inset-0 flex h-screen items-center justify-center bg-black/70 z-99999"><Loading /></div>); }
+  if (loading) { return (<div className="fixed inset-0 flex h-screen items-center justify-center bg-black/70 backdrop-blur-sm z-99999"><Loading /></div>); }
 
   return (
     <div className="fixed top-0 left-0 z-50 flex items-center w-full h-screen justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -300,9 +299,10 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                   {slots.map((slot) => {
                     const booked = slot.patientIds.includes(patientId);
                     const available = slot.capacity - slot.patientIds.length;
+                    const Full = available == 0;
 
                     return (
-                      <button key={slot.id} disabled={booked || isAdmin} onClick={() => { setSelectedSlot(slot.id); setConfirmSlot({ ...slot, ...doctor }); }} className={`group relative overflow-hidden rounded-[28px] border p-5 text-left transition-all duration-300 ${selectedSlot === slot.id ? "border-sky-300 bg-linear-to-br from-sky-500 to-blue-600 text-white shadow-[0_15px_40px_rgba(59,130,246,0.35)] scale-[1.02]" : booked ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed" : "border-white/70 bg-white/80 shadow-[0_10px_35px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]"}`}>
+                      <button key={slot.id} disabled={booked || isAdmin || Full} onClick={() => { setSelectedSlot(slot.id); setConfirmSlot({ ...slot, ...doctor }); }} className={`group relative overflow-hidden rounded-[28px] border p-5 text-left transition-all duration-300 ${selectedSlot === slot.id ? "border-sky-300 bg-linear-to-br from-sky-500 to-blue-600 text-white shadow-[0_15px_40px_rgba(59,130,246,0.35)] scale-[1.02]" : booked || Full ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed" : "border-white/70 bg-white/80 shadow-[0_10px_35px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]"}`}>
                         {!booked && (<div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-white/20 blur-2xl" />)}
 
                         <div className="relative">
@@ -311,18 +311,17 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
                               <p className={`text-xs uppercase tracking-wider ${selectedSlot === slot.id ? "text-white/70" : "text-gray-400"}`}>  Appointment Time</p>
                               <h4 className={`mt-2 text-lg font-bold ${selectedSlot === slot.id ? "text-white" : "text-gray-900"}`}>  {slot.startTime} - {slot.endTime}</h4>
                             </div>
-
                             {booked && (<span className="rounded-full bg-yellow-100 px-3 py-1 text-[11px] font-semibold text-yellow-700">Requested</span>)}
                           </div>
 
                           <div className="mb-4 flex items-center gap-2">
-                            <div className={`rounded-full px-3 py-1 text-xs font-medium ${selectedSlot === slot.id ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"}`}>  {slot.date}</div>
+                            <div className={`rounded-full px-3 py-1 text-xs font-medium ${selectedSlot === slot.id ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"}`}>{slot.date}</div>
                           </div>
 
                           <div className="flex items-center justify-between">
                             <div>
                               <p className={`text-xs ${selectedSlot === slot.id ? "text-white/70" : "text-gray-400"}`}>  Availability</p>
-                              <p className={`mt-1 text-sm font-semibold ${available <= 1 ? "text-red-400" : selectedSlot === slot.id ? "text-white" : "text-emerald-600"}`}>  {available > 0 ? `${available} slots left` : "Fully booked"}</p>
+                              <p className={`mt-1 text-sm font-semibold ${available <= 1 ? "text-red-400" : selectedSlot === slot.id ? "text-white" : "text-emerald-600"}`}>{available > 0 ? `${available} slots left` : "Fully booked"}</p>
                             </div>
 
                             <div className={`rounded-2xl px-3 py-2 text-center ${selectedSlot === slot.id ? "bg-white/15 text-white" : "bg-gray-50 text-gray-600"}`}>
@@ -482,7 +481,6 @@ export default function ShowDoctorProfile({ id, setshowDoctorDetail, patientId, 
               )}
             </div>
           )}
-
         </div>
       </div>
     </div>

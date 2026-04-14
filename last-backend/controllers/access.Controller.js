@@ -1,10 +1,11 @@
 import bcrypt from "bcrypt";
 import db from "../db/index.js";
 import jwt from "jsonwebtoken"
-import { users, patients, doctors, specializations } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { users, patients, doctors, specializations, reviews, contactMessages } from "../db/schema.js";
+import { eq, and, desc, or } from "drizzle-orm";
 import { sendOtpMail } from "../utils/mailer.js";
 import { CreateNotification } from "./response.Controller.js";
+import { alias } from "drizzle-orm/gel-core";
 const otpStore = {};
 const verifiedOtpStore = {};
 
@@ -208,3 +209,74 @@ export const logout = (req, res) => {
     res.cookie('refreshToken', '');
     res.json({ success: true });
 };
+
+export const MainData = async (req, res) => {
+    try {
+        const patientsList = (await db.select().from(patients)).length;
+        const patientUser = alias(users, "patientUser");
+
+        const review = await db
+            .select({
+                reviewText: reviews.reviewText,
+                rating: reviews.rating,
+                date: reviews.createdAt,
+                doctorName: users.fullName,
+                patientName: patientUser.fullName,
+                patientImage: patientUser.image || null,
+            })
+            .from(reviews)
+            .leftJoin(doctors, eq(doctors.id, reviews.doctorId))
+            .leftJoin(users, eq(users.id, doctors.userId))
+            .leftJoin(patients, eq(patients.id, reviews.patientId))
+            .leftJoin(patientUser, eq(patientUser.id, patients.userId))
+
+            .orderBy(desc(reviews.rating), desc(reviews.createdAt))
+            .limit(3);
+
+
+        const doctorsdata = await db
+            .select({
+                doctorId: doctors.id,
+                experienceYears: doctors.experienceYears, consultationFee: doctors.consultationFee, bio: doctors.bio,
+                userId: users.id, fullName: users.fullName, email: users.email, image: users.image,
+                specialization: specializations.name,
+            })
+            .from(doctors)
+            .where(or(eq(doctors.isApproved, true), eq(doctors.status, "suspanded")))
+            .leftJoin(users, eq(users.id, doctors.userId))
+            .leftJoin(specializations, eq(specializations.id, doctors.specializationId))
+
+        const doctorsMap = {};
+
+        doctorsdata.forEach((row) => {
+            if (!doctorsMap[row.doctorId]) {
+                doctorsMap[row.doctorId] = { doctorId: row.doctorId, fullName: row.fullName, email: row.email, image: row.image, specialization: row.specialization, experienceYears: row.experienceYears, consultationFee: row.consultationFee, };
+            }
+        });
+
+        const doctorsList = Object.values(doctorsMap);
+        res.json({ success: true, patients: patientsList, doctorsList: doctorsList, reviews: review });
+
+    } catch (error) {
+        console.error("webdata Error:", error);
+        res.status(500).json({ success: false, message: "Server error", });
+    }
+}
+
+export const addcontactMessages = async (req, res) => {
+    try {
+        const { name, email, message } = req.body
+
+        if (!name || !email || !message) {
+            return res.status(400).json({ success: false, message: "All fields are required", });
+        }
+
+        const notif = await CreateNotification({ userId: 1, message: "🎉 A new contact detail has been submitted. Please check the contact details section." });
+        await db.insert(contactMessages).values({ name, email, message, })
+        return res.status(200).json({ success: true, message: "Message send successfully" })
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ success: false, message: "Server error", });
+    }
+}

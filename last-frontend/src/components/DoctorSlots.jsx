@@ -173,15 +173,7 @@ const DoctorSlots = ({ slots, setSlots, setAddsote, reuseSlot, setReuseSlot, }) 
     try {
       setLoading(true);
 
-      const slotPayload = {
-        date: newSlot.date || reuseSlot.date,
-        startTime: newSlot.startTime,
-        endTime: newSlot.endTime,
-        capacity: Number(newSlot.capacity),
-        available: Number(newSlot.capacity),
-        booked: 0,
-        status: "available",
-      };
+      const slotPayload = { date: newSlot.date || reuseSlot.date, startTime: newSlot.startTime, endTime: newSlot.endTime, capacity: Number(newSlot.capacity), available: Number(newSlot.capacity), booked: 0, status: "available", };
 
       if (!slotPayload.date || !slotPayload.startTime || !slotPayload.endTime) {
         toast.error("Please fill all required fields");
