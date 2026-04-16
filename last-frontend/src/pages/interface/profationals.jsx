@@ -1,6 +1,9 @@
 import { ArrowRight, BadgeCheck, Briefcase, Calendar, Car, HeartPulse, MapPin, MessageCircle, PlayCircle, Scale, Scissors, ShieldCheck, Sparkles, Star, Users, Wrench, CheckCircle2, Search, Filter, } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfessionalsPage() {
+    const navigate = useNavigate()
+
     const categories = [
         { icon: <HeartPulse size={22} />, title: "Doctors", count: "1,200+ Experts", color: "from-sky-500 to-cyan-500", },
         { icon: <Scale size={22} />, title: "Lawyers", count: "850+ Experts", color: "from-violet-500 to-purple-500", },
@@ -65,7 +68,7 @@ export default function ProfessionalsPage() {
                             <p className="mt-2 text-slate-600">Explore professionals across top service categories</p>
                         </div>
 
-                        <button className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:text-sky-600 md:flex">
+                        <button onClick={() => navigate("/logins")} className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:text-sky-600 md:flex">
                             View All
                             <ArrowRight size={16} />
                         </button>
@@ -91,7 +94,7 @@ export default function ProfessionalsPage() {
                             <p className="mt-2 text-slate-600">Meet the highest-rated experts on our platform</p>
                         </div>
 
-                        <button className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:text-sky-600 md:flex">
+                        <button onClick={() => navigate("/logins")} className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:text-sky-600 md:flex">
                             Explore More
                             <ArrowRight size={16} />
                         </button>
@@ -126,7 +129,7 @@ export default function ProfessionalsPage() {
                                     </div>
 
                                     <div className="mt-6 flex gap-3">
-                                        <button className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-sky-600 to-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:-translate-y-1">
+                                        <button onClick={() => navigate("/logins")} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-sky-600 to-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:-translate-y-1">
                                             <Calendar size={16} />
                                             Book Now
                                         </button>

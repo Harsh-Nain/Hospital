@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import RoleSelection from "../pages/RoleSection";
-import PatientLogin from "../pages/patient/auth/login";
 import PatientRegister from "../pages/patient/auth/register";
 import DoctorLogin from "../pages/doctor/auth/login";
 import DoctorRegister from "../pages/doctor/auth/register";
@@ -36,12 +35,9 @@ function AppRoutes() {
       <Toaster position="top-right" />
 
       <Routes>
-
         <Route path="/logins" element={<RoleSelection />} />
 
-        <Route path="/patient/login" element={<PatientLogin />} />
         <Route path="/patient/register" element={<PatientRegister />} />
-
         <Route path="/doctor/login" element={<DoctorLogin />} />
         <Route path="/doctor/register" element={<DoctorRegister />} />
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FaUser, FaEnvelope, FaLock, FaLockOpen, FaUserMd, FaGavel, FaBriefcase, FaCut, } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaLockOpen, FaGavel, FaCut, FaTools, FaCar, FaBolt, FaPaintRoller, FaBroom, FaTruckMoving, FaLaptop, FaWrench, } from "react-icons/fa";
 import { IoIosEye, IoIosEyeOff } from "react-icons/io";
 import { NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -9,10 +9,18 @@ import Forgetpassword from "../components/forgetPassword";
 import { MdKeyboardBackspace } from "react-icons/md";
 
 const loginConfigs = {
-    patient: { title: "Patient Portal", heading: "Patient Login", description: "Access your medical records, book appointments, and communicate with doctors securely.", endpoint: "/auth/login-patient", registerRoute: "/patient/register", redirectRoute: "/patient/dashboard", linear: "from-blue-500 via-blue-400 to-blue-600", buttonlinear: "from-blue-400 via-blue-500 to-blue-600", focusRing: "focus:ring-blue-400", linkColor: "text-blue-600", Icon: FaUser, },
-    salon: { title: "Salon Portal", heading: "Salon Login", description: "Manage appointments, client records, and salon services.", endpoint: "/auth/login-salon", registerRoute: "/salon/register", redirectRoute: "/salon/dashboard", linear: "from-pink-500 via-rose-400 to-pink-600", buttonlinear: "from-pink-400 via-rose-500 to-pink-600", focusRing: "focus:ring-pink-400", linkColor: "text-pink-600", Icon: FaCut, },
-    lawyer: { title: "Lawyer Portal", heading: "Lawyer Login", description: "Manage legal cases, appointments, and client communications securely.", endpoint: "/auth/login-lawyer", registerRoute: "/lawyer/register", redirectRoute: "/lawyer/dashboard", linear: "from-purple-500 via-purple-400 to-purple-600", buttonlinear: "from-purple-400 via-purple-500 to-purple-600", focusRing: "focus:ring-purple-400", linkColor: "text-purple-600", Icon: FaGavel, },
-    client: { title: "Client Portal", heading: "Client Login", description: "Track your cases, appointments, and service requests in one place.", endpoint: "/auth/login-client", registerRoute: "/client/register", redirectRoute: "/client/dashboard", linear: "from-orange-500 via-orange-400 to-orange-600", buttonlinear: "from-orange-400 via-orange-500 to-orange-600", focusRing: "focus:ring-orange-400", linkColor: "text-orange-600", Icon: FaBriefcase, },
+    patient: { title: "Doctors", heading: "Patient Login", description: "Book appointments and consult specialists easily.", registerRoute: "/doctor/register", redirectRoute: "/doctor/dashboard", linear: "from-sky-500 via-cyan-500 to-blue-600", buttonlinear: "from-sky-500 to-blue-600", focusRing: "focus:ring-sky-500", linkColor: "text-sky-600", Icon: FaUser, },
+    lawyer: { title: "Lawyers", heading: "Clint Login", description: "Connect with legal experts and get advice.", registerRoute: "/lawyer/register", redirectRoute: "/lawyer/dashboard", linear: "from-purple-500 via-violet-500 to-fuchsia-600", buttonlinear: "from-purple-500 to-violet-600", focusRing: "focus:ring-purple-500", linkColor: "text-purple-600", Icon: FaGavel, },
+    salon: { title: "Salons", heading: "Clint Login", description: "Book salon appointments and beauty services.", registerRoute: "/salon/register", redirectRoute: "/salon/dashboard", linear: "from-pink-500 via-rose-500 to-fuchsia-600", buttonlinear: "from-pink-500 to-rose-600", focusRing: "focus:ring-pink-500", linkColor: "text-pink-600", Icon: FaCut, },
+    plumber: { title: "Plumbers", heading: "Clint Login", description: "Find expert plumbers for repair and installation.", registerRoute: "/plumber/register", redirectRoute: "/plumber/dashboard", linear: "from-orange-500 via-amber-500 to-yellow-500", buttonlinear: "from-orange-500 to-amber-600", focusRing: "focus:ring-orange-500", linkColor: "text-orange-600", Icon: FaTools, },
+    mechanic: { title: "Mechanics", heading: "Clint Login", description: "Get vehicle repair and servicing support.", endpoint: "/clint/login", registerRoute: "/mechanic/register", redirectRoute: "/mechanic/dashboard", linear: "from-red-500 via-rose-500 to-pink-600", buttonlinear: "from-red-500 to-rose-600", focusRing: "focus:ring-red-500", linkColor: "text-red-600", Icon: FaWrench, },
+    electrician: { title: "Electricians", heading: "Clint Login", description: "Hire electricians for home and office work.", registerRoute: "/electrician/register", redirectRoute: "/electrician/dashboard", linear: "from-yellow-400 via-amber-500 to-orange-500", buttonlinear: "from-yellow-500 to-orange-500", focusRing: "focus:ring-yellow-500", linkColor: "text-yellow-600", Icon: FaBolt, },
+    painter: { title: "Painters", heading: "Clint Login", description: "Professional wall and home painting services.", registerRoute: "/painter/register", redirectRoute: "/painter/dashboard", linear: "from-indigo-500 via-purple-500 to-pink-500", buttonlinear: "from-indigo-500 to-purple-600", focusRing: "focus:ring-indigo-500", linkColor: "text-indigo-600", Icon: FaPaintRoller, },
+    carService: { title: "Car Services", heading: "Clint Login", description: "Book car wash, servicing, and repairs.", registerRoute: "/car-service/register", redirectRoute: "/car-service/dashboard", linear: "from-cyan-500 via-sky-500 to-blue-600", buttonlinear: "from-cyan-500 to-blue-600", focusRing: "focus:ring-cyan-500", linkColor: "text-cyan-600", Icon: FaCar, },
+    cleaning: { title: "Home Cleaning", heading: "Clint Login", description: "Find trusted cleaning professionals easily.", registerRoute: "/cleaning/register", redirectRoute: "/cleaning/dashboard", linear: "from-green-500 via-emerald-500 to-teal-600", buttonlinear: "from-green-500 to-emerald-600", focusRing: "focus:ring-green-500", linkColor: "text-green-600", Icon: FaBroom, },
+    movers: { title: "Packers & Movers", heading: "Clint Login", description: "Move your home or office without hassle.", registerRoute: "/movers/register", redirectRoute: "/movers/dashboard", linear: "from-teal-500 via-cyan-500 to-sky-600", buttonlinear: "from-teal-500 to-cyan-600", focusRing: "focus:ring-teal-500", linkColor: "text-teal-600", Icon: FaTruckMoving, },
+    homeRepair: { title: "Home Repairs", heading: "Clint Login", description: "General maintenance and repair services.", registerRoute: "/home-repair/register", redirectRoute: "/home-repair/dashboard", linear: "from-amber-500 via-orange-500 to-red-500", buttonlinear: "from-amber-500 to-orange-600", focusRing: "focus:ring-amber-500", linkColor: "text-amber-600", Icon: FaTools, },
+    techRepair: { title: "Laptop Repair", heading: "Clint Login", description: "Repair laptops, PCs, and tech devices.", registerRoute: "/tech-repair/register", redirectRoute: "/tech-repair/dashboard", linear: "from-violet-500 via-purple-500 to-indigo-600", buttonlinear: "from-violet-500 to-purple-600", focusRing: "focus:ring-violet-500", linkColor: "text-violet-600", Icon: FaLaptop, },
 };
 
 export default function DynamicLogin({ type = "patient", setType }) {
@@ -29,7 +37,6 @@ export default function DynamicLogin({ type = "patient", setType }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (loading) return;
 
         if (!formData.email.trim()) {
@@ -44,9 +51,7 @@ export default function DynamicLogin({ type = "patient", setType }) {
 
         try {
             setLoading(true);
-
             const API_URL = import.meta.env.VITE_BACKEND_URL;
-
             const res = await axios.post(`${API_URL}${endpoint}`, formData, { withCredentials: true });
 
             if (res.data.success) {
@@ -61,7 +66,7 @@ export default function DynamicLogin({ type = "patient", setType }) {
     };
 
     return (
-        <div className="h-screen flex bg-linear-to-br from-slate-100 via-white to-slate-200 overflow-scroll">
+        <div className="h-screen flex bg-linear-to-br from-slate-100 via-white to-slate-200 overflow-y-auto w-full relative">
             {passwordForget && (<Forgetpassword role={type} setPasswordforget={setPasswordForget} />)}
 
             <button onClick={() => setType(null)} className="absolute top-5 left-5 z-40 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/80 backdrop-blur-md border border-gray-200 shadow-sm hover:shadow-md hover:bg-white transition-all text-gray-700">
@@ -76,13 +81,9 @@ export default function DynamicLogin({ type = "patient", setType }) {
 
                 <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }} className="relative z-10 max-w-lg text-white">
                     <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-10 shadow-2xl">
-                        <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center mb-6 shadow-lg">
-                            <Icon className="text-4xl text-white" />
-                        </div>
+                        <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center mb-6 shadow-lg"><Icon className="text-4xl text-white" /></div>
+                        <span className="inline-block px-4 py-1 mb-4 text-sm tracking-wide uppercase rounded-full bg-white/15 border border-white/20">Secure Access</span>
 
-                        <span className="inline-block px-4 py-1 mb-4 text-sm tracking-wide uppercase rounded-full bg-white/15 border border-white/20">
-                            Secure Access
-                        </span>
                         <h1 className="text-5xl font-bold leading-tight mb-5">{title}</h1>
                         <p className="text-white/80 text-lg leading-relaxed mb-8">{description}</p>
 
@@ -91,6 +92,7 @@ export default function DynamicLogin({ type = "patient", setType }) {
                                 <h3 className="text-2xl font-bold">24/7</h3>
                                 <p className="text-sm text-white/70">Secure Access</p>
                             </div>
+
                             <div className="backdrop-blur-md bg-white/10 rounded-2xl p-4 border border-white/10">
                                 <h3 className="text-2xl font-bold">100%</h3>
                                 <p className="text-sm text-white/70">Encrypted Login</p>
@@ -101,7 +103,6 @@ export default function DynamicLogin({ type = "patient", setType }) {
             </div>
 
             <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-10 relative">
-
                 <div className="absolute top-16 right-16 w-40 h-40 bg-slate-300/30 rounded-full blur-3xl"></div>
                 <div className="absolute bottom-10 left-10 w-52 h-52 bg-slate-200/40 rounded-full blur-3xl"></div>
 
@@ -119,29 +120,21 @@ export default function DynamicLogin({ type = "patient", setType }) {
                             </div>
 
                             <div className="relative group">
-                                <span className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-400 cursor-pointer">
-                                    {showPassword ? <FaLockOpen /> : <FaLock />}
-                                </span>
+                                <span className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-400 cursor-pointer">{showPassword ? <FaLockOpen /> : <FaLock />}</span>
                                 <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} placeholder="Enter your password" className={`w-full pl-12 pr-12 py-4 bg-white border border-slate-200 rounded-2xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 ${focusRing} focus:border-transparent transition-all duration-300 shadow-sm`} />
-
                                 <span className="absolute top-1/2 right-4 -translate-y-1/2 text-slate-400 cursor-pointer hover:text-slate-600 transition" onClick={() => setShowPassword(!showPassword)}>
                                     {showPassword ? <IoIosEye /> : <IoIosEyeOff />}
                                 </span>
                             </div>
 
-                            <div className="flex items-center justify-between text-sm">
-                                <label className="flex items-center gap-2 text-slate-500 cursor-pointer">
-                                    <input type="checkbox" className="rounded border-slate-300 text-slate-600 focus:ring-slate-500" />
-                                    Remember me
-                                </label>
-                                <button type="button" onClick={() => setPasswordForget(true)} className={`${linkColor} hover:underline font-medium`} >     Forgot Password? </button>
+                            <div className="flex items-center justify-end text-sm">
+                                <button type="button" onClick={() => setPasswordForget(true)} className={`${linkColor} hover:underline font-medium`}>
+                                    Forgot Password?
+                                </button>
                             </div>
 
                             <button type="submit" disabled={loading} className={`relative overflow-hidden w-full py-4 rounded-2xl bg-linear-to-r ${buttonlinear} text-white font-semibold text-lg shadow-xl transition-all duration-300 ${loading ? "opacity-70 cursor-not-allowed" : "hover:scale-[1.02] hover:shadow-2xl"}`}>
-                                <span className="relative z-10">
-                                    {loading ? "Logging in..." : `Continue to ${title}`}
-                                </span>
-
+                                <span className="relative z-10">{loading ? "Logging in..." : `Continue to ${title}`} </span>
                                 {!loading && (<div className="absolute inset-0 -translate-x-full hover:translate-x-full transition-transform duration-1000 bg-linear-to-r from-transparent via-white/20 to-transparent"></div>)}
                             </button>
                         </form>
@@ -154,7 +147,9 @@ export default function DynamicLogin({ type = "patient", setType }) {
 
                         <p className="text-center text-sm text-slate-500">
                             Don’t have an account?{" "}
-                            <NavLink to={registerRoute} className={`${linkColor} font-semibold hover:underline`}>Create Account</NavLink>
+                            <NavLink to={registerRoute} className={`${linkColor} font-semibold hover:underline`}>
+                                Create Account
+                            </NavLink>
                         </p>
                     </div>
                 </motion.div>

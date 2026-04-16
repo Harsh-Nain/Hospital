@@ -55,14 +55,7 @@ export default function MainLayout() {
                         <div className="absolute inset-0 bg-linear-to-br from-purple-50/60 via-white to-cyan-50/60" />
                         <div className="absolute -top-10 -left-10 h-28 w-28 rounded-full bg-purple-200/20 blur-3xl" />
                         <div className="absolute bottom-0 right-0 h-28 w-28 rounded-full bg-cyan-200/20 blur-3xl" />
-
-                        <div className="relative z-10 flex flex-col items-center gap-5">
-                            <Loading />
-                            <div className="text-center">
-                                <h3 className="text-lg font-bold text-slate-800">Loading Experience</h3>
-                                <p className="mt-1 text-sm text-slate-500">Preparing your premium dashboard...</p>
-                            </div>
-                        </div>
+                        <div className="relative z-10 flex flex-col items-center gap-5"><Loading /></div>
                     </div>
                 </div>
             )}
@@ -88,19 +81,14 @@ export default function MainLayout() {
                             <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-purple-300/50 to-transparent" />
                             <div className="absolute left-0 top-20 h-60 w-60 rounded-full bg-purple-200/10 blur-3xl" />
                             <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-cyan-200/10 blur-3xl" />
-
-                            <div className="relative z-10 min-h-[60vh]">
-                                <Outlet context={{ setLoading, doctor, reviews, patients, }} />
-                            </div>
+                            <div className="relative z-10 min-h-[60vh]"><Outlet context={{ setLoading, doctor, reviews, patients, }} /></div>
                         </div>
                     </div>
                 </main>
 
                 <footer className="relative px-3 pb-3">
                     <div className="mx-auto max-w-400">
-                        <div className="overflow-hidden rounded-[40px] border border-white/50 bg-white/60 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur-3xl">
-                            <Footer />
-                        </div>
+                        <div className="overflow-hidden rounded-[40px] border border-white/50 bg-white/60 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur-3xl"><Footer /></div>
                     </div>
                 </footer>
             </div>

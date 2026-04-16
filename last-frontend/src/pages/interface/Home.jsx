@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, MapPin, Star, ArrowRight, Briefcase, Stethoscope, Wrench, Scissors, Scale, Car, ShieldCheck, Clock3, Sparkles, BadgeCheck, } from "lucide-react";
+import { MapPin, Star, ArrowRight, Briefcase, Stethoscope, Wrench, Scissors, Scale, Car, ShieldCheck, Clock3, Sparkles, BadgeCheck, } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
   { title: "Doctors", icon: <Stethoscope size={28} />, count: "1,200+ Experts", color: "from-cyan-500 to-blue-500", },
@@ -18,7 +19,7 @@ const professionals = [
 ];
 
 export default function Home() {
-  const [search, setSearch] = useState("");
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 overflow-hidden">
@@ -85,7 +86,7 @@ export default function Home() {
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((item, index) => (
-            <div key={index} className="group relative overflow-hidden rounded-4xl border border-slate-200 bg-white p-8 shadow-sm hover:-translate-y-2 hover:shadow-xl transition duration-500">
+            <div key={index} onClick={() => navigate("/professionals")} className="group relative overflow-hidden rounded-4xl border border-slate-200 bg-white p-8 shadow-sm hover:-translate-y-2 hover:shadow-xl transition duration-500">
 
               <div className={`w-16 h-16 rounded-2xl bg-linear-to-r ${item.color} flex items-center justify-center text-white shadow-lg`}>  {item.icon}</div>
               <h3 className="text-2xl font-bold mt-6 text-slate-900">  {item.title}</h3>
@@ -133,7 +134,7 @@ export default function Home() {
                   </div>
                 )}
 
-                <button className="mt-6 w-full py-3 rounded-2xl bg-linear-to-r from-purple-600 to-cyan-500 text-white font-semibold hover:scale-105 transition">
+                <button onClick={() => navigate("/logins")} className="mt-6 w-full py-3 rounded-2xl bg-linear-to-r from-purple-600 to-cyan-500 text-white font-semibold hover:scale-105 transition">
                   Book Now
                 </button>
               </div>

@@ -92,7 +92,7 @@ export const doctorSlots = mysqlTable("doctor_slots",
     endTime: varchar("end_time", { length: 10 }).notNull(),
     isCancelled: boolean("isCancelled").default(false),
     capacity: int("capacity").default(1),
-    optionalFor: varchar("optionalFor",{length:20}).default('once'),
+    optionalFor: varchar("optionalFor", { length: 20 }).default('once'),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => ({
@@ -203,7 +203,6 @@ export const notifications = mysqlTable("notifications",
     id: index("notification_idx").on(table.id),
   })
 );
-
 
 export const contactMessages = mysqlTable("contact_messages",
   {

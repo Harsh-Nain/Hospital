@@ -7,7 +7,6 @@ import { FaCalendarCheck, FaHistory, FaUserCheck } from "react-icons/fa";
 import { FiCalendar, FiClock, FiCheckCircle, FiXCircle, } from "react-icons/fi";
 import { FaCheckToSlot } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
-
 const statusLabelMap = { "wait for approval": "Requested", confirmed: "Confirmed At", Cancelled: "Cancelled At", };
 
 function parseTimeTo24Hour(timeStr) {
@@ -68,9 +67,23 @@ const isSlotLive = (slot) => {
   return now >= start && now <= end;
 };
 
+const serviceThemes = {
+  doctor: { role: "Doctor", client: "Patient", service: "Appointment", expertise: "Specialization", slot: "Slot", dashboard: "Doctor Dashboard", welcome: "Welcome back, Dr.", gradients: { primary: "from-emerald-500 to-green-600", secondary: "from-sky-500 to-cyan-500", pending: "from-amber-500 to-orange-500", danger: "from-rose-500 to-red-500", background1: "bg-emerald-200/30", background2: "bg-sky-200/30", }, },
+  lawyer: { role: "Lawyer", client: "Client", service: "Case Meeting", expertise: "Practice Area", slot: "Consultation Slot", dashboard: "Lawyer Dashboard", welcome: "Welcome back, Adv.", gradients: { primary: "from-indigo-500 to-violet-600", secondary: "from-blue-500 to-cyan-500", pending: "from-yellow-500 to-orange-500", danger: "from-red-500 to-pink-500", background1: "bg-indigo-200/30", background2: "bg-cyan-200/30", }, },
+  salon: { role: "Salon Expert", client: "Client", service: "Salon Appointment", expertise: "Beauty Service", slot: "Appointment Slot", dashboard: "Salon Dashboard", welcome: "Welcome back,", gradients: { primary: "from-pink-500 to-rose-600", secondary: "from-fuchsia-500 to-purple-500", pending: "from-amber-400 to-orange-500", danger: "from-red-500 to-pink-600", background1: "bg-pink-200/30", background2: "bg-rose-200/30", }, },
+  plumber: { role: "Plumber", client: "Customer", service: "Repair Request", expertise: "Plumbing Type", slot: "Visit Slot", dashboard: "Plumber Dashboard", welcome: "Welcome back,", gradients: { primary: "from-orange-500 to-amber-600", secondary: "from-yellow-500 to-orange-500", pending: "from-amber-400 to-yellow-500", danger: "from-red-500 to-rose-600", background1: "bg-orange-200/30", background2: "bg-yellow-200/30", }, },
+  mechanic: { role: "Mechanic", client: "Customer", service: "Service Booking", expertise: "Workshop Type", slot: "Service Slot", dashboard: "Mechanic Dashboard", welcome: "Welcome back,", gradients: { primary: "from-red-500 to-rose-600", secondary: "from-slate-500 to-gray-700", pending: "from-yellow-500 to-orange-500", danger: "from-rose-500 to-red-600", background1: "bg-red-200/30", background2: "bg-slate-200/30", }, },
+  electrician: { role: "Electrician", client: "Customer", service: "Electrical Service", expertise: "Electrical Work", slot: "Service Slot", dashboard: "Electrician Dashboard", welcome: "Welcome back,", gradients: { primary: "from-yellow-400 to-orange-500", secondary: "from-amber-500 to-yellow-500", pending: "from-orange-400 to-red-500", danger: "from-red-500 to-orange-600", background1: "bg-yellow-200/30", background2: "bg-orange-200/30", }, },
+  painter: { role: "Painter", client: "Customer", service: "Painting Service", expertise: "Painting Type", slot: "Booking Slot", dashboard: "Painter Dashboard", welcome: "Welcome back,", gradients: { primary: "from-indigo-500 to-purple-600", secondary: "from-pink-500 to-rose-500", pending: "from-amber-400 to-orange-500", danger: "from-red-500 to-pink-600", background1: "bg-indigo-200/30", background2: "bg-pink-200/30", }, },
+  carService: { role: "Car Service Provider", client: "Customer", service: "Car Service", expertise: "Vehicle Type", slot: "Service Slot", dashboard: "Car Service Dashboard", welcome: "Welcome back,", gradients: { primary: "from-cyan-500 to-blue-600", secondary: "from-sky-500 to-indigo-500", pending: "from-amber-400 to-orange-500", danger: "from-red-500 to-rose-600", background1: "bg-cyan-200/30", background2: "bg-blue-200/30", }, },
+  cleaning: { role: "Cleaning Expert", client: "Customer", service: "Cleaning Service", expertise: "Cleaning Type", slot: "Cleaning Slot", dashboard: "Cleaning Dashboard", welcome: "Welcome back,", gradients: { primary: "from-green-500 to-emerald-600", secondary: "from-teal-500 to-cyan-500", pending: "from-yellow-400 to-orange-500", danger: "from-red-500 to-pink-600", background1: "bg-green-200/30", background2: "bg-emerald-200/30", }, },
+  movers: { role: "Mover", client: "Customer", service: "Moving Service", expertise: "Move Type", slot: "Moving Slot", dashboard: "Movers Dashboard", welcome: "Welcome back,", gradients: { primary: "from-teal-500 to-cyan-600", secondary: "from-sky-500 to-blue-500", pending: "from-yellow-400 to-orange-500", danger: "from-red-500 to-rose-600", background1: "bg-teal-200/30", background2: "bg-cyan-200/30", }, },
+  homeRepair: { role: "Repair Expert", client: "Customer", service: "Repair Service", expertise: "Repair Type", slot: "Repair Slot", dashboard: "Home Repair Dashboard", welcome: "Welcome back,", gradients: { primary: "from-amber-500 to-orange-600", secondary: "from-orange-500 to-red-500", pending: "from-yellow-400 to-orange-500", danger: "from-red-500 to-rose-600", background1: "bg-amber-200/30", background2: "bg-orange-200/30", }, },
+  techRepair: { role: "Tech Expert", client: "Customer", service: "Device Repair", expertise: "Device Type", slot: "Repair Slot", dashboard: "Tech Repair Dashboard", welcome: "Welcome back,", gradients: { primary: "from-violet-500 to-purple-600", secondary: "from-indigo-500 to-blue-500", pending: "from-amber-400 to-orange-500", danger: "from-red-500 to-pink-600", background1: "bg-violet-200/30", background2: "bg-indigo-200/30", }, },
+};
+
 export default function Dashboard() {
   const API_URL = import.meta.env.VITE_BACKEND_URL;
-
   const [loading, setLoading] = useState(true);
   const [addSlot, setAddSlot] = useState(false);
   const [showPatientDetail, setShowPatientDetail] = useState(null);
@@ -87,6 +100,9 @@ export default function Dashboard() {
   const [slotFilter, setSlotFilter] = useState("active");
   const [appointmentFilter, setAppointmentFilter] = useState("upcoming");
   const isAnyModalOpen = selectedSlot || addSlot || showPatientDetail;
+
+  const currentService = doctor?.serviceType || "doctor";
+  const theme = serviceThemes[currentService] || serviceThemes.doctor;
 
   useEffect(() => {
     if (isAnyModalOpen) {
@@ -122,7 +138,6 @@ export default function Dashboard() {
         setDoctor(doctorInfo);
         setStats(doctorData.stats || {});
         console.log(doctorData.formattedAppointments);
-
         setAppointments(doctorData.formattedAppointments || []);
 
         if (!doctorInfo?.doctorId) {
@@ -234,12 +249,36 @@ export default function Dashboard() {
 
   const statsCards = useMemo(
     () => [
-      { label: "Total Appointments", value: stats?.totalAppointments, accent: "from-sky-500 to-cyan-500", tone: "bg-sky-50", icon: <FiCalendar />, },
-      { label: "Confirmed", value: stats?.confirmed, accent: "from-emerald-500 to-green-500", tone: "bg-green-50", icon: <FiCheckCircle />, },
-      { label: "Pending", value: stats?.pending, accent: "from-amber-500 to-orange-500", tone: "bg-amber-50", icon: <FiClock />, },
-      { label: "Cancelled", value: stats?.cancelled, accent: "from-rose-500 to-red-500", tone: "bg-red-50", icon: <FiXCircle />, },
+      {
+        label: `Total ${theme.service}s`,
+        value: stats?.totalAppointments,
+        accent: theme.gradients.secondary,
+        tone: "bg-sky-50",
+        icon: <FiCalendar />,
+      },
+      {
+        label: "Confirmed",
+        value: stats?.confirmed,
+        accent: "from-emerald-500 to-green-500",
+        tone: "bg-green-50",
+        icon: <FiCheckCircle />,
+      },
+      {
+        label: "Pending",
+        value: stats?.pending,
+        accent: theme.gradients.pending,
+        tone: "bg-amber-50",
+        icon: <FiClock />,
+      },
+      {
+        label: "Cancelled",
+        value: stats?.cancelled,
+        accent: theme.gradients.danger,
+        tone: "bg-red-50",
+        icon: <FiXCircle />,
+      },
     ],
-    [stats]
+    [stats, theme]
   );
 
   const filteredAppointments = appointments.filter((appointment) => {
@@ -282,14 +321,16 @@ export default function Dashboard() {
     );
   }
 
+
+
   return (
     <div className="min-h-screen space-y-6 p-4 sm:p-5 lg:p-7">
       {showPatientDetail && (<ShowPatientProfile id={showPatientDetail} doctorId={showPatientDetail} setshowPatientDetail={setShowPatientDetail} />)}
       {(addSlot || reuseSlot) && (<DoctorSlots slots={slots} setAddsote={setAddSlot} setSlots={setSlots} reuseSlot={reuseSlot} setReuseSlot={setReuseSlot} />)}
 
       <section className="relative overflow-hidden rounded-3xl border border-black/5 bg-white/75 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl sm:p-8">
-        <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-emerald-200/30 blur-3xl" />
-        <div className="absolute -left-10 bottom-0 h-40 w-40 rounded-full bg-sky-200/30 blur-3xl" />
+        <div className={`absolute right-0 top-0 h-56 w-56 rounded-full ${theme.gradients.background1} blur-3xl`} />
+        <div className={`absolute -left-10 bottom-0 h-40 w-40 rounded-full ${theme.gradients.background2} blur-3xl`} />
 
         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
@@ -299,14 +340,21 @@ export default function Dashboard() {
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-400">Doctor Dashboard</p>
-              <h1 className="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">Welcome back, Dr. {doctor?.fullName || "Doctor"}</h1>
-              <p className="mt-1 text-sm text-gray-500 sm:text-base">{doctor?.specialization || "Specialization not added"}</p>
-            </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-400">
+                {theme.dashboard}
+              </p>
+
+              <h1 className="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">
+                {theme.welcome} {doctor?.fullName || theme.role}
+              </h1>
+
+              <p className="mt-1 text-sm text-gray-500 sm:text-base">
+                {doctor?.specialization || `${theme.expertise} not added`}
+              </p></div>
           </div>
 
-          <button onClick={() => setAddSlot(true)} className="inline-flex items-center justify-center rounded-2xl bg-linear-to-r from-emerald-500 to-green-600 px-5 py-3 font-medium text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-emerald-500/50">
-            + Add New Slot
+          <button onClick={() => setAddSlot(true)} className={`inline-flex items-center justify-center rounded-2xl bg-linear-to-r ${theme.gradients.primary} px-5 py-3 font-medium text-white shadow-lg transition-all duration-300 hover:scale-[1.02]`}>
+            + Add New {theme.slot}
           </button>
         </div>
       </section>
@@ -315,9 +363,14 @@ export default function Dashboard() {
       <section className="group relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900"><FaCalendarCheck className="text-emerald-500" />Your Appointments</h2>
-            <p className="mt-1 text-sm text-gray-500">Manage patient requests and confirmations</p>
-          </div>
+            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900">
+              <FaCalendarCheck className="text-emerald-500" />
+              Your {theme.service}s
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Manage {theme.client.toLowerCase()} requests and confirmations
+            </p>   </div>
 
           <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
             <button onClick={() => setAppointmentFilter("all")} className={`rounded-xl px-4 py-2 text-sm font-medium transition-all ${appointmentFilter === "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:bg-white/70"}`}>All</button>
@@ -330,7 +383,7 @@ export default function Dashboard() {
 
           <div className="space-y-4">
             {filteredAppointments.map((a, i) => {
-              const patient = a.patient || {};
+              const patient = a.patient || a.client || a.customer || {};
               const slot = a.slot || {};
               const createdAt = a.createdAt || a.createdat;
               const slotEnd = getSlotDateTime(slot.date, slot.endTime);
@@ -345,8 +398,9 @@ export default function Dashboard() {
                       <img src={patient.image || "https://i.pravatar.cc/150?img=5"} alt={patient.name || "Patient"} className="h-14 w-14 rounded-2xl border border-white object-cover shadow-md" />
                       <div>
                         <h3 className="text-sm font-semibold text-gray-800 sm:text-base">{patient.name || "Unknown"}</h3>
-                        <p className="text-xs text-blue-600 sm:text-sm">{patient.disease || "Not mentioned"}</p>
-                        <p className="mt-1 text-[11px] text-gray-400">
+                        <p className="text-xs text-blue-600 sm:text-sm">
+                          {patient.disease || patient.issue || patient.caseType || patient.serviceNeeded || "Not mentioned"}
+                        </p>                        <p className="mt-1 text-[11px] text-gray-400">
                           {statusLabelMap[a.status] ? `${statusLabelMap[a.status]} • ` : ""}
                           {createdAt ? new Date(createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", }) : "N/A"}
                         </p>
@@ -384,9 +438,14 @@ export default function Dashboard() {
 
       <section className="group relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900">< FaCheckToSlot className="text-blue-500" />Your Slots</h2>
-            <p className="mt-1 text-sm text-gray-500">View, activate, deactivate, or Repeat availability</p>
+          <div><h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900">
+            <FaCheckToSlot className="text-blue-500" />
+            Your {theme.slot}s
+          </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              View, activate, deactivate, or repeat availability
+            </p>
           </div>
 
           <div className="flex items-center sm:gap-2 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-2">
