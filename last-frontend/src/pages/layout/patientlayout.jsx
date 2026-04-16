@@ -35,7 +35,7 @@ export default function PatientLayout() {
 
             if (res.data.success) {
                 setLoading(false)
-                navigate("/patient/login");
+                navigate("/logins");
             }
         } catch (err) {
             setLoading(false)

@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Menu, X, Sparkles, ChevronDown, Stethoscope, Scale, Scissors, Wrench, Car, ShieldCheck, } from "lucide-react";
 
 export default function Nav() {
   const [isOpen, setIsOpen] = useState(false);
   const [showServices, setShowServices] = useState(false);
+  const navigate = useNavigate()
 
   const navItems = [
     { label: "Home", path: "/" },
     { label: "Professionals", path: "/professionals" },
-    { label: "Pricing", path: "/pricing" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
   ];
@@ -63,7 +63,7 @@ export default function Nav() {
               <div className={`absolute left-0 top-14 w-95 rounded-[28px] border border-slate-200 bg-white/95 p-4 shadow-2xl shadow-slate-200 backdrop-blur-3xl transition-all duration-300 ${showServices ? "visible translate-y-0 opacity-100" : "invisible -translate-y-2 opacity-0"}`}>
                 <div className="grid gap-3">
                   {services.map((item, index) => (
-                    <button key={index} className="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-left transition hover:-translate-y-1 hover:border-slate-200 hover:bg-white hover:shadow-lg">
+                    <button key={index} onClick={() => navigate("/logins")} className="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-left transition hover:-translate-y-1 hover:border-slate-200 hover:bg-white hover:shadow-lg">
                       <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-r ${item.color} text-white shadow-md`}>  {item.icon}</div>
 
                       <div className="flex-1">
